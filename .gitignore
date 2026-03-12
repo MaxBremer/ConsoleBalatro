@@ -56,3 +56,5 @@ nunit-*.xml
 /.vs/ConsoleBalatro/FileContentIndex
 /.vs/ConsoleBalatro/v17/.suo
 /.vs/ConsoleBalatro/DesignTimeBuild/.dtbcache.v2
+/.vs/ConsoleBalatro/CopilotIndices/17.14.1593.33849/CodeChunks.db
+/.vs/ConsoleBalatro/CopilotIndices/17.14.1593.33849/SemanticSymbols.db

@@ -8,5 +8,6 @@ namespace ConsoleBalatro.Engine.Cards
 {
     public class Card
     {
+        public CardZone MyZone;
     }
 }

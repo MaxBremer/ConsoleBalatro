@@ -14,11 +14,6 @@
 
   <ItemGroup>
     <Folder Include="Engine\Cards\Blinds\" />
-    <Folder Include="Engine\Cards\Consumables\" />
-    <Folder Include="Engine\Cards\Jokers\" />
-    <Folder Include="Engine\Cards\Vouchers\" />
-    <Folder Include="Engine\Cards\Tags\" />
-    <Folder Include="Engine\Market\" />
   </ItemGroup>
 
 </Project>

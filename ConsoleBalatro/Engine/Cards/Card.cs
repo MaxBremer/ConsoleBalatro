@@ -16,6 +16,9 @@ namespace ConsoleBalatro.Engine.Cards
 
         public Rank Rank;
         public Suit Suit;
+        public Edition Edition;
+        public Seal Seal;
+        public Enhancement Enhancement;
         public JokerCardDataBlock JokerData;
         public ConsumableCardDataBlock ConsumableData;
         public int BuyCost;

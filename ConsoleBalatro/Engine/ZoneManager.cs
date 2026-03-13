@@ -2,6 +2,7 @@
 using ConsoleBalatro.Engine.Cards.Vouchers;
 using ConsoleBalatro.Engine.Events;
 using ConsoleBalatro.Engine.Events.Args;
+using ConsoleBalatro.Engine.Market;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -122,7 +123,17 @@ namespace ConsoleBalatro.Engine
 
         public static void ClosePackSelection()
         {
-            //DO
+            var cardList = new List<Card>();
+            cardList.AddRange(PackOptionZone.Cards);
+            foreach (Card card in cardList)
+            {
+                MarketOptionsManager.ReturnMarketItemFromZone(card, PackOptionZone);
+            }
+
+            cardList.Clear();
+
+            DeckZone.DrawUntilCapacityFrom(HandZone);
+            ShuffleDeck();
         }
 
         public static void InitializeMarketRoundZones()

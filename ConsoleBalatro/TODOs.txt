@@ -1,5 +1,4 @@
 ﻿CREATED, TO BE FINISHED:
 Card.cs (FINISH AND REMOVE PLACEHOLDERS)
 Globals.cs
-ZoneManager.cs
 MarketOptionsManager.cs

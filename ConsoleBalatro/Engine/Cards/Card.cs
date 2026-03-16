@@ -24,9 +24,14 @@ namespace ConsoleBalatro.Engine.Cards
         public int BuyCost;
         public bool isJoker;
         public bool isConsumable;
+        public int ID;
+        public int BaseCost;
+        public PackType MyPackType;
+        public bool isVoucher;
 
         public void SetChipsFromRank() { }
         public void DestroyCard() { }
         public void ToggleSelect() { }
+        public void ClearExtras() { }
     }
 }

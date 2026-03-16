@@ -1,4 +1,5 @@
 ﻿CREATED, TO BE FINISHED:
 Card.cs (FINISH AND REMOVE PLACEHOLDERS)
 Globals.cs
-MarketOptionsManager.cs
+ConsumableManager.cs (ONLY DICTIONARY POPULATION)
+JokerDb.cs (ONLY DICTIONARY POPULATION)

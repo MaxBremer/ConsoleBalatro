@@ -1,5 +1,8 @@
 ﻿using ConsoleBalatro.Engine.Cards;
+using ConsoleBalatro.Engine.Cards.Consumables;
 using ConsoleBalatro.Engine.Cards.Enums;
+using ConsoleBalatro.Engine.Cards.Jokers;
+using ConsoleBalatro.Engine.Cards.Vouchers;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -48,7 +51,77 @@ namespace ConsoleBalatro.Engine.Market
 
         public static void InitializeMarketPools()
         {
-            //DO
+            foreach (BuyItemType buyItem in Enum.GetValues(typeof(BuyItemType)))
+            {
+                //Done I think????
+                switch(buyItem)
+                {
+                    case BuyItemType.PLAYING_CARD:
+                        var cardZoneToAdd = ZoneManager.MakeBasicDeck();
+                        cardZoneToAdd.Name = "CardPool";
+                        MarketPoolsToDrawFrom.Add(buyItem, cardZoneToAdd);
+                        break;
+                    case BuyItemType.PLANET_CARD:
+                        var planetPool = ZoneManager.MakeZone("PlanetPool");
+                        foreach (var planetType in DefaultPlanetsAvailable)
+                        {
+                            var pc = new Card();
+                            ConsumableManager.MakeCardPlanetCard(planetType, pc);
+                            planetPool.AddCard(pc, invisibleAdd: true);
+                        }
+                        break;
+                    case BuyItemType.TAROT_CARD:
+                        var tarotPool = ZoneManager.MakeZone("TarotPool");
+                        foreach (var tarotType in ConsumableManager.TarotNames)
+                        {
+                            tarotPool.AddCard(ConsumableManager.MakeTarotCard(tarotType), invisibleAdd: true);
+                        }
+                        MarketPoolsToDrawFrom.Add(buyItem, tarotPool);
+                        break;
+                    case BuyItemType.SPECTRAL_CARD:
+                        var spectralPool = ZoneManager.MakeZone("SpectralPool");
+                        foreach (var spectralType in ConsumableManager.SpectralNames)
+                        {
+                            spectralPool.AddCard(ConsumableManager.MakeSpectralCard(spectralType), invisibleAdd: true);
+                        }
+                        MarketPoolsToDrawFrom.Add(buyItem, spectralPool);
+                        break;
+                    case BuyItemType.JOKER:
+                        var jokerPool = ZoneManager.MakeZone("JokerPool");
+                        foreach (var joker in JokerDb.JokerDbNames)
+                        {
+                            var card = new Card();
+                            JokerDb.MakeCardJoker(card, joker);
+                            //TODO: Need better approach here.
+                            if(card.JokerData.Rarity != Cards.Jokers.JokerRarity.LEGENDARY)
+                            {
+                                jokerPool.AddCard(card, invisibleAdd: true);
+                            }
+                        }
+                        MarketPoolsToDrawFrom.Add(buyItem, jokerPool);
+                        break;
+                    case BuyItemType.VOUCHER:
+                        var voucherPool = ZoneManager.MakeZone("VoucherPool");
+                        foreach (var voucher in VoucherDb.VoucherDBNames)
+                        {
+                            var card = new Card();
+                            VoucherDb.MakeCardVoucher(card, voucher);
+                            if (card.JokerData.voucherIsBase)
+                            {
+                                voucherPool.AddCard(card, invisibleAdd: true);
+                            }
+                            else
+                            {
+                                VoucherDb.VoucherDependants.Add(card.JokerData.PredecessorBoucherDBName, card.JokerData.DBName);
+                            }
+                        }
+                        MarketPoolsToDrawFrom.Add(buyItem, voucherPool);
+                        break;
+                    default:
+                        MarketPoolsToDrawFrom.Add(buyItem, new());
+                        break;
+                }
+            }
         }
 
         public static void ShufflePools()
@@ -61,19 +134,54 @@ namespace ConsoleBalatro.Engine.Market
 
         public static void AddToVoucherPool(string DBNameToAdd)
         {
-            //DO
+            if (MarketPoolsToDrawFrom[BuyItemType.VOUCHER] != null && MarketPoolsToDrawFrom[BuyItemType.VOUCHER].Cards.Where(x => x.isVoucher && x.JokerData.DBName == DBNameToAdd).Any())
+            {
+                return; //Don't add dupe of existing
+            }
+            Card c = VoucherDb.GenerateVoucherCard(DBNameToAdd);
+            MarketPoolsToDrawFrom[BuyItemType.VOUCHER].AddCard(c, invisibleAdd: true);
         }
 
         public static void AttemptToRemoveFromVoucherPool(string DBNameToRemove)
         {
-            //DO
+            if(!MarketPoolsToDrawFrom[BuyItemType.VOUCHER].Cards.Where(x => x.isVoucher && x.JokerData.DBName == DBNameToRemove).Any())
+            {
+                return; //it's not there, stop.
+            }
+            var target = MarketPoolsToDrawFrom[BuyItemType.VOUCHER].Cards.Where(x => x.isVoucher && x.JokerData.DBName == DBNameToRemove).First();
+            MarketPoolsToDrawFrom[BuyItemType.VOUCHER].RemoveCard(target, invisibleRemove: true);
         }
 
         //returns whether it successfully returned the item.
         public static bool ReturnMarketItemFromZone(Card cardToReturn, CardZone zoneFrom)
         {
-            //DO
-            return false;
+            if (cardToReturn.isConsumable
+                && MarketPoolsToDrawFrom.ContainsKey(cardToReturn.ConsumableData.BuyType)
+                && !MarketPoolsToDrawFrom[cardToReturn.ConsumableData.BuyType].Cards.Where(x => x.isConsumable && x.ConsumableData.ConsumableName == cardToReturn.ConsumableData.ConsumableName).Any()
+                )
+            {
+                MarketPoolsToDrawFrom[cardToReturn.ConsumableData.BuyType].DrawTargetFrom(zoneFrom, cardToReturn, invisibleAdd: true);
+                cardToReturn.ClearExtras();
+                MarketPoolsToDrawFrom[cardToReturn.ConsumableData.BuyType].Shuffle();
+            }
+            else if (cardToReturn.isJoker
+                && !MarketPoolsToDrawFrom[BuyItemType.JOKER].Cards.Where(x => x.isJoker && x.JokerData.JokerName == cardToReturn.JokerData.JokerName).Any())
+            {
+                MarketPoolsToDrawFrom[BuyItemType.JOKER].DrawTargetFrom(zoneFrom, cardToReturn, invisibleAdd: true);
+                cardToReturn.ClearExtras();
+                MarketPoolsToDrawFrom[BuyItemType.JOKER].Shuffle();
+            }else if(cardToReturn.isVoucher && !MarketPoolsToDrawFrom[BuyItemType.VOUCHER].Cards.Where(x => x.isVoucher && x.JokerData.JokerName == cardToReturn.JokerData.JokerName).Any())
+            {
+                MarketPoolsToDrawFrom[BuyItemType.VOUCHER].DrawTargetFrom(zoneFrom, cardToReturn, invisibleAdd: true);
+                cardToReturn.ClearExtras();
+                MarketPoolsToDrawFrom[BuyItemType.VOUCHER].Shuffle();
+            }
+            else
+            {
+                return false;
+            }
+                
+            return true;
         }
 
         public static void DrawMarketItemOfTypeToConsumableZone(BuyItemType itemType)
@@ -83,7 +191,26 @@ namespace ConsoleBalatro.Engine.Market
 
         public static void DrawMarketItem(BuyItemType itemType, CardZone zoneToDrawTo, bool applyMarketModifiers = false)
         {
-            //DO
+            //TODO: When duplicates allowed, draw from some static pool.
+            var cardDrawn = zoneToDrawTo.DrawFromAndReturn(MarketPoolsToDrawFrom[itemType]);
+
+            //TODO: Wow this is so gross. Look at that nesting.
+            //like I get why I did it but... please. make it better.
+            if(applyMarketModifiers && cardDrawn != null)
+            {
+                //First, editions. Later maybe others?
+                if (RandomEditionOdds.ContainsKey(itemType))
+                {
+                    foreach (var ed in RandomEditionOdds[itemType].Keys)
+                    {
+                        if(Random.Shared.Next(1000) < RandomEditionOdds[itemType][ed])
+                        {
+                            cardDrawn.Edition = ed;
+                            break; //Not do this? later rolls override?
+                        }
+                    }
+                }
+            }
         }
 
         public static void DrawMarketItems(List<BuyItemType> itemTypes, CardZone zoneToDrawTo)
@@ -91,6 +218,14 @@ namespace ConsoleBalatro.Engine.Market
             foreach (var type in itemTypes)
             {
                 DrawMarketItem(type, zoneToDrawTo);
+            }
+        }
+
+        public static void DrawItemsByMainMarketOddsUntilFull(CardZone zoneToDrawTo, bool applyMarketModifiers = false)
+        {
+            while (zoneToDrawTo.HasRoom)
+            {
+                DrawItemsByMainMarketOdds(1, zoneToDrawTo, applyMarketModifiers);
             }
         }
 

@@ -1,7 +1,9 @@
 ﻿using ConsoleBalatro.Engine.Cards;
+using ConsoleBalatro.Engine.Cards.Consumables;
 using ConsoleBalatro.Engine.Cards.Enums;
 using ConsoleBalatro.Engine.Events;
 using ConsoleBalatro.Engine.Events.Args;
+using ConsoleBalatro.Engine.Market;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -71,6 +73,10 @@ namespace ConsoleBalatro.Engine
 
         public static int HandSize { get => ZoneManager.HandSize; set => ZoneManager.HandSize = value; }
 
+        public static int SelectionMax = 5;
+
+        public static int CurNumCardsSelected => ZoneManager.CardsSelectedInHand.Count();
+
         public static int StartingHandSize = 8;
 
         public static int MainMarketCount = 2;
@@ -119,17 +125,123 @@ namespace ConsoleBalatro.Engine
 
         public static void InitializeMain()
         {
-            //DO
+            ZoneManager.InitializeMainGameZones();
+
+            ScoreHandler.InitializeHandStatTracker();
+
+            GlobalEventListeners.SetupGlobalListeners();
+
+            MarketOptionsManager.InitializeMarketPools();
+            MarketOptionsManager.ShufflePools();
+
+            FlowHandler.InitializeFlowListeners();
+
+            PackActions.InitializePackData();
+
+            RerollButtonCard = new();
         }
 
         public static void PlayCurrentlySelectedHand()
         {
-            //DO
+            if(CurrentGameState != GameState.PlayRound || CurNumCardsSelected == 0)
+            {
+                return;
+            }
+
+            var selCards = ZoneManager.CardsSelectedInHand;
+
+            var evArgs = new EngineHandPlayArgs()
+            {
+                CardsSelected = selCards,
+                PreHandTypeCalculation = true,
+                MyContext = new EventContext() { Context = EventContextType.CardsSelectedForPlay },
+            };
+            EngineEventHandler.TriggerEvent(evArgs);
+
+            ZoneManager.CurrentlyBeingPlayedZone.DrawTargetsFrom(ZoneManager.HandZone, selCards);
+            var handSelInfo = EngineUtils.BestHandFromCards(selCards);
+
+            var bestHandArgs = new EngineHandPlayArgs()
+            {
+                CardsSelected = selCards,
+                MyContext = new EventContext() { Context = EventContextType.HandPlayedCalculated },
+                HandBeingPlayed = handSelInfo.Item1,
+                CardsInScoringHand = handSelInfo.Item2,
+            };
+            EngineEventHandler.TriggerEvent(bestHandArgs);
+
+            ScoreHandler.SetBaseHandScore(bestHandArgs.HandBeingPlayed);
+
+            var handTypePlayed = bestHandArgs.HandBeingPlayed;
+            var cardsInActualHandPlayed = bestHandArgs.CardsInScoringHand;
+
+            //Find the cards we're going to use in the scoring calc.
+            var cardsForScoringCalc = new List<Card>();
+            foreach (var cardSelected in selCards)
+            {
+                bool addToScoringCalc = cardsInActualHandPlayed.Contains(cardSelected);
+                var considerationArgs = new EngineCardChosenForPlayedHandArgs()
+                {
+                    CardBeingConsidered = cardSelected,
+                    WillBeIncludedInCalc = addToScoringCalc,
+                    MyContext = new EventContext() { Context = EventContextType.SelectedCardBeingConsideredForCalc },
+                };
+                EngineEventHandler.TriggerEvent(considerationArgs);
+
+                if (considerationArgs.WillBeIncludedInCalc)
+                {
+                    cardsForScoringCalc.Add(cardSelected);
+                }
+            }
+
+            var sContext = new ScoringContext() { HandBeingPlayed = handTypePlayed, };
+            sContext.PlayingCardsBeingScored.AddRange(cardsInActualHandPlayed);//Uhhh shouldn't this be cardsForScoringCalc? TODO
+            //like honestly wtf did I write here?
+            sContext.AllPlayingCardsSubmittedForHand.AddRange(selCards);//See this one makes sense
+            foreach (var cardScored in cardsForScoringCalc)//see this makes sense
+            {
+                cardScored.TriggerScoring(sContext);
+            }
+
+            foreach (var cardInHand in ZoneManager.HandZone.Cards)
+            {
+                cardInHand.TriggerInHandDuringScoring(sContext);
+            }
+
+            foreach (var jokerCard in ZoneManager.JokerZone.Cards)
+            {
+                jokerCard.TriggerScoring(sContext);
+            }
+
+            foreach (var voucherCard in ZoneManager.ActiveVoucherZone.Cards)
+            {
+                voucherCard.TriggerScoring(sContext);//TODO: Put all always-score cards (like jokers, vouchers, boss blind jokers) in one always-score list, then score that.
+            }
+
+            ScoreHandler.FinalPlayChipsCalc();
+            ZoneManager.HiddenPlayZone.DrawUntilCapacityFrom(ZoneManager.CurrentlyBeingPlayedZone);
+            CurHandsRemaining -= 1;
+            if(TotalCurrentChips >= RequiredChipsForCurrentBlind)
+            {
+                FlowHandler.ClosePlayRound();
+            }else if(CurHandsRemaining == 0)
+            {
+                FlowHandler.GameOver();
+            }
+            else
+            {
+                ZoneManager.DrawHandful();
+            }
         }
 
         public static void DiscardSelectedFromHand(bool doRedraw = true)
         {
-            //DO
+            if (CurDiscardsRemaining == 0)
+                return;
+            ZoneManager.DiscardSelectedFromHand();
+            if (doRedraw)
+                ZoneManager.DrawHandful();
+            CurDiscardsRemaining -= 1;
         }
 
         public static void EmitChipsAdd(int chipsNum, Card src)
@@ -198,22 +310,78 @@ namespace ConsoleBalatro.Engine
 
         public static void PerformSell(Card beingSold, CardZone zoneCardIsLeaving)
         {
-            //DO
+            var args = new EngineCardSoldArgs()
+            {
+                CardBeingSold = beingSold,
+                ValueBeingSoldFor = beingSold.SellCost,
+                ZoneCardIsLeaving = zoneCardIsLeaving,
+                MyContext = new EventContext() { Context = EventContextType.CardSell},
+            };
+            EngineEventHandler.TriggerEvent(args);
+
+            EmitMoneyGain(args.ValueBeingSoldFor, args.CardBeingSold);
+
+            //Right now, only jokers/consumables get returned to market pools.
+            //Later maybe vouchers? I mean they shouldn't be sell-able but do have a pool.
+            if(args.CardBeingSold.isJoker || args.CardBeingSold.isConsumable)
+            {
+                if(!MarketOptionsManager.ReturnMarketItemFromZone(args.CardBeingSold, args.ZoneCardIsLeaving))
+                {
+                    ZoneManager.DestroyCard(args.CardBeingSold, args.ZoneCardIsLeaving);
+                }
+            }
+            else
+            {
+                //TODO: Others get destroyed? idk. Only weird cases where non-jokers/consumables getting sold, for modded stuff.
+            }
         }
 
         public static void PerformPurchaseByType(Card beingPurchased)
         {
-            //DO
+            var zoneFrom = beingPurchased.MyZone;
+            CardZone zoneTo = null;
+            //Order matters here; a card can in theory be multiple of these things.
+            if (beingPurchased.isVoucher)
+            {
+                zoneTo = ZoneManager.ActiveVoucherZone;
+            }else if (beingPurchased.isJoker)
+            {
+                zoneTo = ZoneManager.JokerZone;
+            }else if (beingPurchased.isConsumable)
+            {
+                zoneTo = ZoneManager.ConsumableZone;
+            }
+
+            PerformPurchase(beingPurchased, zoneTo, zoneFrom);
         }
 
         public static void PerformPurchase(Card beingPurchased, CardZone zoneGoingTo = null, CardZone zoneFrom = null)
         {
-            //DO
+            if (zoneFrom == null)
+                zoneFrom = beingPurchased.MyZone;
+            //noZone purchases can occur, such as a buyAndUse, which will handle its own discard.
+            if (zoneGoingTo != null && zoneFrom != null)
+                zoneGoingTo.DrawTargetFrom(zoneFrom, beingPurchased);
+            EmitMoneyLoss(beingPurchased.BuyCost, beingPurchased, true);
+            //TODO: Should this really be done here? Doesn't feel right.
+            //Maybe add extra conditional here? In case a pack consumable can be bought without open.
+            if (beingPurchased.isPack)
+            {
+                PackActions.OpenPack(beingPurchased);
+                ZoneManager.DestroyCard(beingPurchased, beingPurchased.MyZone);
+            }
         }
 
         public static void PerformBuyAndUse(Card beingPurchased)
         {
-            //DO
+            var zoneFrom = beingPurchased.MyZone;
+
+            //TODO: Once again, consumable usage params.
+            if(beingPurchased.isConsumable && beingPurchased.ConsumableData.IsActivatable(null))
+            {
+                PerformPurchase(beingPurchased);
+                ConsumableManager.UseConsumable(beingPurchased, zoneFrom);
+            }
         }
 
         public static bool CanBuyAndUse(Card beingPurchased)
@@ -230,13 +398,42 @@ namespace ConsoleBalatro.Engine
 
         public static GameStateObj PopCurrGameState()
         {
-            //DO
-            return null;
+            if (GameStateStack == null || GameStateStack.Count == 0)
+                return null;
+            //NOTE: For now, just this. Maybe some other stuff later idk.
+
+            var args = new EngineGameStateChangeArgs()
+            {
+                MyContext = new() { Context = EventContextType.GameStatePop },
+                OldStateToBePopped = GameStateStack.Peek(),
+                NewStateRevealedByPop = GameStateStack.Count > 1 ? GameStateStack.ToArray()[1] : null,
+            };
+            EngineEventHandler.TriggerEvent(args);
+            var ret = GameStateStack.Pop();
+
+            args.isAfterStateChange = true;
+            args.MyContext = new() { Context = EventContextType.PostGameStatePop };//Now in theory, could use same context obj and change context type. But don't really know eventual full scope of EventContext, maybe contextual info changes.
+            EngineEventHandler.TriggerEvent(args);
+
+            return ret;
         }
 
         public static void PushGameState(GameStateObj obj)
         {
-            //DO
+            //Same as above; maybe more later.
+            var args = new EngineGameStateChangeArgs()
+            {
+                MyContext = new() { Context = EventContextType.GameStatePush},
+                NewStateBeingPushed = obj,
+                OldStatePushedOver = GameStateStack != null && GameStateStack.Count > 0 ? CurrentGameStateObj : null,
+            };
+            EngineEventHandler.TriggerEvent(args);
+
+            GameStateStack.Push(obj);
+
+            args.isAfterStateChange = true;
+            args.MyContext = new() { Context = EventContextType.PostGameStatePush };
+            EngineEventHandler.TriggerEvent(args);
         }
 
         public static void ClearGameStateStack()

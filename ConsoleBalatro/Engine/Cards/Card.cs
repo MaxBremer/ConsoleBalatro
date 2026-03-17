@@ -1,6 +1,7 @@
 ﻿using ConsoleBalatro.Engine.Cards.Consumables;
 using ConsoleBalatro.Engine.Cards.Enums;
 using ConsoleBalatro.Engine.Cards.Jokers;
+using ConsoleBalatro.Engine.Events;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -22,7 +23,9 @@ namespace ConsoleBalatro.Engine.Cards
         public JokerCardDataBlock JokerData;
         public ConsumableCardDataBlock ConsumableData;
         public int BuyCost;
+        public int SellCost;
         public bool isJoker;
+        public bool isPack;
         public bool isConsumable;
         public int ID;
         public int BaseCost;
@@ -33,5 +36,8 @@ namespace ConsoleBalatro.Engine.Cards
         public void DestroyCard() { }
         public void ToggleSelect() { }
         public void ClearExtras() { }
+
+        public void TriggerScoring(ScoringContext context) { }
+        public void TriggerInHandDuringScoring(ScoringContext context) { }
     }
 }

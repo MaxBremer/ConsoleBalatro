@@ -1,0 +1,190 @@
+﻿using ConsoleBalatro.Engine.Cards;
+using ConsoleBalatro.Engine.Cards.Consumables;
+using ConsoleBalatro.Engine.Cards.Enums;
+using ConsoleBalatro.Engine.Market;
+using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Text;
+using System.Threading.Tasks;
+
+namespace ConsoleBalatro.Engine
+{
+    public static class PackActions
+    {
+        public class PackOpeningData
+        {
+            public BuyItemType RelevantBuyItemType = BuyItemType.NONE;
+            public bool isImmediateActivation = false;
+            public bool drawHandOnOpen = false;
+            public bool DrawsToZone = false;
+            public CardZone ZoneToDrawTo = null;
+        }
+
+        private static Dictionary<BuyItemType, PackOpeningData> PackDataForOpenings;
+
+        public static void InitializePackData()
+        {
+            PackDataForOpenings = new();
+            PackDataForOpenings.Add(BuyItemType.PLAYING_CARD, new PackOpeningData()
+            {
+                RelevantBuyItemType = BuyItemType.PLAYING_CARD,
+                ZoneToDrawTo = ZoneManager.DeckZone,
+                DrawsToZone = true,
+            });
+            PackDataForOpenings.Add(BuyItemType.JOKER, new PackOpeningData()
+            {
+                RelevantBuyItemType = BuyItemType.JOKER,
+                ZoneToDrawTo = ZoneManager.JokerZone,
+                DrawsToZone = true,
+            });
+            PackDataForOpenings.Add(BuyItemType.PLANET_CARD, new PackOpeningData()
+            {
+                RelevantBuyItemType = BuyItemType.PLANET_CARD,
+                isImmediateActivation = true,
+            });
+            PackDataForOpenings.Add(BuyItemType.TAROT_CARD, new PackOpeningData()
+            {
+                RelevantBuyItemType = BuyItemType.TAROT_CARD,
+                isImmediateActivation = true,
+                drawHandOnOpen = true,
+            });
+            PackDataForOpenings.Add(BuyItemType.SPECTRAL_CARD, new PackOpeningData()
+            {
+                RelevantBuyItemType = BuyItemType.SPECTRAL_CARD,
+                isImmediateActivation = true,
+                drawHandOnOpen = true,
+            });
+        }
+
+        public static void OpenPack(Card pack)
+        {
+            if (!pack.isPack)
+            {
+                return;
+            }
+
+            FlowHandler.OpenPackSelectionRound(pack);
+
+            //Draw relevant items to pack option zone.
+            var packInfo = ConsumableManager.PackBasicNums[Globals.CurrentGameStateObj.TargetPack.MyPackType];
+            MarketOptionsManager.DrawNumMarketItems(packInfo.RelevantBuyItemType, packInfo.NumOptionsPresented, ZoneManager.PackOptionZone);
+
+            //OPTIONS:
+            //JOKER: choose to add to jokerzone
+            //CARD: choose to add to deck
+            //TAROT/SPECTRAL: draw a hand of cards first. Then choose one to activate immediately.
+            //PLANET: Choose one to activate immediately.
+
+            var packOpenData = PackDataForOpenings[packInfo.RelevantBuyItemType];
+            if (packOpenData.drawHandOnOpen)
+            {
+                ZoneManager.DrawHandful();
+            }
+        }
+
+        public static void SkipCurrentPack()
+        {
+            //TODO: Emit a custom event for things that care about skipping packs, like that one joker.
+            EndCurrentPack();
+        }
+
+        public static void EndCurrentPack()
+        {
+            if(Globals.CurrentGameState != GameState.SelectingPackOption)
+            {
+                return;
+            }
+            //TODO: Other stuff? At least emit an event later.
+            //Is this even necessary? Can we just go direct to FlowHandler call.
+
+            FlowHandler.ClosePackSelectionRound();
+        }
+
+        public static bool CanAcceptPackOption(Card optionAttempted)
+        {
+            var packInfo = ConsumableManager.PackBasicNums[Globals.CurrentGameStateObj.TargetPack.MyPackType];
+            switch (packInfo.RelevantBuyItemType)
+            {
+                case BuyItemType.PLAYING_CARD:
+                    return true;
+                case BuyItemType.TAROT_CARD:
+                case BuyItemType.PLANET_CARD:
+                case BuyItemType.SPECTRAL_CARD:
+                    //TODO: pass args here? So far none need them.
+                    return optionAttempted.ConsumableData.IsActivatable(null);
+                case BuyItemType.JOKER:
+                    return ZoneManager.JokerZone.HasRoom;
+                case BuyItemType.VOUCHER:
+                case BuyItemType.NONE:
+                default:
+                    return false;
+            }
+        }
+
+        public static void PackOptionSelectionMade(Card optionSelected)
+        {
+            if(Globals.CurrentGameState != GameState.SelectingPackOption || (!OptionMatchesPackType(optionSelected, Globals.CurrentGameStateObj.TargetPack.MyPackType)))
+            {
+                return;
+            }
+
+            var packInfo = ConsumableManager.PackBasicNums[Globals.CurrentGameStateObj.TargetPack.MyPackType];
+
+            switch (packInfo.RelevantBuyItemType)
+            {
+                case BuyItemType.NONE:
+                    break;
+                case BuyItemType.PLAYING_CARD:
+                    //ADD OPT TO DECK
+                    ZoneManager.DeckZone.DrawTargetFrom(ZoneManager.PackOptionZone, optionSelected);
+                    break;
+                case BuyItemType.TAROT_CARD:
+                case BuyItemType.PLANET_CARD:
+                case BuyItemType.SPECTRAL_CARD:
+                    //ACTIVATE OPT
+                    ConsumableManager.UseConsumable(optionSelected, ZoneManager.PackOptionZone);
+                    break;
+                case BuyItemType.JOKER:
+                    //ADD TO ZONE
+                    //TODO: ONLY ALLOW IF THERE IS ROOM
+                    ZoneManager.JokerZone.DrawTargetFrom(ZoneManager.PackOptionZone, optionSelected);
+                    break;
+                case BuyItemType.VOUCHER:
+                    //HUH?
+                    break;
+                default:
+                    break;
+            }
+            //INCREMENT NUM OPTIONS SELECTED IN GAMESTATE OBJ.
+            //IF OUT OF OPTIONS TO CHOOSE, CLEAR OUT SELECTION ZONE.
+            //IF THAT OR NO OPTIONS REMAINING, EXIT PACK SELECTION GAME STATE.
+            Globals.CurrentGameStateObj.NumChoicesAlreadyMade++;
+            var optRemNum = ZoneManager.PackOptionZone.Cards.Count;
+            if (packInfo.NumCanBeTaken <= Globals.CurrentGameStateObj.NumChoicesAlreadyMade || optRemNum == 0)
+            {
+                EndCurrentPack();
+            }
+        }
+
+        public static bool OptionMatchesPackType(Card option, PackType packType)
+        {
+            var packBuyType = ConsumableManager.PackBasicNums[packType].RelevantBuyItemType;
+            switch (packBuyType)
+            {
+                case BuyItemType.PLAYING_CARD:
+                    return true;
+                case BuyItemType.JOKER:
+                    return option.isJoker;
+                case BuyItemType.PLANET_CARD:
+                    return option.isConsumable && option.ConsumableData.Type == ConsumableType.PLANET;
+                case BuyItemType.TAROT_CARD:
+                    return option.isConsumable && option.ConsumableData.Type == ConsumableType.TAROT;
+                case BuyItemType.SPECTRAL_CARD:
+                    return option.isConsumable && option.ConsumableData.Type == ConsumableType.SPECTRAL;
+                default:
+                    return false;
+            }
+        }
+    }
+}

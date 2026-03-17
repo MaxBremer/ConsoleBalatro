@@ -26,6 +26,7 @@ namespace ConsoleBalatro.Engine.Cards
         public int SellCost;
         public bool isJoker;
         public bool isPack;
+        public bool isTag;
         public bool isConsumable;
         public int ID;
         public int BaseCost;

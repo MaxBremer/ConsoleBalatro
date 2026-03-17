@@ -1,4 +1,5 @@
-﻿using ConsoleBalatro.Engine.Cards.Jokers;
+﻿using ConsoleBalatro.Engine.Cards.Consumables;
+using ConsoleBalatro.Engine.Cards.Jokers;
 using ConsoleBalatro.Engine.Events;
 using ConsoleBalatro.Engine.Events.Args;
 using System;
@@ -18,7 +19,71 @@ namespace ConsoleBalatro.Engine.Cards.Tags
         //PUT DATA DICTIONARY HERE
         public static Dictionary<TagType, Func<Card, JokerCardDataBlock>> TagBuilders = new()
         {
-            //DO: POPULATE
+            {TagType.INVESTMENT, c =>
+            {
+                var jokerDataBlock = PrepBlockForTag("Investment Tag");
+                var tagDataBlock = new TagDataBlock();
+                tagDataBlock.EventTypesTrigger.Add(EventContextType.GatherPostRoundMoney);
+                Func<EngineEventArgs, Card, bool> doTriggerFunc = (args, ct) =>
+                {
+                    return args is EngineGatherPostRoundMoneyArgs moneyArgs && FlowHandler.CurrentSelectedBlind == BlindType.BOSS;
+                };
+                tagDataBlock.DoTrigger = doTriggerFunc;
+                Action<EngineEventArgs> activation = args =>
+                {
+                    if(args is EngineGatherPostRoundMoneyArgs moneyArgs)
+                        moneyArgs.JokersContributed.Add((jokerDataBlock, 25));//TODO: Data dict val???
+                };
+                tagDataBlock.Activate = activation;
+
+                jokerDataBlock.TagData = tagDataBlock;
+                return jokerDataBlock;
+            } },
+            {TagType.DOUBLE_TAG, c =>
+            {
+                var jokerDataBlock = PrepBlockForTag("Double Tag");
+                var tagDataBlock = new TagDataBlock();
+                tagDataBlock.EventTypesTrigger.Add(EventContextType.TagAdded);
+                Func<EngineEventArgs, Card, bool> doTriggerFunc = (args, ct) =>
+                {
+                    return args is EngineTagAddedEventArgs tagArgs && tagArgs.isPostAdd;
+                };
+                tagDataBlock.DoTrigger = doTriggerFunc;
+                Action<EngineEventArgs> activation = args =>
+                {
+                    if(args is EngineTagAddedEventArgs tagArgs)
+                        OnTagAdd(tagArgs.TagCard.MakeCopy());
+                };
+                tagDataBlock.Activate = activation;
+
+                jokerDataBlock.TagData = tagDataBlock;
+                return jokerDataBlock;
+            } },
+            {TagType.MEGA_ARCANA, c =>
+            {
+                var jokerDataBlock = PrepBlockForTag("Mega Arcana Tag");
+                var tagDataBlock = new TagDataBlock();
+                tagDataBlock.EventTypesTrigger.Add(EventContextType.PostGameStatePop);
+                tagDataBlock.EventTypesTrigger.Add(EventContextType.PostGameStatePush);
+                Func<EngineEventArgs, Card, bool> doTriggerFunc = (args, ct) =>
+                {
+                    return args is EngineGameStateChangeArgs stateArgs && stateArgs.NewState != null && stateArgs.NewState.GameState != GameState.SelectingPackOption && !stateArgs.StateChangeIsInterrupted; ;
+                };
+                tagDataBlock.DoTrigger = doTriggerFunc;
+                Action<EngineEventArgs> activation = args =>
+                {
+                    if(args is EngineGameStateChangeArgs stateArgs)
+                    {
+                        stateArgs.StateChangeIsInterrupted = true;
+                        Card targPack = ConsumableManager.MakePack(Enums.PackType.MEGA_TAROT);
+                        PackActions.OpenPack(targPack);
+                    }
+                };
+                tagDataBlock.Activate = activation;
+
+                jokerDataBlock.TagData = tagDataBlock;
+                return jokerDataBlock;
+            } },
         };
 
         public static JokerCardDataBlock PrepBlockForTag(string name)

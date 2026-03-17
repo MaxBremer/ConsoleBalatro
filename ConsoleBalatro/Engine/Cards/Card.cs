@@ -5,6 +5,7 @@ using ConsoleBalatro.Engine.Events;
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Reflection.Metadata.Ecma335;
 using System.Text;
 using System.Threading.Tasks;
 
@@ -40,5 +41,6 @@ namespace ConsoleBalatro.Engine.Cards
 
         public void TriggerScoring(ScoringContext context) { }
         public void TriggerInHandDuringScoring(ScoringContext context) { }
+        public Card MakeCopy() => null;
     }
 }

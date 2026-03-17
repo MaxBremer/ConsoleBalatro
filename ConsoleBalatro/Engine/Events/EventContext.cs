@@ -27,6 +27,8 @@ namespace ConsoleBalatro.Engine.Events
 
         CardDetailsChange,
 
+        CardSuitPull,
+
         CardDiscardedFromHand,
 
         CardsSelectedForPlay,

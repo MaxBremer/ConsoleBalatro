@@ -1,4 +1,5 @@
 ﻿using ConsoleBalatro.Engine.Cards.Enums;
+using ConsoleBalatro.Engine.Cards.Jokers;
 using ConsoleBalatro.Engine.Events;
 using ConsoleBalatro.Engine.Events.Args;
 using ConsoleBalatro.Engine.Market;
@@ -19,7 +20,7 @@ namespace ConsoleBalatro.Engine.Cards.Consumables
             public int NumCanBeTaken;
             public int ChanceToAppear; //This is out of 10,000 (for percentages).
             public BuyItemType RelevantBuyItemType = BuyItemType.NONE;
-            public string PackName;
+            public string PackName;//TODO: THESE FIELDS ARE DISPLAY FIELDS. MOVE TO DISPLAY CLASSES.
             public string TopLine;
             public string BottomLine;
             public string GetItemTypeString()
@@ -43,7 +44,166 @@ namespace ConsoleBalatro.Engine.Cards.Consumables
 
         public static Dictionary<PackType, PackData> PackBasicNums = new()
         {
-            //DO: POPULATE THIS
+            { PackType.NONE, new() { 
+                NumCanBeTaken = 1,
+                NumOptionsPresented = 1,
+                BasePackPrice = 1,
+                ChanceToAppear = 0,
+                RelevantBuyItemType= BuyItemType.NONE,
+                PackName = "",
+                TopLine = "",
+                BottomLine = "",
+            } },
+            { PackType.BASIC_JOKER, new() {
+                NumCanBeTaken = 1,
+                NumOptionsPresented = 2,
+                BasePackPrice = 4,
+                ChanceToAppear = 535,
+                RelevantBuyItemType= BuyItemType.JOKER,
+                PackName = "Basic Joker Pack",
+                TopLine = "BAS",
+                BottomLine = "JOK",
+            } },
+            { PackType.BASIC_STANDARD, new() {
+                NumCanBeTaken = 1,
+                NumOptionsPresented = 3,
+                BasePackPrice = 4,
+                ChanceToAppear = 1784,
+                RelevantBuyItemType= BuyItemType.PLAYING_CARD,
+                PackName = "Basic Card Pack",
+                TopLine = "BAS",
+                BottomLine = "CAR",
+            } },
+            { PackType.BASIC_TAROT, new() {
+                NumCanBeTaken = 1,
+                NumOptionsPresented = 3,
+                BasePackPrice = 4,
+                ChanceToAppear = 1784,
+                RelevantBuyItemType= BuyItemType.TAROT_CARD,
+                PackName = "Basic Tarot Pack",
+                TopLine = "BAS",
+                BottomLine = "TAR",
+            } },
+            { PackType.BASIC_PLANET, new() {
+                NumCanBeTaken = 1,
+                NumOptionsPresented = 3,
+                BasePackPrice = 4,
+                ChanceToAppear = 1784,
+                RelevantBuyItemType= BuyItemType.PLANET_CARD,
+                PackName = "Basic Planet Pack",
+                TopLine = "BAS",
+                BottomLine = "PLA",
+            } },
+            { PackType.BASIC_SPECTRAL, new() {
+                NumCanBeTaken = 1,
+                NumOptionsPresented = 2,
+                BasePackPrice = 4,
+                ChanceToAppear = 267,
+                RelevantBuyItemType= BuyItemType.SPECTRAL_CARD,
+                PackName = "Basic Spectral Pack",
+                TopLine = "BAS",
+                BottomLine = "SPE",
+            } },
+            { PackType.JUMBO_JOKER, new() {
+                NumCanBeTaken = 1,
+                NumOptionsPresented = 4,
+                BasePackPrice = 6,
+                ChanceToAppear = 267,
+                RelevantBuyItemType= BuyItemType.JOKER,
+                PackName = "Jumbo Joker Pack",
+                TopLine = "JUM",
+                BottomLine = "JOK",
+            } },
+            { PackType.JUMBO_STANDARD, new() {
+                NumCanBeTaken = 1,
+                NumOptionsPresented = 5,
+                BasePackPrice = 6,
+                ChanceToAppear = 892,
+                RelevantBuyItemType= BuyItemType.PLAYING_CARD,
+                PackName = "Jumbo Card Pack",
+                TopLine = "JUM",
+                BottomLine = "CAR",
+            } },
+            { PackType.JUMBO_TAROT, new() {
+                NumCanBeTaken = 1,
+                NumOptionsPresented = 5,
+                BasePackPrice = 6,
+                ChanceToAppear = 892,
+                RelevantBuyItemType= BuyItemType.TAROT_CARD,
+                PackName = "Jumbo Tarot Pack",
+                TopLine = "JUM",
+                BottomLine = "TAR",
+            } },
+            { PackType.JUMBO_PLANET, new() {
+                NumCanBeTaken = 1,
+                NumOptionsPresented = 5,
+                BasePackPrice = 6,
+                ChanceToAppear = 892,
+                RelevantBuyItemType= BuyItemType.PLANET_CARD,
+                PackName = "Jumbo Planet Pack",
+                TopLine = "JUM",
+                BottomLine = "PLA",
+            } },
+            { PackType.JUMBO_SPECTRAL, new() {
+                NumCanBeTaken = 1,
+                NumOptionsPresented = 4,
+                BasePackPrice = 6,
+                ChanceToAppear = 134,
+                RelevantBuyItemType= BuyItemType.SPECTRAL_CARD,
+                PackName = "Jumbo Spectral Pack",
+                TopLine = "JUM",
+                BottomLine = "SPE",
+            } },
+            { PackType.MEGA_JOKER, new() {
+                NumCanBeTaken = 2,
+                NumOptionsPresented = 4,
+                BasePackPrice = 8,
+                ChanceToAppear = 66,
+                RelevantBuyItemType= BuyItemType.JOKER,
+                PackName = "Mega Joker Pack",
+                TopLine = "MEG",
+                BottomLine = "JOK",
+            } },
+            { PackType.MEGA_STANDARD, new() {
+                NumCanBeTaken = 2,
+                NumOptionsPresented = 5,
+                BasePackPrice = 8,
+                ChanceToAppear = 223,
+                RelevantBuyItemType= BuyItemType.PLAYING_CARD,
+                PackName = "Mega Card Pack",
+                TopLine = "MEG",
+                BottomLine = "CAR",
+            } },
+            { PackType.MEGA_TAROT, new() {
+                NumCanBeTaken = 2,
+                NumOptionsPresented = 5,
+                BasePackPrice = 8,
+                ChanceToAppear = 223,
+                RelevantBuyItemType= BuyItemType.TAROT_CARD,
+                PackName = "Mega Tarot Pack",
+                TopLine = "MEG",
+                BottomLine = "TAR",
+            } },
+            { PackType.MEGA_PLANET, new() {
+                NumCanBeTaken = 2,
+                NumOptionsPresented = 5,
+                BasePackPrice = 8,
+                ChanceToAppear = 223,
+                RelevantBuyItemType= BuyItemType.PLANET_CARD,
+                PackName = "Mega Planet Pack",
+                TopLine = "MEG",
+                BottomLine = "PLA",
+            } },
+            { PackType.MEGA_SPECTRAL, new() {
+                NumCanBeTaken = 2,
+                NumOptionsPresented = 4,
+                BasePackPrice = 8,
+                ChanceToAppear = 31,
+                RelevantBuyItemType= BuyItemType.SPECTRAL_CARD,
+                PackName = "Mega Spectral Pack",
+                TopLine = "MEG",
+                BottomLine = "SPE",
+            } },
         };
 
         public static int PackTotalOdds => PackBasicNums.Values.Select(x => x.ChanceToAppear).Sum();
@@ -64,7 +224,473 @@ namespace ConsoleBalatro.Engine.Cards.Consumables
         public static List<string> TarotNames => TarotConsumableDb.Keys.ToList();
         public static Dictionary<string, Func<Card, ConsumableCardDataBlock>> TarotConsumableDb = new()
         {
-            //DO: POPULATE THIS
+            { "FOOL", c => 
+            {
+                var ret = new ConsumableCardDataBlock();
+                ret.ConsumableName = "The Fool";
+                ret.DBName = "FOOL";
+                ret.DescriptionBuilder = _ =>
+                {
+                    var retStr = "Gain a copy of last used Planet or Tarot card (NONE)";
+                    var targetC = EngineEventHandler.LastSavedOfTypeConditional(EventContextType.ConsumableUsed, EvaluateCardForFool);
+                    if(targetC != null && targetC is EngineConsumableUseArgs conArgs)
+                    {
+                        retStr = retStr.Replace("NONE", conArgs.ConsumableName);
+                    }
+                    return retStr;
+                };
+                ret.IsActivatable = _ => EngineEventHandler.LastSavedOfTypeConditional(EventContextType.ConsumableUsed, EvaluateCardForFool) != null;
+                ret.Use = _ =>
+                {
+                    var lastEv = EngineEventHandler.LastSavedOfTypeConditional(EventContextType.ConsumableUsed, EvaluateCardForFool);
+                    if(lastEv != null && lastEv is EngineConsumableUseArgs conArg && (conArg.TypeUsed == ConsumableType.TAROT || conArg.TypeUsed == ConsumableType.PLANET))
+                    {
+                        Card toDraw = new();
+                        if(conArg.TypeUsed == ConsumableType.TAROT)
+                        {
+                            MakeCardTarotCard(conArg.ConsumableDBName, toDraw);
+                        }
+                        else
+                        {
+                            MakeCardPlanetCard(conArg.HandOfItemUsed, toDraw);
+                        }
+
+                        ZoneManager.ConsumableZone.AddCard(toDraw);
+                    }
+                };
+
+                return ret;
+            } },
+            { "HIGHPRIESTESS", c =>
+            {
+                var ret = new ConsumableCardDataBlock();
+                ret.ConsumableName = "High Priestess";
+                ret.DBName = "HIGHPRIESTESS";
+                ret.DataDict.Add("INTAMOUNT", new JokerData() { MyDataType = JokerDataType.INT, IntData = 2});
+                ret.DescriptionBuilder = _ => "Add " + ret.DataDict["INTAMOUNT"].IntData + " planet cards. (Must have room)";
+                ret.IsActivatable = _ => ZoneManager.ConsumableZone.HasRoom || ZoneManager.ConsumableZone.Cards.Contains(ret.MyCard);
+                ret.Use = _ =>
+                {
+                    MarketOptionsManager.DrawNumMarketItems(BuyItemType.PLANET_CARD, ret.DataDict["INTAMOUNT"].IntData, ZoneManager.ConsumableZone);
+                };
+
+                return ret;
+            } },
+            { "EMPEROR", c =>
+            {
+                var ret = new ConsumableCardDataBlock();
+                ret.ConsumableName = "The Emperor";
+                ret.DBName = "EMPEROR";
+                ret.DataDict.Add("INTAMOUNT", new JokerData() { MyDataType = JokerDataType.INT, IntData = 2});
+                ret.DescriptionBuilder = _ => "Add " + ret.DataDict["INTAMOUNT"].IntData + " tarot cards. (Must have room)";
+                ret.IsActivatable = _ => ZoneManager.ConsumableZone.HasRoom || ZoneManager.ConsumableZone.Cards.Contains(ret.MyCard);
+                ret.Use = _ =>
+                {
+                    MarketOptionsManager.DrawNumMarketItems(BuyItemType.TAROT_CARD, ret.DataDict["INTAMOUNT"].IntData, ZoneManager.ConsumableZone);
+                };
+
+                return ret;
+            } },
+            { "CHARIOT", c =>
+            {
+                var ret = new ConsumableCardDataBlock();
+                ret.ConsumableName = "The Chariot";
+                ret.DBName = "CHARIOT";
+                ret.DataDict.Add("INTAMOUNT", new JokerData() { MyDataType = JokerDataType.INT, IntData = 1});
+                ret.DescriptionBuilder = _ => "Make " + ret.DataDict["INTAMOUNT"].IntData + " selected playing card(s) in hand steel.";
+                ret.IsActivatable = _ => EngineUtils.NumCardsSelectedInHand > 0 && EngineUtils.NumCardsSelectedInHand <= ret.DataDict["INTAMOUNT"].IntData;
+                ret.Use = _ =>
+                {
+                    foreach (var card in ZoneManager.CardsSelectedInHand)
+                    {
+                        card.SetEnhancementOfficial(Enhancement.STEEL);
+                    }
+                };
+
+                return ret;
+            } },
+            { "EMPRESS", c =>
+            {
+                var ret = new ConsumableCardDataBlock();
+                ret.ConsumableName = "The Empress";
+                ret.DBName = "EMPRESS";
+                ret.DataDict.Add("INTAMOUNT", new JokerData() { MyDataType = JokerDataType.INT, IntData = 2});
+                ret.DescriptionBuilder = _ => "Make " + ret.DataDict["INTAMOUNT"].IntData + " selected playing card(s) in hand mult cards.";
+                ret.IsActivatable = _ => EngineUtils.NumCardsSelectedInHand > 0 && EngineUtils.NumCardsSelectedInHand <= ret.DataDict["INTAMOUNT"].IntData;
+                ret.Use = _ =>
+                {
+                    foreach (var card in ZoneManager.CardsSelectedInHand)
+                    {
+                        card.SetEnhancementOfficial(Enhancement.MULT);
+                    }
+                };
+
+                return ret;
+            } },
+            { "MAGICIAN", c =>
+            {
+                var ret = new ConsumableCardDataBlock();
+                ret.ConsumableName = "The Magician";
+                ret.DBName = "MAGICIAN";
+                ret.DataDict.Add("INTAMOUNT", new JokerData() { MyDataType = JokerDataType.INT, IntData = 2});
+                ret.DescriptionBuilder = _ => "Make " + ret.DataDict["INTAMOUNT"].IntData + " selected playing card(s) in hand lucky cards.";
+                ret.IsActivatable = _ => EngineUtils.NumCardsSelectedInHand > 0 && EngineUtils.NumCardsSelectedInHand <= ret.DataDict["INTAMOUNT"].IntData;
+                ret.Use = _ =>
+                {
+                    foreach (var card in ZoneManager.CardsSelectedInHand)
+                    {
+                        card.SetEnhancementOfficial(Enhancement.LUCKY);
+                    }
+                };
+
+                return ret;
+            } },
+            { "HIEROPHANT", c =>
+            {
+                var ret = new ConsumableCardDataBlock();
+                ret.ConsumableName = "The Hierophant";
+                ret.DBName = "HIEROPHANT";
+                ret.DataDict.Add("INTAMOUNT", new JokerData() { MyDataType = JokerDataType.INT, IntData = 2});
+                ret.DescriptionBuilder = _ => "Make " + ret.DataDict["INTAMOUNT"].IntData + " selected playing card(s) in hand bonus cards.";
+                ret.IsActivatable = _ => EngineUtils.NumCardsSelectedInHand > 0 && EngineUtils.NumCardsSelectedInHand <= ret.DataDict["INTAMOUNT"].IntData;
+                ret.Use = _ =>
+                {
+                    foreach (var card in ZoneManager.CardsSelectedInHand)
+                    {
+                        card.SetEnhancementOfficial(Enhancement.BONUSCHIPS);
+                    }
+                };
+
+                return ret;
+            } },
+            { "LOVERS", c =>
+            {
+                var ret = new ConsumableCardDataBlock();
+                ret.ConsumableName = "The Lovers";
+                ret.DBName = "LOVERS";
+                ret.DataDict.Add("INTAMOUNT", new JokerData() { MyDataType = JokerDataType.INT, IntData = 1});
+                ret.DescriptionBuilder = _ => "Make " + ret.DataDict["INTAMOUNT"].IntData + " selected playing card(s) in hand wild cards.";
+                ret.IsActivatable = _ => EngineUtils.NumCardsSelectedInHand > 0 && EngineUtils.NumCardsSelectedInHand <= ret.DataDict["INTAMOUNT"].IntData;
+                ret.Use = _ =>
+                {
+                    foreach (var card in ZoneManager.CardsSelectedInHand)
+                    {
+                        card.SetEnhancementOfficial(Enhancement.WILD);
+                    }
+                };
+
+                return ret;
+            } },
+            { "JUSTICE", c =>
+            {
+                var ret = new ConsumableCardDataBlock();
+                ret.ConsumableName = "Justice";
+                ret.DBName = "JUSTICE";
+                ret.DataDict.Add("INTAMOUNT", new JokerData() { MyDataType = JokerDataType.INT, IntData = 1});
+                ret.DescriptionBuilder = _ => "Make " + ret.DataDict["INTAMOUNT"].IntData + " selected playing card(s) in hand glass cards.";
+                ret.IsActivatable = _ => EngineUtils.NumCardsSelectedInHand > 0 && EngineUtils.NumCardsSelectedInHand <= ret.DataDict["INTAMOUNT"].IntData;
+                ret.Use = _ =>
+                {
+                    foreach (var card in ZoneManager.CardsSelectedInHand)
+                    {
+                        card.SetEnhancementOfficial(Enhancement.GLASS);
+                    }
+                };
+
+                return ret;
+            } },
+            { "HERMIT", c =>
+            {
+                var ret = new ConsumableCardDataBlock();
+                ret.ConsumableName = "The Hermit";
+                ret.DBName = "HERMIT";
+                ret.DataDict.Add("INTAMOUNT", new JokerData() { MyDataType = JokerDataType.INT, IntData = 20});
+                ret.DescriptionBuilder = _ => "Double your money (max " + ret.DataDict["INTAMOUNT"].IntData + ")";
+                ret.IsActivatable = _ => true;
+                ret.Use = _ =>
+                {
+                    var moneyGainAmt = Math.Min(ret.DataDict["INTAMOUNT"].IntData, Globals.Money);
+                    Globals.EmitMoneyGain(moneyGainAmt, c);
+                };
+
+                return ret;
+            } },
+            { "WHEEL", c =>
+            {
+                var ret = new ConsumableCardDataBlock();
+                ret.ConsumableName = "Wheel of Fortune";
+                ret.DBName = "WHEEL";
+                ret.DataDict.Add("MINCHANCEAMOUNT", new JokerData() { MyDataType = JokerDataType.INT, IntData = 1});
+                ret.DataDict.Add("MAXCHANCEAMOUNT", new JokerData() { MyDataType = JokerDataType.INT, IntData = 4});
+                ret.DescriptionBuilder = _ => ret.DataDict["MINCHANCEAMOUNT"].IntData + " in " + ret.DataDict["MAXCHANCEAMOUNT"].IntData + " chance to make a random Joker Foil, Holographic, or Polychrome.";
+                ret.IsActivatable = _ => ZoneManager.JokerZone.Cards.Count > 0 && ZoneManager.JokerZone.Cards.Where(x => x.Edition == Edition.BASE).Any();
+                ret.Use = _ =>
+                {
+                    var doAtAll = Globals.RollRandom(ret.DataDict["MINCHANCEAMOUNT"].IntData, ret.DataDict["MAXCHANCEAMOUNT"].IntData);
+                    //TODO: if failure emit event, so print can show
+                    if (doAtAll)
+                    {
+                        var editionToGiveRoll = Globals.ChooseRandomInclusive(0, 2);
+                        Edition editionToGive = Edition.BASE;
+                        switch (editionToGiveRoll)
+                        {
+                            case 0:
+                                editionToGive = Edition.FOIL;
+                                break;
+                            case 1:
+                                editionToGive = Edition.HOLOGRAPHIC;
+                                break;
+                            case 2:
+                                editionToGive = Edition.POLYCHROME;
+                                break;
+                        }
+                        var chosenJokerSeq = ZoneManager.JokerZone.Cards.Where(x => x.Edition == Edition.BASE);
+                        var chosenJoker = chosenJokerSeq.ToArray()[Globals.ChooseRandomInclusive(0, chosenJokerSeq.Count() - 1)];
+                        chosenJoker.SetEditionOfficial(editionToGive);
+                    }
+                };
+
+                return ret;
+            } },
+            { "STRENGTH", c =>
+            {
+                var ret = new ConsumableCardDataBlock();
+                ret.ConsumableName = "Strength";
+                ret.DBName = "STRENGTH";
+                ret.DataDict.Add("INTAMOUNT", new JokerData() { MyDataType = JokerDataType.INT, IntData = 2});
+                ret.DescriptionBuilder = _ => "Increase the rank of " + ret.DataDict["INTAMOUNT"].IntData + " selected playing card(s) in hand.";
+                ret.IsActivatable = _ => EngineUtils.NumCardsSelectedInHand > 0 && EngineUtils.NumCardsSelectedInHand <= ret.DataDict["INTAMOUNT"].IntData;
+                ret.Use = _ =>
+                {
+                    foreach (var card in ZoneManager.CardsSelectedInHand)
+                    {
+                        //TODO: what happens if you apply Strength to a card with modified bonus chips a la Hiker? Research.
+                        var oldRank = card.Rank;
+                        Rank newRank;
+                        if(oldRank == Rank.ACE)
+                        {
+                            newRank = Rank.TWO;
+                        }
+                        else
+                        {
+                            newRank = EngineUtils.StandardOrderAceHigh[EngineUtils.StandardOrderAceHigh.IndexOf(oldRank) + 1];
+                        }
+                        card.SetRankOfficial(newRank);
+                    }
+                };
+
+                return ret;
+            } },
+            { "DEVIL", c =>
+            {
+                var ret = new ConsumableCardDataBlock();
+                ret.ConsumableName = "The Devil";
+                ret.DBName = "DEVIL";
+                ret.DataDict.Add("INTAMOUNT", new JokerData() { MyDataType = JokerDataType.INT, IntData = 1});
+                ret.DescriptionBuilder = _ => "Make " + ret.DataDict["INTAMOUNT"].IntData + " selected playing card(s) in hand golden.";
+                ret.IsActivatable = _ => EngineUtils.NumCardsSelectedInHand > 0 && EngineUtils.NumCardsSelectedInHand <= ret.DataDict["INTAMOUNT"].IntData;
+                ret.Use = _ =>
+                {
+                    foreach (var card in ZoneManager.CardsSelectedInHand)
+                    {
+                        card.SetEnhancementOfficial(Enhancement.GOLD);
+                    }
+                };
+
+                return ret;
+            } },
+            { "TOWER", c =>
+            {
+                var ret = new ConsumableCardDataBlock();
+                ret.ConsumableName = "The Tower";
+                ret.DBName = "TOWER";
+                ret.DataDict.Add("INTAMOUNT", new JokerData() { MyDataType = JokerDataType.INT, IntData = 1});
+                ret.DescriptionBuilder = _ => "Make " + ret.DataDict["INTAMOUNT"].IntData + " selected playing card(s) in hand stone.";
+                ret.IsActivatable = _ => EngineUtils.NumCardsSelectedInHand > 0 && EngineUtils.NumCardsSelectedInHand <= ret.DataDict["INTAMOUNT"].IntData;
+                ret.Use = _ =>
+                {
+                    foreach (var card in ZoneManager.CardsSelectedInHand)
+                    {
+                        card.SetEnhancementOfficial(Enhancement.STONE);
+                    }
+                };
+
+                return ret;
+            } },
+            { "HANGED", c =>
+            {
+                var ret = new ConsumableCardDataBlock();
+                ret.ConsumableName = "The Hanged Man";
+                ret.DBName = "HANGED";
+                ret.DataDict.Add("INTAMOUNT", new JokerData() { MyDataType = JokerDataType.INT, IntData = 2});
+                ret.DescriptionBuilder = _ => "Destroy up to " + ret.DataDict["INTAMOUNT"].IntData + " selected playing card(s) in hand.";
+                ret.IsActivatable = _ => EngineUtils.NumCardsSelectedInHand > 0 && EngineUtils.NumCardsSelectedInHand <= ret.DataDict["INTAMOUNT"].IntData;
+                ret.Use = _ =>
+                {
+                    var toDest = ZoneManager.CardsSelectedInHand.ToList();
+                    foreach (var card in toDest)
+                    {
+                        ZoneManager.DestroyCard(card, card.MyZone);
+                    }
+                };
+
+                return ret;
+            } },
+            { "DEATH", c =>
+            {
+                var ret = new ConsumableCardDataBlock();
+                ret.ConsumableName = "Death";
+                ret.DBName = "DEATH";
+                ret.DataDict.Add("INTAMOUNT", new JokerData() { MyDataType = JokerDataType.INT, IntData = 1});
+                ret.DescriptionBuilder = _ => "Transform the left " + ret.DataDict["INTAMOUNT"].IntData + " card(s) into the rightmost card.";
+                ret.IsActivatable = _ => EngineUtils.NumCardsSelectedInHand >= 2 && EngineUtils.NumCardsSelectedInHand <= ret.DataDict["INTAMOUNT"].IntData + 1;
+                ret.Use = _ =>
+                {
+                    var selCards = ZoneManager.CardsSelectedInHand.ToList();
+                    var baseToCopy = selCards.Last();
+                    selCards.Remove(baseToCopy);
+                    foreach (var card in selCards)
+                    {
+                        baseToCopy.TurnIntoCopyOfMe(card);
+                    }
+                };
+
+                return ret;
+            } },
+            { "TERMPERANCE", c =>
+            {
+                var ret = new ConsumableCardDataBlock();
+                ret.ConsumableName = "Temperance";
+                ret.DBName = "TERMPERANCE";
+                ret.DataDict.Add("INTAMOUNT", new JokerData() { MyDataType = JokerDataType.INT, IntData = 50});
+                ret.DescriptionBuilder = _ =>
+                {
+                    var firstMon = ZoneManager.JokerZone.Cards.Select(x => x.SellCost).Sum();
+                    var moneyGainAmt = Math.Min(ret.DataDict["INTAMOUNT"].IntData, firstMon);
+                    return "Gain $" + moneyGainAmt + ", the sell value of your jokers (max " + ret.DataDict["INTAMOUNT"].IntData + ").";
+                };
+                ret.IsActivatable = _ => ZoneManager.JokerZone.Cards.Count > 0;
+                ret.Use = _ =>
+                {
+                    var firstMon = ZoneManager.JokerZone.Cards.Select(x => x.SellCost).Sum();
+                    var moneyGainAmt = Math.Min(ret.DataDict["INTAMOUNT"].IntData, firstMon);
+                    Globals.EmitMoneyGain(moneyGainAmt, c);
+                };
+
+                return ret;
+            } },
+            { "JUDGEMENT", c =>
+            {
+                var ret = new ConsumableCardDataBlock();
+                ret.ConsumableName = "Judgement";
+                ret.DBName = "JUDGEMENT";
+                ret.DataDict.Add("INTAMOUNT", new JokerData() { MyDataType = JokerDataType.INT, IntData = 1});
+                ret.DescriptionBuilder = _ =>
+                {
+                    var cardSect = ret.DataDict["INTAMOUNT"].IntData > 1 ? "" + ret.DataDict["INTAMOUNT"].IntData + " random Jokers" : "a random Joker";
+                    return "Gain " + cardSect + ". (Must have room)";
+                };
+                ret.IsActivatable = _ => ZoneManager.JokerZone.HasRoom;
+                ret.Use = _ =>
+                {
+                    MarketOptionsManager.DrawNumMarketItems(BuyItemType.JOKER, ret.DataDict["INTAMOUNT"].IntData, ZoneManager.JokerZone);
+                };
+
+                return ret;
+            } },
+            { "STARS", c =>
+            {
+                var ret = new ConsumableCardDataBlock();
+                ret.ConsumableName = "Stars";
+                ret.DBName = "STARS";
+                ret.DataDict.Add("INTAMOUNT", new JokerData() { MyDataType = JokerDataType.INT, IntData = 3});
+                ret.DataDict.Add("SUIT", new JokerData() { MyDataType = JokerDataType.SUIT, SpecificCardSuit = Suit.DIAMONDS});
+                ret.DescriptionBuilder = _ =>
+                {
+                    var possPlural = ret.DataDict["INTAMOUNT"].IntData < 2 ? "" : "s";
+                    return "Change the suit of " + ret.DataDict["INTAMOUNT"].IntData + " selected playing card" + possPlural + " to " + ret.DataDict["SUIT"].SpecificCardSuit + ".";
+                };
+                ret.IsActivatable = _ => EngineUtils.NumCardsSelectedInHand > 0 && EngineUtils.NumCardsSelectedInHand <= ret.DataDict["INTAMOUNT"].IntData;
+                ret.Use = _ =>
+                {
+                    foreach (var card in ZoneManager.CardsSelectedInHand)
+                    {
+                        card.SetSuitOfficial(ret.DataDict["SUIT"].SpecificCardSuit);
+	                }
+                };
+
+                return ret;
+            } },
+            { "MOON", c =>
+            {
+                var ret = new ConsumableCardDataBlock();
+                ret.ConsumableName = "Moon";
+                ret.DBName = "MOON";
+                ret.DataDict.Add("INTAMOUNT", new JokerData() { MyDataType = JokerDataType.INT, IntData = 3});
+                ret.DataDict.Add("SUIT", new JokerData() { MyDataType = JokerDataType.SUIT, SpecificCardSuit = Suit.CLUBS});
+                ret.DescriptionBuilder = _ =>
+                {
+                    var possPlural = ret.DataDict["INTAMOUNT"].IntData < 2 ? "" : "s";
+                    return "Change the suit of " + ret.DataDict["INTAMOUNT"].IntData + " selected playing card" + possPlural + " to " + ret.DataDict["SUIT"].SpecificCardSuit + ".";
+                };
+                ret.IsActivatable = _ => EngineUtils.NumCardsSelectedInHand > 0 && EngineUtils.NumCardsSelectedInHand <= ret.DataDict["INTAMOUNT"].IntData;
+                ret.Use = _ =>
+                {
+                    foreach (var card in ZoneManager.CardsSelectedInHand)
+                    {
+                        card.SetSuitOfficial(ret.DataDict["SUIT"].SpecificCardSuit);
+                    }
+                };
+
+                return ret;
+            } },
+            { "SUN", c =>
+            {
+                var ret = new ConsumableCardDataBlock();
+                ret.ConsumableName = "Sun";
+                ret.DBName = "SUN";
+                ret.DataDict.Add("INTAMOUNT", new JokerData() { MyDataType = JokerDataType.INT, IntData = 3});
+                ret.DataDict.Add("SUIT", new JokerData() { MyDataType = JokerDataType.SUIT, SpecificCardSuit = Suit.HEARTS});
+                ret.DescriptionBuilder = _ =>
+                {
+                    var possPlural = ret.DataDict["INTAMOUNT"].IntData < 2 ? "" : "s";
+                    return "Change the suit of " + ret.DataDict["INTAMOUNT"].IntData + " selected playing card" + possPlural + " to " + ret.DataDict["SUIT"].SpecificCardSuit + ".";
+                };
+                ret.IsActivatable = _ => EngineUtils.NumCardsSelectedInHand > 0 && EngineUtils.NumCardsSelectedInHand <= ret.DataDict["INTAMOUNT"].IntData;
+                ret.Use = _ =>
+                {
+                    foreach (var card in ZoneManager.CardsSelectedInHand)
+                    {
+                        card.SetSuitOfficial(ret.DataDict["SUIT"].SpecificCardSuit);
+                    }
+                };
+
+                return ret;
+            } },
+            { "WORLD", c =>
+            {
+                var ret = new ConsumableCardDataBlock();
+                ret.ConsumableName = "World";
+                ret.DBName = "WORLD";
+                ret.DataDict.Add("INTAMOUNT", new JokerData() { MyDataType = JokerDataType.INT, IntData = 3});
+                ret.DataDict.Add("SUIT", new JokerData() { MyDataType = JokerDataType.SUIT, SpecificCardSuit = Suit.SPADES});
+                ret.DescriptionBuilder = _ =>
+                {
+                    var possPlural = ret.DataDict["INTAMOUNT"].IntData < 2 ? "" : "s";
+                    return "Change the suit of " + ret.DataDict["INTAMOUNT"].IntData + " selected playing card" + possPlural + " to " + ret.DataDict["SUIT"].SpecificCardSuit + ".";
+                };
+                ret.IsActivatable = _ => EngineUtils.NumCardsSelectedInHand > 0 && EngineUtils.NumCardsSelectedInHand <= ret.DataDict["INTAMOUNT"].IntData;
+                ret.Use = _ =>
+                {
+                    foreach (var card in ZoneManager.CardsSelectedInHand)
+                    {
+                        card.SetSuitOfficial(ret.DataDict["SUIT"].SpecificCardSuit);
+                    }
+                };
+
+                return ret;
+            } },
+
         };
 
         //Creating a planet card is a bit simpler, just take its name and hand-type and you're good.

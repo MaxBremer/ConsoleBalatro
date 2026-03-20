@@ -227,6 +227,11 @@ namespace ConsoleBalatro.Engine
             return (ret, retCards);
         }
 
+        public static bool HandContainsOtherHand(PlayedHandType HandThatMightContain, PlayedHandType HandLookedFor)
+        {
+            return OtherHandsInside(HandThatMightContain).Contains(HandLookedFor);
+        }
+
         public static List<PlayedHandType> OtherHandsInside(PlayedHandType hand)
         {
             var ret = new List<PlayedHandType>();

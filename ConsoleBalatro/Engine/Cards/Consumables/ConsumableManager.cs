@@ -601,7 +601,7 @@ namespace ConsoleBalatro.Engine.Cards.Consumables
             { "STARS", c =>
             {
                 var ret = new ConsumableCardDataBlock();
-                ret.ConsumableName = "Stars";
+                ret.ConsumableName = "The Stars";
                 ret.DBName = "STARS";
                 ret.DataDict.Add("INTAMOUNT", new JokerData() { MyDataType = JokerDataType.INT, IntData = 3});
                 ret.DataDict.Add("SUIT", new JokerData() { MyDataType = JokerDataType.SUIT, SpecificCardSuit = Suit.DIAMONDS});
@@ -624,7 +624,7 @@ namespace ConsoleBalatro.Engine.Cards.Consumables
             { "MOON", c =>
             {
                 var ret = new ConsumableCardDataBlock();
-                ret.ConsumableName = "Moon";
+                ret.ConsumableName = "The Moon";
                 ret.DBName = "MOON";
                 ret.DataDict.Add("INTAMOUNT", new JokerData() { MyDataType = JokerDataType.INT, IntData = 3});
                 ret.DataDict.Add("SUIT", new JokerData() { MyDataType = JokerDataType.SUIT, SpecificCardSuit = Suit.CLUBS});
@@ -647,7 +647,7 @@ namespace ConsoleBalatro.Engine.Cards.Consumables
             { "SUN", c =>
             {
                 var ret = new ConsumableCardDataBlock();
-                ret.ConsumableName = "Sun";
+                ret.ConsumableName = "The Sun";
                 ret.DBName = "SUN";
                 ret.DataDict.Add("INTAMOUNT", new JokerData() { MyDataType = JokerDataType.INT, IntData = 3});
                 ret.DataDict.Add("SUIT", new JokerData() { MyDataType = JokerDataType.SUIT, SpecificCardSuit = Suit.HEARTS});
@@ -670,7 +670,7 @@ namespace ConsoleBalatro.Engine.Cards.Consumables
             { "WORLD", c =>
             {
                 var ret = new ConsumableCardDataBlock();
-                ret.ConsumableName = "World";
+                ret.ConsumableName = "The World";
                 ret.DBName = "WORLD";
                 ret.DataDict.Add("INTAMOUNT", new JokerData() { MyDataType = JokerDataType.INT, IntData = 3});
                 ret.DataDict.Add("SUIT", new JokerData() { MyDataType = JokerDataType.SUIT, SpecificCardSuit = Suit.SPADES});

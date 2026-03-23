@@ -83,7 +83,7 @@ namespace ConsoleBalatro.UI.EngineUI
                 tempDisplay = insertInto(tempDisplay, CardSelectNumber.ToString(), 26);
             }
 
-            if ((PriceDisplay != -1){ })
+            if (PriceDisplay != -1)
             {
                 tempDisplay = insertInto(tempDisplay, "$" + PriceDisplay.ToString(), 0);
             }

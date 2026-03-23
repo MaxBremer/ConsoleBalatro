@@ -140,6 +140,7 @@ namespace ConsoleBalatro.Engine
             EngineEventHandler.TriggerEvent(new EngineEventArgs() { MyContext = new() { Context = EventContextType.StartPlayRound } });
             Globals.PushGameState(new GameStateObj() { GameState = GameState.PlayRound });
             Globals.SetStartOfRoundStats();
+            ZoneManager.ShuffleDeck();
             //Scores should already be reset, as they're reset post-round.
             //but u know. can never be too sure.
 
@@ -165,7 +166,13 @@ namespace ConsoleBalatro.Engine
             ZoneManager.HiddenBlindAttributeZone.ClearCards(true);//TODO: PROBABLY TURN OFF INVISIBLE ADD HERE TOO CAUSE OF LISTENERS. FUCK.
 
             //BEFORE BLIND INCREMENT, CALC MONEY TO GIVE.
-            var postRoudnMoney = CalcPostRoundMoneyWithSources();
+            var postRoundMoney = CalcPostRoundMoneyWithSources();
+
+            IncrementBlind();
+
+            //Post-round with the money menu
+
+            InitializePostRound(postRoundMoney);
         }
 
         public static void InitializePostRound(List<(string, int)> postRoundMoney)

@@ -57,6 +57,12 @@ namespace ConsoleBalatro.UI.EngineUI.Controls
             }
         }
 
+        public static void EngageCurrentControlset(ControlContext context)
+        {
+            var curSet = AvailableControlSets[CurrentControlset];
+            EngageControlset(curSet, context);
+        }
+
         public static Card KeySelectCardFromZone(CardZone zone)
         {
             //null represents a cancelled select.

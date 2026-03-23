@@ -1,8 +1,57 @@
 ﻿// See https://aka.ms/new-console-template for more information
+using ConsoleBalatro.Engine;
+using ConsoleBalatro.Engine.Cards.Enums;
+using ConsoleBalatro.Engine.Cards.Jokers;
+using ConsoleBalatro.Engine.Market;
+using ConsoleBalatro.UI;
+using ConsoleBalatro.UI.EngineUI;
+using ConsoleBalatro.UI.EngineUI.Controls;
+
 class Program
 {
     public static void Main(string[] args)
     {
-        Console.WriteLine("Hello, World!");
+        var inte = new Interface(120, 29);
+
+        Console.CursorVisible = false;
+        Globals.InitializeMain();
+        UIStateManager.InitializeUIStateManager();
+        //test stuff
+        var ra = new Random();
+        foreach (var c in ZoneManager.DeckZone.Cards)
+        {
+            if(ra.Next(1, 4) == 3)
+            {
+                c.Enhancement = Enhancement.STEEL;
+                c.Seal = Seal.RED;
+            }
+        }
+
+        Console.Clear();
+        EngineDisplayGlobals.InitializeDisplayAll(inte);
+
+        FlowHandler.StartNewAnte();
+        FlowHandler.InitializeBlindSelectionRound();
+
+
+        //Test jokers
+        ZoneManager.JokerZone.AddCard(JokerDb.GenerateJokerCard("MIME"));
+        ZoneManager.JokerZone.AddCard(JokerDb.GenerateJokerCard("JOLLY JOKER"));
+        ZoneManager.JokerZone.AddCard(JokerDb.GenerateJokerCard("WRATHFUL JOKER"));
+        ZoneManager.JokerZone.AddCard(JokerDb.GenerateJokerCard("GOLDEN JOKER"));
+        ZoneManager.JokerZone.AddCard(JokerDb.GenerateJokerCard("CREDIT CARD"));
+
+        //Test consumables
+        ZoneManager.ConsumableZone.DrawTargetFrom(MarketOptionsManager.MarketPoolsToDrawFrom[BuyItemType.TAROT_CARD], MarketOptionsManager.MarketPoolsToDrawFrom[BuyItemType.TAROT_CARD].Cards.Where(x => x.ConsumableData.ConsumableName == "The Emperor").First());
+        ZoneManager.ConsumableZone.DrawTargetFrom(MarketOptionsManager.MarketPoolsToDrawFrom[BuyItemType.TAROT_CARD], MarketOptionsManager.MarketPoolsToDrawFrom[BuyItemType.TAROT_CARD].Cards.Where(x => x.ConsumableData.ConsumableName == "The World").First());
+        ZoneManager.ConsumableZone.Cards[0].Edition = Edition.HOLOGRAPHIC;
+
+        EngineDisplayGlobals.PlayCachedAnimations();
+
+        while (!Globals.QUIT)
+        {
+            ControlManager.EngageCurrentControlset(null);
+            EngineDisplayGlobals.PlayCachedAnimations();
+        }
     }
 }

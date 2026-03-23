@@ -247,7 +247,7 @@ namespace ConsoleBalatro.Engine.Cards.Jokers
                 var ret = new JokerCardDataBlock();
                 ret.JokerName = "Sly Joker";
                 ret.DBName = "SLY JOKER";
-                ret.DescriptionBuilder = _ => "+ " + ret.DataDict["CHIPAMOUNT"].DoubleData + " Chips if Played Hand contains a " + ret.DataDict["PLAYEDHAND"].HandTypeData.ToString();
+                ret.DescriptionBuilder = _ => "+ " + ret.DataDict["CHIPAMOUNT"].IntData + " Chips if Played Hand contains a " + ret.DataDict["PLAYEDHAND"].HandTypeData.ToString();
                 ret.DataDict.Add("CHIPAMOUNT", new JokerData() { IntData = 50, MyDataType = JokerDataType.INT});
                 ret.DataDict.Add("PLAYEDHAND", new JokerData() { HandTypeData = PlayedHandType.PAIR, MyDataType = JokerDataType.HANDTYPE});
                 ret.Listeners.Add(new EngineEventListener()
@@ -267,7 +267,7 @@ namespace ConsoleBalatro.Engine.Cards.Jokers
                 var ret = new JokerCardDataBlock();
                 ret.JokerName = "Wily Joker";
                 ret.DBName = "WILY JOKER";
-                ret.DescriptionBuilder = _ => "+ " + ret.DataDict["CHIPAMOUNT"].DoubleData + " Chips if Played Hand contains a " + ret.DataDict["PLAYEDHAND"].HandTypeData.ToString();
+                ret.DescriptionBuilder = _ => "+ " + ret.DataDict["CHIPAMOUNT"].IntData + " Chips if Played Hand contains a " + ret.DataDict["PLAYEDHAND"].HandTypeData.ToString();
                 ret.DataDict.Add("CHIPAMOUNT", new JokerData() { IntData = 100, MyDataType = JokerDataType.INT});
                 ret.DataDict.Add("PLAYEDHAND", new JokerData() { HandTypeData = PlayedHandType.THREEOFAKIND, MyDataType = JokerDataType.HANDTYPE});
                 ret.Listeners.Add(new EngineEventListener()
@@ -287,7 +287,7 @@ namespace ConsoleBalatro.Engine.Cards.Jokers
                 var ret = new JokerCardDataBlock();
                 ret.JokerName = "Clever Joker";
                 ret.DBName = "CLEVER JOKER";
-                ret.DescriptionBuilder = _ => "+ " + ret.DataDict["CHIPAMOUNT"].DoubleData + " Chips if Played Hand contains a " + ret.DataDict["PLAYEDHAND"].HandTypeData.ToString();
+                ret.DescriptionBuilder = _ => "+ " + ret.DataDict["CHIPAMOUNT"].IntData + " Chips if Played Hand contains a " + ret.DataDict["PLAYEDHAND"].HandTypeData.ToString();
                 ret.DataDict.Add("CHIPAMOUNT", new JokerData() { IntData = 80, MyDataType = JokerDataType.INT});
                 ret.DataDict.Add("PLAYEDHAND", new JokerData() { HandTypeData = PlayedHandType.TWOPAIR, MyDataType = JokerDataType.HANDTYPE});
                 ret.Listeners.Add(new EngineEventListener()
@@ -307,7 +307,7 @@ namespace ConsoleBalatro.Engine.Cards.Jokers
                 var ret = new JokerCardDataBlock();
                 ret.JokerName = "Devious Joker";
                 ret.DBName = "DEVIOUS JOKER";
-                ret.DescriptionBuilder = _ => "+ " + ret.DataDict["CHIPAMOUNT"].DoubleData + " Chips if Played Hand contains a " + ret.DataDict["PLAYEDHAND"].HandTypeData.ToString();
+                ret.DescriptionBuilder = _ => "+ " + ret.DataDict["CHIPAMOUNT"].IntData + " Chips if Played Hand contains a " + ret.DataDict["PLAYEDHAND"].HandTypeData.ToString();
                 ret.DataDict.Add("CHIPAMOUNT", new JokerData() { IntData = 100, MyDataType = JokerDataType.INT});
                 ret.DataDict.Add("PLAYEDHAND", new JokerData() { HandTypeData = PlayedHandType.STRAIGHT, MyDataType = JokerDataType.HANDTYPE});
                 ret.Listeners.Add(new EngineEventListener()
@@ -327,7 +327,7 @@ namespace ConsoleBalatro.Engine.Cards.Jokers
                 var ret = new JokerCardDataBlock();
                 ret.JokerName = "Crafty Joker";
                 ret.DBName = "CRAFTY JOKER";
-                ret.DescriptionBuilder = _ => "+ " + ret.DataDict["CHIPAMOUNT"].DoubleData + " Chips if Played Hand contains a " + ret.DataDict["PLAYEDHAND"].HandTypeData.ToString();
+                ret.DescriptionBuilder = _ => "+ " + ret.DataDict["CHIPAMOUNT"].IntData + " Chips if Played Hand contains a " + ret.DataDict["PLAYEDHAND"].HandTypeData.ToString();
                 ret.DataDict.Add("CHIPAMOUNT", new JokerData() { IntData = 80, MyDataType = JokerDataType.INT});
                 ret.DataDict.Add("PLAYEDHAND", new JokerData() { HandTypeData = PlayedHandType.FLUSH, MyDataType = JokerDataType.HANDTYPE});
                 ret.Listeners.Add(new EngineEventListener()

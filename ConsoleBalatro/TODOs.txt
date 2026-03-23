@@ -1,1 +1,2 @@
-﻿CREATED, TO BE FINISHED:
+﻿BUGS:
+Selling Mime with mime in the shop resulted in visual glitch, visual mime stayed in JokerDisplay.

@@ -1,0 +1,509 @@
+﻿using ConsoleBalatro.Engine;
+using ConsoleBalatro.Engine.Cards;
+using ConsoleBalatro.Engine.Cards.Consumables;
+using ConsoleBalatro.Engine.Market;
+using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Text;
+using System.Threading.Tasks;
+
+namespace ConsoleBalatro.UI.EngineUI.Controls
+{
+    public static class ControlManager
+    {
+        private static List<ConsoleKey> numKeyList = new List<ConsoleKey>() { ConsoleKey.D1, ConsoleKey.D2, ConsoleKey.D3, ConsoleKey.D4, ConsoleKey.D5, ConsoleKey.D6, ConsoleKey.D7, ConsoleKey.D8, ConsoleKey.D9, ConsoleKey.D0 };
+
+        private static Dictionary<ConsoleKey, string> keyStrings = new()//TODO: Used to clean up look action setup.
+        {
+            {ConsoleKey.C, "C" },
+            {ConsoleKey.J, "J" },
+            {ConsoleKey.H, "H" },
+            {ConsoleKey.P, "P" },
+        };
+
+        public static Dictionary<string, ControlOptionset> AvailableControlSets = new();
+
+        public static ControlOptionset CurrentOptions;
+        public static ControlContext CurrentContext;
+
+        public static string CurrentControlset = "ROUND";
+
+        public static void InitializeControls()
+        {
+            AvailableControlSets.Add("ROUND", BuildPlayRoundOptions());
+            AvailableControlSets.Add("MARKET", BuildMarketRoundOptions());
+            AvailableControlSets.Add("PACK", BuildPackOptionSelectionOptions());
+            AvailableControlSets.Add("POSTROUND", BuildPostRoundOptions());
+            AvailableControlSets.Add("BLIND", BuildBlindOptions());
+        }
+
+        public static void KeyPressed(ConsoleKey key)
+        {
+            //TODO: do we even use this????
+            var curOpts = CurrentOptions;
+            if (curOpts.AvailableActions.ContainsKey(key))
+            {
+                curOpts.AvailableActions[key](CurrentContext);
+            }
+        }
+
+        public static void EngageControlset(ControlOptionset options, ControlContext context)
+        {
+            var inp = Console.ReadKey();
+            if (options.AvailableActions.ContainsKey(inp.Key))
+            {
+                options.AvailableActions[inp.Key](context);
+            }
+        }
+
+        public static Card KeySelectCardFromZone(CardZone zone)
+        {
+            //null represents a cancelled select.
+            //Requires all cards in the zone to exist as CardDisplays.
+            var dispList = new Dictionary<int, (CardDisplay, Card)>();
+            int curKey = 1;
+            foreach (var c in zone.Cards)
+            {
+                if (EngineDisplayGlobals.GlobalCardDisplays.ContainsKey(c))
+                {
+                    var targetDisp = EngineDisplayGlobals.GlobalCardDisplays[c];
+                    dispList.Add(curKey, (targetDisp, c));
+                    targetDisp.CardSelectNumber = curKey;
+                    targetDisp.PreDisplaySetup();
+                    curKey += 1;
+                }
+            }
+            EngineDisplayGlobals.Redraw();
+
+            var selInp = Console.ReadLine();
+            Card toRet = null;
+            if(Int32.TryParse(selInp, out int result) && dispList.ContainsKey(result))
+            {
+                toRet = dispList[result].Item2;
+            }
+            foreach(var k in dispList.Keys)
+            {
+                dispList[k].Item1.CardSelectNumber = -1;
+                dispList[k].Item1.PreDisplaySetup();
+            }
+            EngineDisplayGlobals.Redraw();
+            return toRet;
+        }
+
+        private static ControlOptionset BuildPlayRoundOptions()
+        {
+            var ret = new ControlOptionset();
+            ret.AvailableActions.Add(ConsoleKey.Backspace, _ =>
+            {
+                if (Globals.CanDiscard)
+                    Globals.DiscardSelectedFromHand();
+            });
+            ret.AvailableActions.Add(ConsoleKey.Enter, _ =>
+            {
+                Globals.PlayCurrentlySelectedHand();
+            });
+
+            var lookZones = new LookZonesAvailable()
+            {
+                HandAvailable = true,
+                JokersAvailable = true,
+                ConsumablesAvailable = true,
+            };
+            ret.AvailableActions.Add(ConsoleKey.L, BuildLookAction(lookZones));
+
+            ret.AvailableActions.Add(ConsoleKey.S, _ =>
+            {
+                ZoneManager.SortZoneBySuit(ZoneManager.HandZone);
+                EngineDisplayGlobals.HandDisplay.ResetFromZoneList();
+                EngineDisplayGlobals.Redraw();
+            });
+
+            ret.AvailableActions.Add(ConsoleKey.R, _ =>
+            {
+                ZoneManager.SortZoneByRank(ZoneManager.HandZone);
+                EngineDisplayGlobals.HandDisplay.ResetFromZoneList();
+                EngineDisplayGlobals.Redraw();
+            });
+
+            foreach (var n in numKeyList)
+            {
+                ret.AvailableActions.Add(n, BuildActionForNumKey(n));
+            }
+
+            return ret;
+        }
+
+        private static ControlOptionset BuildMarketRoundOptions()
+        {
+            var ret = new ControlOptionset();
+
+            var lookZones = new LookZonesAvailable()
+            {
+                JokersAvailable = true,
+                ConsumablesAvailable = true,
+                PackMarketAvailable = true,
+                MainMarketAvailable = true,
+                VoucherMarketAvailable = true,
+            };
+            ret.AvailableActions.Add(ConsoleKey.L, BuildLookAction(lookZones));
+            ret.AvailableActions.Add(ConsoleKey.R, _ =>
+            {
+                MarketGeneralManager.RerollMainMarket();
+            });
+            ret.AvailableActions.Add(ConsoleKey.D, _ =>
+            {
+                MarketGeneralManager.DebugRefreshPackMarket();
+            });
+            ret.AvailableActions.Add(ConsoleKey.E, _ =>
+            {
+                FlowHandler.CloseMarketRound();
+            });
+
+            return ret;
+        }
+
+        private static ControlOptionset BuildPackOptionSelectionOptions()
+        {
+            var ret = new ControlOptionset();
+
+            var lookZones = new LookZonesAvailable()
+            {
+                JokersAvailable = true,
+                ConsumablesAvailable = true,
+                HandAvailable = true,
+                PackOptionsAvailable = true,
+            };
+            ret.AvailableActions.Add(ConsoleKey.L, BuildLookAction(lookZones));
+            foreach (var n in numKeyList)
+            {
+                ret.AvailableActions.Add(n, BuildActionForNumKey(n));
+            }
+            ret.AvailableActions.Add(ConsoleKey.S, _ =>
+            {
+                PackActions.SkipCurrentPack();
+            });
+
+            return ret;
+        }
+
+        private static ControlOptionset BuildPostRoundOptions()
+        {
+            var ret = new ControlOptionset();
+
+            var lookZones = new LookZonesAvailable()
+            {
+                JokersAvailable = true,
+                ConsumablesAvailable = true,
+            };
+            ret.AvailableActions.Add(ConsoleKey.L, BuildLookAction(lookZones));
+
+            ret.AvailableActions.Add(ConsoleKey.C, _ =>
+            {
+                FlowHandler.ClosePostRound();
+            });
+
+            return ret;
+        }
+
+        private static ControlOptionset BuildBlindOptions()
+        {
+            var ret = new ControlOptionset();
+
+            var lookZones = new LookZonesAvailable()
+            {
+                JokersAvailable = true,
+                ConsumablesAvailable = true,
+            };
+            ret.AvailableActions.Add(ConsoleKey.L, BuildLookAction(lookZones));
+
+            ret.AvailableActions.Add(ConsoleKey.S, _ =>
+            {
+                FlowHandler.DoSkip();
+            });
+
+            ret.AvailableActions.Add(ConsoleKey.B, _ =>
+            {
+                FlowHandler.StartSelectedBlind();
+            });
+
+            return ret;
+        }
+
+        private static ControlOptionset GetAvailableCardActions(Card c)
+        {
+            var ret = new ControlOptionset();
+
+            //everyone gets view detail
+            ret.AvailableActions.Add(ConsoleKey.D, context =>
+            {
+                EngineDisplayGlobals.DisplayDetailInfoForCard(c);
+                EngineDisplayGlobals.Redraw();
+                var _ = Console.ReadKey();
+            });
+
+            //Everyone besides market zones gets move.
+            if(!(ZoneManager.MainMarketZone.Cards.Contains(c) || ZoneManager.PackMarketZone.Cards.Contains(c) || ZoneManager.VoucherMarketZone.Cards.Contains(c)))
+            {
+                ret.AvailableActions.Add(ConsoleKey.M, context =>
+                {
+                    var targetZone = c.MyZone;
+                    var secondCardForSwap = KeySelectCardFromZone(targetZone);
+                    if (c == secondCardForSwap)
+                        return;
+                    var firstInd = targetZone.Cards.IndexOf(c);
+                    var secondInd = targetZone.Cards.IndexOf(secondCardForSwap);
+                    targetZone.Cards[secondInd] = c;
+                    targetZone.Cards[firstInd] = secondCardForSwap;
+                    var zoneDisplay = EngineDisplayGlobals.GetZoneDisplayOfCard(c);
+                    zoneDisplay.CardList[secondInd] = c;
+                    zoneDisplay.CardList[firstInd] = secondCardForSwap;
+                    zoneDisplay.SetCardPositions();
+                    zoneDisplay.PreDisplaySetup();
+
+                    EngineDisplayGlobals.Redraw();
+                });
+            }
+
+            //Joker and Consumable zones get Sell
+            if(ZoneManager.JokerZone.Cards.Contains(c) || ZoneManager.ConsumableZone.Cards.Contains(c))
+            {
+                ret.AvailableActions.Add(ConsoleKey.S, context =>
+                {
+                    Globals.PerformSell(c, c.MyZone);
+                });
+            }
+
+            //Consumables that are activatable
+            //TODO: Yeah the stupid activatable args.
+            if(c.isConsumable && ZoneManager.ConsumableZone.Cards.Contains(c) && c.ConsumableData.IsActivatable(null))
+            {
+                ret.AvailableActions.Add(ConsoleKey.A, context =>
+                {
+                    ConsumableManager.UseConsumable(c, c.MyZone);
+                });
+            }
+
+            //Pack option selection
+            if(ZoneManager.PackOptionZone.Cards.Contains(c) && PackActions.CanAcceptPackOption(c))
+            {
+                ret.AvailableActions.Add(ConsoleKey.C, context =>
+                {
+                    PackActions.PackOptionSelectionMade(c);
+                });
+            }
+
+            //For now, only offer toggle select for hand cards. Later, prob all.
+            if(c.MyZone == ZoneManager.HandZone)
+            {
+                ret.AvailableActions.Add(ConsoleKey.T, context =>
+                {
+                    c.ToggleSelect();
+                });
+            }
+
+            //Purchase
+            if((c.MyZone == ZoneManager.MainMarketZone || c.MyZone == ZoneManager.PackMarketZone || c.MyZone == ZoneManager.VoucherMarketZone) && Globals.CanBePurchased(c))
+            {
+                ret.AvailableActions.Add(ConsoleKey.B, context =>
+                {
+                    Globals.PerformPurchaseByType(c);
+                });
+            }
+
+            //Buy and use instantly
+            if(c.MyZone == ZoneManager.MainMarketZone && Globals.CanBuyAndUse(c))
+            {
+                ret.AvailableActions.Add(ConsoleKey.U, context =>
+                {
+                    Globals.PerformBuyAndUse(c);
+                });
+            }
+
+            //everyone gets cancel
+            ret.AvailableActions.Add(ConsoleKey.E, context => { });
+
+            return ret;
+        }
+
+        private static string GetStringOfAvailableActions(Card c, string lineDivider)
+        {
+            //everyone gets view detail
+            var ret = "[D]etail" + lineDivider;
+
+            //Everyone besides market zones gets move.
+            if (!(ZoneManager.MainMarketZone.Cards.Contains(c) || ZoneManager.PackMarketZone.Cards.Contains(c) || ZoneManager.VoucherMarketZone.Cards.Contains(c)))
+            {
+                ret += "[M]ove card" + lineDivider;
+            }
+
+            //Joker and Consumable zones get Sell
+            if (ZoneManager.JokerZone.Cards.Contains(c) || ZoneManager.ConsumableZone.Cards.Contains(c))
+            {
+                ret += "[S]ell (" + c.SellCost + ")" + lineDivider;
+            }
+
+            //Consumables that are activatable
+            //TODO: Yeah the stupid activatable args.
+            if (c.isConsumable && ZoneManager.ConsumableZone.Cards.Contains(c) && c.ConsumableData.IsActivatable(null))
+            {
+                ret += "[A]ctivate" + lineDivider;
+            }
+
+            //Pack option selection
+            if (ZoneManager.PackOptionZone.Cards.Contains(c) && PackActions.CanAcceptPackOption(c))
+            {
+                ret += "[C]hoose" + lineDivider;
+            }
+
+            //For now, only offer toggle select for hand cards. Later, prob all.
+            if (c.MyZone == ZoneManager.HandZone)
+            {
+                ret += "[T]oggle select" + lineDivider;
+            }
+
+            //Purchase
+            if ((c.MyZone == ZoneManager.MainMarketZone || c.MyZone == ZoneManager.PackMarketZone || c.MyZone == ZoneManager.VoucherMarketZone) && Globals.CanBePurchased(c))
+            {
+                ret += "[B]uy card" + lineDivider;
+            }
+
+            //Buy and use instantly
+            if (c.MyZone == ZoneManager.MainMarketZone && Globals.CanBuyAndUse(c))
+            {
+                ret += "Buy and [U]se" + lineDivider;
+            }
+
+            //everyone gets cancel
+            ret += "Canc[E]l" + lineDivider;
+
+            return ret;
+        }
+
+        private class LookZonesAvailable
+        {
+            public bool HandAvailable = false;
+            public bool JokersAvailable = false;
+            public bool ConsumablesAvailable = false;
+            public bool BeingPlayedAvailable = false;
+            public bool PackMarketAvailable = false;
+            public bool MainMarketAvailable = false;
+            public bool VoucherMarketAvailable = false;
+
+            public bool PackOptionsAvailable = false;
+        }
+
+        private static Action<ControlContext> BuildLookAction(LookZonesAvailable zonesAvailable)
+        {
+            //TODO: move this out into its own function? would make sense.
+            Func<CardZone> SelectCardZone = () =>
+            {
+                Dictionary<ConsoleKey, CardZone> OptsToPickFrom = new();
+
+                //TODO: MORE BAD REPEATED CODE. ME ANGYY.
+                if(zonesAvailable.HandAvailable && ZoneManager.HandZone.Cards.Count > 0)
+                {
+                    OptsToPickFrom.Add(ConsoleKey.H, ZoneManager.HandZone);
+                    EngineDisplayGlobals.HandDisplay.DisplayBeneath = "H";
+                }
+                if (zonesAvailable.JokersAvailable && ZoneManager.JokerZone.Cards.Count > 0)
+                {
+                    OptsToPickFrom.Add(ConsoleKey.J, ZoneManager.JokerZone);
+                    EngineDisplayGlobals.JokersDisplay.DisplayBeneath = "J";
+                }
+                if (zonesAvailable.ConsumablesAvailable && ZoneManager.ConsumableZone.Cards.Count > 0)
+                {
+                    OptsToPickFrom.Add(ConsoleKey.C, ZoneManager.ConsumableZone);
+                    EngineDisplayGlobals.ConsumableDisplay.DisplayBeneath = "C";
+                }
+                if (zonesAvailable.BeingPlayedAvailable && ZoneManager.CurrentlyBeingPlayedZone.Cards.Count > 0)
+                {
+                    OptsToPickFrom.Add(ConsoleKey.L, ZoneManager.CurrentlyBeingPlayedZone);
+                    EngineDisplayGlobals.BeingPlayedDisplay.DisplayBeneath = "L";
+                }
+                if (zonesAvailable.PackMarketAvailable && ZoneManager.PackMarketZone.Cards.Count > 0)
+                {
+                    OptsToPickFrom.Add(ConsoleKey.P, ZoneManager.PackMarketZone);
+                    EngineDisplayGlobals.PackMarketDisplay.DisplayBeneath = "P";
+                }
+                if (zonesAvailable.MainMarketAvailable && ZoneManager.MainMarketZone.Cards.Count > 0)
+                {
+                    OptsToPickFrom.Add(ConsoleKey.M, ZoneManager.MainMarketZone);
+                    EngineDisplayGlobals.MainMarketDisplay.DisplayBeneath = "M";
+                }
+                if (zonesAvailable.VoucherMarketAvailable && ZoneManager.VoucherMarketZone.Cards.Count > 0)
+                {
+                    OptsToPickFrom.Add(ConsoleKey.V, ZoneManager.VoucherMarketZone);
+                    EngineDisplayGlobals.VoucherMarketDisplay.DisplayBeneath = "V";
+                }
+                if (zonesAvailable.PackOptionsAvailable && ZoneManager.PackOptionZone.Cards.Count > 0)
+                {
+                    OptsToPickFrom.Add(ConsoleKey.O, ZoneManager.PackOptionZone);
+                    EngineDisplayGlobals.HandDisplay.DisplayBeneath = "O";
+                }
+                EngineDisplayGlobals.Redraw();
+                ConsoleKey sel = Console.ReadKey().Key;
+                EngineDisplayGlobals.ClearDisplayBeneathChars();
+                EngineDisplayGlobals.Redraw();
+                if (!OptsToPickFrom.ContainsKey(sel))
+                {
+                    return null;
+                }
+                else
+                {
+                    return OptsToPickFrom[sel];
+                }
+            };
+
+            return context =>
+            {
+                var cz = SelectCardZone();
+                if (cz == null)
+                {
+                    EngineDisplayGlobals.Redraw();
+                    return;
+                }
+                Card targetCard = null;
+                if(cz.Cards.Count == 0)
+                {
+                    return;
+                }else if(cz.Cards.Count == 1)
+                {
+                    targetCard = cz.Cards[0];
+                }
+                else
+                {
+                    targetCard = KeySelectCardFromZone(cz);
+                }
+
+                if(targetCard == null)
+                {
+                    EngineDisplayGlobals.Redraw();
+                    return;
+                }
+
+                //CardSelectedOptions(targetCard);
+                var showStr = GetStringOfAvailableActions(targetCard, "&");
+                EngineDisplayGlobals.ShowInfoDisplay(showStr, "&");
+                EngineDisplayGlobals.Redraw();
+                EngageControlset(GetAvailableCardActions(targetCard), null);
+                EngineDisplayGlobals.HideInfoDisplay();
+                EngineDisplayGlobals.Redraw();
+            };
+        }
+
+        private static Action<ControlContext> BuildActionForNumKey(ConsoleKey numKey)
+        {
+            if (numKeyList.Contains(numKey))
+            {
+                return _ =>
+                {
+                    var targetInd = numKeyList.IndexOf(numKey);
+                    if (ZoneManager.HandZone.Cards.Count > targetInd)
+                        ZoneManager.HandZone.Cards[targetInd].ToggleSelect();
+                };
+            }
+            return null;
+        }
+    }
+}

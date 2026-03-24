@@ -69,6 +69,7 @@ namespace ConsoleBalatro.Engine.Market
                             ConsumableManager.MakeCardPlanetCard(planetType, pc);
                             planetPool.AddCard(pc, invisibleAdd: true);
                         }
+                        MarketPoolsToDrawFrom.Add(buyItem, planetPool);
                         break;
                     case BuyItemType.TAROT_CARD:
                         var tarotPool = ZoneManager.MakeZone("TarotPool");

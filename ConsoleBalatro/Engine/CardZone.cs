@@ -88,7 +88,7 @@ namespace ConsoleBalatro.Engine
         {
             if (!HasRoom || !zone.Cards.Contains(target))
                 return;
-            zone.RemoveCard(target, invisibleRemove: invisibleAdd);
+            zone.RemoveCard(target);
             AddCard(target, invisibleAdd: invisibleAdd);
         }
 

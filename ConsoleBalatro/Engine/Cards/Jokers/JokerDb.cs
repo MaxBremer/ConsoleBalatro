@@ -465,7 +465,7 @@ namespace ConsoleBalatro.Engine.Cards.Jokers
                 ret.JokerName = "Golden Joker";
                 ret.DBName = "GOLDEN JOKER";
                 ret.DescriptionBuilder = _ => "Gain " + ret.DataDict["INTAMOUNT"].IntData + "$ at end of round.";
-                ret.DataDict.Add("INTAMOUNT", new JokerData() { IntData = 2, MyDataType = JokerDataType.INT});
+                ret.DataDict.Add("INTAMOUNT", new JokerData() { IntData = 4, MyDataType = JokerDataType.INT});
                 ret.Listeners.Add(new EngineEventListener()
                 {
                     MyContextType = EventContextType.GatherPostRoundMoney,

@@ -46,6 +46,7 @@ class Program
         ZoneManager.ConsumableZone.DrawTargetFrom(MarketOptionsManager.MarketPoolsToDrawFrom[BuyItemType.TAROT_CARD], MarketOptionsManager.MarketPoolsToDrawFrom[BuyItemType.TAROT_CARD].Cards.Where(x => x.ConsumableData.ConsumableName == "The World").First());
         ZoneManager.ConsumableZone.Cards[0].Edition = Edition.HOLOGRAPHIC;
 
+        Globals.EmitMoneyGain(999, null);
         EngineDisplayGlobals.PlayCachedAnimations();
 
         while (!Globals.QUIT)

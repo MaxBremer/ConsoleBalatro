@@ -293,6 +293,37 @@ namespace ConsoleBalatro.Engine.Cards.Consumables
 
                 return ret;
             } },
+            {"IMMOLATE", c =>
+            {
+                var ret = new ConsumableCardDataBlock();
+                ret.ConsumableName = "Immolate";
+                ret.DBName = "IMMOLATE";
+
+                ret.DataDict.Add("INTAMOUNT", new() {IntData = 5, MyDataType = JokerDataType.INT});
+                ret.DataDict.Add("MONEYAMOUNT", new() {IntData = 20, MyDataType = JokerDataType.INT});
+                
+                ret.DescriptionBuilder = _ => "Destroy " + ret.DataDict["INTAMOUNT"].IntData + " random cards in hand, gain $"  + ret.DataDict["MONEYAMOUNT"].IntData;
+
+                ret.IsActivatable = _ => ZoneManager.HandZone.Cards.Count >= ret.DataDict["INTAMOUNT"].IntData;
+                ret.Use = _ =>
+                {
+                    var handCards = ZoneManager.HandZone.Cards.ToList();
+                    var selCards = new List<Card>();
+                    for (int i = 0; i < ret.DataDict["INTAMOUNT"].IntData; i++)
+                    {
+                        var chosenInd = Globals.ChooseRandomInclusive(0, handCards.Count - 1);
+                        selCards.Add(handCards[chosenInd]);
+                        handCards.RemoveAt(chosenInd);
+			        }
+                    foreach (var c in selCards)
+                    {
+                        ZoneManager.DestroyCard(c, ZoneManager.HandZone);
+	                }
+                    Globals.EmitMoneyGain(ret.DataDict["MONEYAMOUNT"].IntData, ret.MyCard);
+                };
+
+                return ret;
+            } },
         };
 
         public static List<string> TarotNames => TarotConsumableDb.Keys.ToList();

@@ -269,7 +269,7 @@ namespace ConsoleBalatro.Engine.Market
         }
     }
 
-        public enum BuyItemType
+    public enum BuyItemType
     {
         NONE,
         PLAYING_CARD,

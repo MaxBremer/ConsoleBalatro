@@ -22,7 +22,7 @@ namespace ConsoleBalatro.Engine
             //TODO: test this. Changed from old shuffle method which was basically just doing random swaps.
             Cards = Cards.OrderBy(x => Random.Shared.Next()).ToList();
         }
-
+        //TODO: invisible add/remove causes so many fucking problems better to just remove... not even that useful.
         public virtual bool AddCard(Card card, bool invisibleAdd = false, bool overrideSpace = false)
         {
             if (!HasRoom && !overrideSpace)

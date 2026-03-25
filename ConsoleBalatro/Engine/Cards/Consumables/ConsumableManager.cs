@@ -211,11 +211,85 @@ namespace ConsoleBalatro.Engine.Cards.Consumables
         public static List<string> SpectralNames => SpectralConsumablesDb.Keys.ToList();
         public static Dictionary<string, Func<Card, ConsumableCardDataBlock>> SpectralConsumablesDb = new()
         {
-            {"TEST", c =>
+            {"TALISMAN", c =>
             {
                 var ret = new ConsumableCardDataBlock();
-                ret.ConsumableName = "Test";
-                ret.DBName = "TEST";
+                ret.ConsumableName = "Talisman";
+                ret.DBName = "TALISMAN";
+
+                ret.DataDict.Add("INTAMOUNT", new() {IntData = 1, MyDataType = JokerDataType.INT});
+                ret.DescriptionBuilder = _ => "Add a Gold Seal to " + ret.DataDict["INTAMOUNT"].IntData + " selected card(s) in hand.";
+
+                ret.IsActivatable = _ => EngineUtils.NumCardsSelectedInHand > 0 && EngineUtils.NumCardsSelectedInHand <= ret.DataDict["INTAMOUNT"].IntData;
+                ret.Use = _ =>
+                {
+                    foreach (var card in ZoneManager.CardsSelectedInHand)
+                    {
+                        card.Seal = Seal.GOLD;
+                    }
+                };
+
+                return ret;
+            } },
+            {"SIGIL", c =>
+            {
+                var ret = new ConsumableCardDataBlock();
+                ret.ConsumableName = "Sigil";
+                ret.DBName = "SIGIL";
+
+                ret.DescriptionBuilder = _ => "Convert all cards in hand to a single random suit.";
+
+                ret.IsActivatable = _ => ZoneManager.HandZone.Cards.Count > 0;
+                ret.Use = _ =>
+                {
+                    var selSuit =  (Suit)Globals.ChooseRandomInclusive(1, 4);
+                    foreach (var card in ZoneManager.HandZone.Cards)
+                    {
+                        card.SetSuitOfficial(selSuit);
+                    }
+                };
+
+                return ret;
+            } },
+            {"OUIJA", c =>
+            {
+                var ret = new ConsumableCardDataBlock();
+                ret.ConsumableName = "Ouija";
+                ret.DBName = "OUIJA";
+
+                ret.DataDict.Add("INTAMOUNT", new() {IntData = 1, MyDataType = JokerDataType.INT});
+                ret.DescriptionBuilder = _ => "Convert all cards in hand to a single random rank. -" + ret.DataDict["INTAMOUNT"].IntData + " hand size.";
+
+                ret.IsActivatable = _ => ZoneManager.HandZone.Cards.Count > 0;
+                ret.Use = _ =>
+                {
+                    var selRank =  (Rank)Globals.ChooseRandomInclusive(1, 13);
+                    foreach (var card in ZoneManager.HandZone.Cards)
+                    {
+                        card.SetRankOfficial(selRank);
+                    }
+                    Globals.HandSize -= ret.DataDict["INTAMOUNT"].IntData;
+                };
+
+                return ret;
+            } },
+            {"ECTOPLASM", c =>
+            {
+                var ret = new ConsumableCardDataBlock();
+                ret.ConsumableName = "Ectoplasm";
+                ret.DBName = "ECTOPLASM";
+
+                ret.DataDict.Add("INTAMOUNT", new() {IntData = 1, MyDataType = JokerDataType.INT});
+                ret.DescriptionBuilder = _ => "Add Negative to a random Joker. -" + ret.DataDict["INTAMOUNT"].IntData + " hand size.";
+
+                ret.IsActivatable = _ => ZoneManager.JokerZone.Cards.Where(x => x.Edition == Edition.BASE).Count() > 0;
+                ret.Use = _ =>
+                {
+                    var opts = ZoneManager.JokerZone.Cards.Where(x => x.Edition == Edition.BASE).ToList();
+                    var selOpt = opts[Globals.ChooseRandomInclusive(0, opts.Count - 1)];
+                    selOpt.SetEditionOfficial(Edition.NEGATIVE);
+                    Globals.HandSize -= ret.DataDict["INTAMOUNT"].IntData;
+                };
 
                 return ret;
             } },

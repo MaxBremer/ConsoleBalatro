@@ -445,7 +445,7 @@ namespace ConsoleBalatro.UI.EngineUI.Controls
                 if (zonesAvailable.PackOptionsAvailable && ZoneManager.PackOptionZone.Cards.Count > 0)
                 {
                     OptsToPickFrom.Add(ConsoleKey.O, ZoneManager.PackOptionZone);
-                    EngineDisplayGlobals.HandDisplay.DisplayBeneath = "O";
+                    EngineDisplayGlobals.PackOptionsDisplay.DisplayBeneath = "O";
                 }
                 EngineDisplayGlobals.Redraw();
                 ConsoleKey sel = Console.ReadKey().Key;

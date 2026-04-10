@@ -123,14 +123,10 @@ namespace ConsoleBalatro.Engine
 
         public static void ClosePackSelection()
         {
-            var cardList = new List<Card>();
-            cardList.AddRange(PackOptionZone.Cards);
-            foreach (Card card in cardList)
+            foreach (Card card in PackOptionZone.Cards.ToList())
             {
                 MarketOptionsManager.ReturnMarketItemFromZone(card, PackOptionZone);
             }
-
-            cardList.Clear();
 
             DeckZone.DrawUntilCapacityFrom(HandZone);
             ShuffleDeck();

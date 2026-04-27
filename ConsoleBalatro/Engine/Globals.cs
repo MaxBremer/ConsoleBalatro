@@ -299,19 +299,6 @@ namespace ConsoleBalatro.Engine
 
         public static bool CanBePurchased(Card c)
         {
-            if (FlowHandler.ActiveFreeShopPurchases > 0 && c != null && c.MyZone != null
-                && (c.MyZone == ZoneManager.MainMarketZone || c.MyZone == ZoneManager.PackMarketZone || c.MyZone == ZoneManager.VoucherMarketZone))
-            {
-                if (c.isJoker)
-                {
-                    return ZoneManager.JokerZone.HasRoom;
-                }
-                if (c.isConsumable)
-                {
-                    return ZoneManager.ConsumableZone.HasRoom;
-                }
-                return true;
-            }
             if (c.isJoker)
             {
                 return CanAfford(c) && ZoneManager.JokerZone.HasRoom;
@@ -377,10 +364,7 @@ namespace ConsoleBalatro.Engine
             //noZone purchases can occur, such as a buyAndUse, which will handle its own discard.
             if (zoneGoingTo != null && zoneFrom != null)
                 zoneGoingTo.DrawTargetFrom(zoneFrom, beingPurchased);
-            if (!FlowHandler.TryConsumeFreeShopPurchase(beingPurchased))
-            {
-                EmitMoneyLoss(beingPurchased.BuyCost, beingPurchased, true);
-            }
+            EmitMoneyLoss(beingPurchased.BuyCost, beingPurchased, true);
             //TODO: Should this really be done here? Doesn't feel right.
             //Maybe add extra conditional here? In case a pack consumable can be bought without open.
             if (beingPurchased.isPack)

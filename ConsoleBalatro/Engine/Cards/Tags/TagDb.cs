@@ -59,7 +59,7 @@ namespace ConsoleBalatro.Engine.Cards.Tags
                         MarketOptionsManager.DrawMarketItem(BuyItemType.VOUCHER, ZoneManager.ActiveVoucherZone);
                 }) },
             {TagType.BOSS_REROLL, _ => BuildImmediateTag("Boss Reroll Tag", _ => FlowHandler.RerollBossBlind()) },
-            {TagType.COUPON, _ => BuildImmediateTag("Coupon Tag", _ => FlowHandler.PendingFreeShopPurchases += 1) },
+            {TagType.COUPON, _ => BuildImmediateTag("Coupon Tag", _ => FlowHandler.NextShopIsCouponed = true) },
             {TagType.DOUBLE_TAG, _ => BuildDoubleTag() },
             {TagType.JUGGLE, _ => BuildImmediateTag("Juggle Tag", _ => FlowHandler.NextRoundGetsJuggleHandSize = true) },
             {TagType.REROLLS, _ => BuildImmediateTag("Reroll Tag", _ => FlowHandler.NextShopRerollsStartFree = true) },
@@ -107,30 +107,7 @@ namespace ConsoleBalatro.Engine.Cards.Tags
         }
 
         private static JokerCardDataBlock BuildMegaPackTag(string name, PackType packType)
-        {
-            var jokerDataBlock = PrepBlockForTag(name);
-            var tagDataBlock = new TagDataBlock();
-            tagDataBlock.EventTypesTrigger.Add(EventContextType.PostGameStatePop);
-            tagDataBlock.EventTypesTrigger.Add(EventContextType.PostGameStatePush);
-            tagDataBlock.DoTrigger = (args, _) =>
-            {
-                return args is EngineGameStateChangeArgs stateArgs
-                    && stateArgs.NewState != null
-                    && stateArgs.NewState.GameState != GameState.SelectingPackOption
-                    && !stateArgs.StateChangeIsInterrupted;
-            };
-            tagDataBlock.Activate = args =>
-            {
-                if (args is EngineGameStateChangeArgs stateArgs)
-                {
-                    stateArgs.StateChangeIsInterrupted = true;
-                    Card targPack = ConsumableManager.MakePack(packType);
-                    PackActions.OpenPack(targPack);
-                }
-            };
-            jokerDataBlock.TagData = tagDataBlock;
-            return jokerDataBlock;
-        }
+            => BuildImmediateTag(name, _ => PackActions.OpenPack(ConsumableManager.MakePack(packType)));
 
         private static JokerCardDataBlock BuildRarityShopTag(string name, JokerRarity rarity)
         {
@@ -142,7 +119,7 @@ namespace ConsoleBalatro.Engine.Cards.Tags
             {
                 var toAdd = BuildRandomJokerForShop(rarity);
                 if (toAdd != null)
-                    AddCardToMainMarket(toAdd);
+                    AddCardToMainMarket(toAdd, forceFree: true);
             };
             jokerDataBlock.TagData = tagDataBlock;
             return jokerDataBlock;
@@ -160,16 +137,20 @@ namespace ConsoleBalatro.Engine.Cards.Tags
                 if (toAdd == null)
                     return;
                 toAdd.Edition = edition;
-                AddCardToMainMarket(toAdd);
+                AddCardToMainMarket(toAdd, forceFree: true);
             };
             jokerDataBlock.TagData = tagDataBlock;
             return jokerDataBlock;
         }
 
-        private static void AddCardToMainMarket(Card c)
+        private static void AddCardToMainMarket(Card c, bool forceFree = false)
         {
             if (c == null)
                 return;
+            if (forceFree)
+            {
+                c.BuyCostOverride = 0;
+            }
             if (ZoneManager.MainMarketZone.HasRoom)
             {
                 ZoneManager.MainMarketZone.AddCard(c, invisibleAdd: false);

@@ -52,7 +52,8 @@ namespace ConsoleBalatro.Engine.Cards
         public ConsumableCardDataBlock ConsumableData = null;
 
         public int BaseCost = 1; //Default cost of playing card.
-        public int BuyCost => (int)((BaseCost + EngineUtils.EditionCostIncreases[Edition]) * Globals.DiscountMultiplier);
+        public int? BuyCostOverride = null;
+        public int BuyCost => BuyCostOverride ?? (int)((BaseCost + EngineUtils.EditionCostIncreases[Edition]) * Globals.DiscountMultiplier);
         public int SellCost => Math.Max((BuyCost / 2) + BonusSellValue, 1);
         public int BonusSellValue = 0;
 
@@ -353,6 +354,7 @@ namespace ConsoleBalatro.Engine.Cards
             target.MyPackType = MyPackType;
 
             target.BaseCost = BaseCost;
+            target.BuyCostOverride = BuyCostOverride;
             target.BonusSellValue = BonusSellValue;
 
             var evArgs = new EngineCardDetailsChangeArgs()

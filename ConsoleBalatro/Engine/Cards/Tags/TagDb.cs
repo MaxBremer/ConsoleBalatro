@@ -10,6 +10,8 @@ namespace ConsoleBalatro.Engine.Cards.Tags
     public static class TagDb
     {
         private static Dictionary<int, List<EngineEventListener>> TagListeners = new();
+        private static Queue<PackType> QueuedPackOpens = new();
+        private static bool PackQueueListenerInitialized = false;
 
         public static Dictionary<TagType, Func<Card, JokerCardDataBlock>> TagBuilders = new()
         {
@@ -94,20 +96,60 @@ namespace ConsoleBalatro.Engine.Cards.Tags
         private static JokerCardDataBlock BuildDoubleTag()
         {
             var jokerDataBlock = PrepBlockForTag("Double Tag");
+            jokerDataBlock.DataDict.Add("ACTIVATED", new JokerData() { MyDataType = JokerDataType.BOOL, BoolData = false });
             var tagDataBlock = new TagDataBlock();
             tagDataBlock.EventTypesTrigger.Add(EventContextType.TagAdded);
-            tagDataBlock.DoTrigger = (args, _) => args is EngineTagAddedEventArgs tagArgs && tagArgs.isPostAdd && tagArgs.TagCard.JokerData.TagData.MyType != TagType.DOUBLE_TAG;
+            tagDataBlock.DoTrigger = (args, ct) => args is EngineTagAddedEventArgs tagArgs
+                && tagArgs.isPostAdd
+                && tagArgs.TagCard.JokerData.TagData.MyType != TagType.DOUBLE_TAG
+                && ct.JokerData.DataDict.ContainsKey("ACTIVATED")
+                && !ct.JokerData.DataDict["ACTIVATED"].BoolData;
             tagDataBlock.Activate = args =>
             {
                 if (args is EngineTagAddedEventArgs tagArgs)
+                {
+                    jokerDataBlock.DataDict["ACTIVATED"].BoolData = true;
                     OnTagAdd(tagArgs.TagCard.MakeCopy());
+                }
             };
             jokerDataBlock.TagData = tagDataBlock;
             return jokerDataBlock;
         }
 
         private static JokerCardDataBlock BuildMegaPackTag(string name, PackType packType)
-            => BuildImmediateTag(name, _ => PackActions.OpenPack(ConsumableManager.MakePack(packType)));
+            => BuildImmediateTag(name, _ => EnqueuePackOpen(packType));
+
+        private static void EnqueuePackOpen(PackType packType)
+        {
+            EnsurePackQueueListener();
+            QueuedPackOpens.Enqueue(packType);
+            TryOpenQueuedPack();
+        }
+
+        private static void EnsurePackQueueListener()
+        {
+            if (PackQueueListenerInitialized)
+                return;
+            EngineEventHandler.StartListening(new EngineEventListener()
+            {
+                MyContextType = EventContextType.PostGameStatePop,
+                MyAction = _ => TryOpenQueuedPack(),
+            });
+            PackQueueListenerInitialized = true;
+        }
+
+        private static void TryOpenQueuedPack()
+        {
+            if (QueuedPackOpens.Count == 0)
+                return;
+            if (Globals.GameStateStack == null || Globals.GameStateStack.Count == 0)
+                return;
+            if (Globals.CurrentGameState == GameState.SelectingPackOption)
+                return;
+
+            var nextPack = QueuedPackOpens.Dequeue();
+            PackActions.OpenPack(ConsumableManager.MakePack(nextPack));
+        }
 
         private static JokerCardDataBlock BuildRarityShopTag(string name, JokerRarity rarity)
         {

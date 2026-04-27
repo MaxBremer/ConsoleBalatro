@@ -239,6 +239,14 @@ namespace ConsoleBalatro.Engine.Cards.Tags
             }
             TagListeners.Add(TagCard.JokerData.TagData.MyTagID, listenerList);
 
+            EventContext evContext = new() { Context = EventContextType.TagAdded };
+            EngineEventHandler.TriggerEvent(new EngineTagAddedEventArgs()
+            {
+                isPostAdd = true,
+                TagCard = TagCard,
+                MyContext = evContext,
+            });
+
             var onAddAct = TagCard.JokerData.TagData.OnAddAction;
             if(onAddAct != null)
             {
@@ -251,14 +259,6 @@ namespace ConsoleBalatro.Engine.Cards.Tags
                 ZoneManager.DestroyCard(TagCard, ZoneManager.PreDestructionZone);
                 return;
             }
-
-            EventContext evContext = new() { Context = EventContextType.TagAdded };
-            EngineEventHandler.TriggerEvent(new EngineTagAddedEventArgs()
-            {
-                isPostAdd = true,
-                TagCard = TagCard,
-                MyContext = evContext,
-            });
         }
 
         public static void OnTagRemove(Card TagCard)

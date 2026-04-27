@@ -47,6 +47,14 @@ namespace ConsoleBalatro.Engine
         public static TagType GetTagTypeOf(BlindType b) => b == BlindType.SMALL ? CurSmallBlindTag : (b == BlindType.BIG ? CurBigBlindTag : TagType.NONE);
         public static TagType CurrentTag => GetTagTypeOf(CurrentSelectedBlind);
         public static string CurrentBossBlind;
+        public static int HandsPlayedThisRun = 0;
+        public static int DiscardActionsThisRun = 0;
+        public static int BlindsSkippedThisRun = 0;
+        public static int PendingFreeShopPurchases = 0;
+        public static int ActiveFreeShopPurchases = 0;
+        public static bool NextShopRerollsStartFree = false;
+        public static bool NextRoundGetsJuggleHandSize = false;
+        public static int TempRoundHandSizeBonus = 0;
         public static bool SkipAvailable => CurrentSelectedBlind != BlindType.BOSS;
         public static bool ShouldDrawVoucher = true;
 
@@ -132,6 +140,12 @@ namespace ConsoleBalatro.Engine
 
         public static void InitializePlayRound(BlindType blindType)
         {
+            if(NextRoundGetsJuggleHandSize)
+            {
+                TempRoundHandSizeBonus = 3;
+                Globals.HandSize += TempRoundHandSizeBonus;
+                NextRoundGetsJuggleHandSize = false;
+            }
             if(blindType == BlindType.BOSS)
             {
                 //SET UP BOSS BLIND BEFORE ANYTHING
@@ -168,6 +182,12 @@ namespace ConsoleBalatro.Engine
             //BEFORE BLIND INCREMENT, CALC MONEY TO GIVE.
             var postRoundMoney = CalcPostRoundMoneyWithSources();
 
+            if(TempRoundHandSizeBonus > 0)
+            {
+                Globals.HandSize -= TempRoundHandSizeBonus;
+                TempRoundHandSizeBonus = 0;
+            }
+
             IncrementBlind();
 
             //Post-round with the money menu
@@ -197,6 +217,10 @@ namespace ConsoleBalatro.Engine
         {
             EngineEventHandler.TriggerEvent(new EngineEventArgs() { MyContext = new() { Context = EventContextType.StartMarket } });
             Globals.PushGameState(new GameStateObj() { GameState = GameState.ShopMenu });
+            ActiveFreeShopPurchases = PendingFreeShopPurchases;
+            PendingFreeShopPurchases = 0;
+            Globals.CurrentRerollCost = NextShopRerollsStartFree ? 0 : Globals.BaseRerollCost;
+            NextShopRerollsStartFree = false;
             //No need to initialize zones I think?
             MarketGeneralManager.FillFreshMarket();
         }
@@ -346,9 +370,34 @@ namespace ConsoleBalatro.Engine
                 return;
             }
 
-            //TODO: ADD/ACTIVATE CURRENT TAG
+            BlindsSkippedThisRun += 1;
+            TagDb.AddTagOfType(CurrentTag);
 
             IncrementBlind();
+        }
+
+        public static bool TryConsumeFreeShopPurchase(Card c)
+        {
+            if (ActiveFreeShopPurchases <= 0)
+                return false;
+            if (c == null || c.MyZone == null)
+                return false;
+            if (c.MyZone != ZoneManager.MainMarketZone && c.MyZone != ZoneManager.PackMarketZone && c.MyZone != ZoneManager.VoucherMarketZone)
+                return false;
+            ActiveFreeShopPurchases -= 1;
+            return true;
+        }
+
+        public static void RerollBossBlind()
+        {
+            string targetBossBlindName;
+            if (BossBlindDb.AvailableBossBlinds == null || BossBlindDb.AvailableBossBlinds.Count == 0)
+            {
+                BossBlindDb.BossBlindsAlreadyUsed.Clear();
+            }
+            targetBossBlindName = BossBlindDb.AvailableBossBlinds[Random.Shared.Next(BossBlindDb.AvailableBossBlinds.Count)];
+            BossBlindDb.BossBlindsAlreadyUsed.Add(targetBossBlindName);
+            CurrentBossBlind = targetBossBlindName;
         }
 
         public static void StartSelectedBlind()

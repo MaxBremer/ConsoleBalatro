@@ -73,6 +73,7 @@ namespace ConsoleBalatro.Engine
 
         public static Dictionary<Rank, int> RankBaseChipAmounts = new()
         {
+            {Rank.NONE, 0 },
             { Rank.TWO, 2 },
             { Rank.THREE, 3 },
             { Rank.FOUR, 4 },

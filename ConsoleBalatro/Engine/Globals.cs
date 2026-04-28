@@ -220,6 +220,7 @@ namespace ConsoleBalatro.Engine
 
             ScoreHandler.FinalPlayChipsCalc();
             ZoneManager.HiddenPlayZone.DrawUntilCapacityFrom(ZoneManager.CurrentlyBeingPlayedZone);
+            FlowHandler.HandsPlayedThisRun += 1;
             CurHandsRemaining -= 1;
             if(TotalCurrentChips >= RequiredChipsForCurrentBlind)
             {
@@ -241,6 +242,7 @@ namespace ConsoleBalatro.Engine
             ZoneManager.DiscardSelectedFromHand();
             if (doRedraw)
                 ZoneManager.DrawHandful();
+            FlowHandler.DiscardActionsThisRun += 1;
             CurDiscardsRemaining -= 1;
         }
 

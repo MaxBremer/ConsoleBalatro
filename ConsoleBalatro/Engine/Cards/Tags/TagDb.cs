@@ -38,7 +38,7 @@ namespace ConsoleBalatro.Engine.Cards.Tags
                 {
                     if (Globals.Money > 0)
                     {
-                        Globals.EmitMoneyGain(Math.Min(Globals.Money, 40), null);
+                        Globals.EmitMoneyGain(Math.Min(Globals.Money, 20), null);
                     }
                 }) },
             {TagType.INVESTMENT, _ => BuildPostRoundMoneyTag("Investment Tag", 25) },
@@ -48,7 +48,7 @@ namespace ConsoleBalatro.Engine.Cards.Tags
             {TagType.GARBAGE, _ => BuildImmediateTag("Garbage Tag", _ => Globals.EmitMoneyGain(FlowHandler.DiscardActionsThisRun, null)) },
             {TagType.ORBITAL, _ => BuildImmediateTag("Orbital Tag", _ =>
                 {
-                    var upgradable = Enum.GetValues(typeof(PlayedHandType)).Cast<PlayedHandType>().Where(x => x != PlayedHandType.NONE).ToList();
+                    var upgradable = Enum.GetValues(typeof(PlayedHandType)).Cast<PlayedHandType>().ToList();
                     if (upgradable.Count == 0)
                         return;
                     var chosen = upgradable[Random.Shared.Next(upgradable.Count)];
@@ -98,10 +98,11 @@ namespace ConsoleBalatro.Engine.Cards.Tags
             var jokerDataBlock = PrepBlockForTag("Double Tag");
             jokerDataBlock.DataDict.Add("ACTIVATED", new JokerData() { MyDataType = JokerDataType.BOOL, BoolData = false });
             var tagDataBlock = new TagDataBlock();
+            tagDataBlock.ImmuneToDouble = true;
             tagDataBlock.EventTypesTrigger.Add(EventContextType.TagAdded);
             tagDataBlock.DoTrigger = (args, ct) => args is EngineTagAddedEventArgs tagArgs
                 && tagArgs.isPostAdd
-                && tagArgs.TagCard.JokerData.TagData.MyType != TagType.DOUBLE_TAG
+                && !tagArgs.TagCard.JokerData.TagData.ImmuneToDouble
                 && ct.JokerData.DataDict.ContainsKey("ACTIVATED")
                 && !ct.JokerData.DataDict["ACTIVATED"].BoolData;
             tagDataBlock.Activate = args =>

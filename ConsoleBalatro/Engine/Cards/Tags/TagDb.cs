@@ -112,22 +112,21 @@ namespace ConsoleBalatro.Engine.Cards.Tags
 
         public static void AddTagOfType(TagType type)
         {
+            if (type == TagType.NONE)
+                return;
             var c = BuildTagOfType(type);
             OnTagAdd(c);
         }
 
         public static void OnTagAdd(Card TagCard, CardZone fromZone = null)
         {
+            //First just check that the card passed is a tag.
             if (!TagCard.isTag)
                 return;
-            if(fromZone == null)
-            {
-                ZoneManager.TagZone.AddCard(TagCard);
-            }
-            else
-            {
-                ZoneManager.TagZone.DrawTargetFrom(fromZone, TagCard);
-            }
+
+            //Build the activation function.
+            //TODO: Make immediate activation a flag?
+            //Then this func is just called on add? No need for a separate "on add func"?
             Action<EngineEventArgs> ActivateFunc = arg =>
             {
                 var data = TagCard.JokerData.TagData;
@@ -140,6 +139,26 @@ namespace ConsoleBalatro.Engine.Cards.Tags
                 }
             };
 
+            //Trigger the pre-addition tagAdd event.
+            EventContext evContext = new() { Context = EventContextType.TagAdded };
+            EngineEventHandler.TriggerEvent(new EngineTagAddedEventArgs()
+            {
+                isPostAdd = false,
+                TagCard = TagCard,
+                MyContext = evContext,
+            });
+
+            //Now, draw the card to the tag zone, either from another zone or from nothing.
+            if (fromZone == null)
+            {
+                ZoneManager.TagZone.AddCard(TagCard);
+            }
+            else
+            {
+                ZoneManager.TagZone.DrawTargetFrom(fromZone, TagCard);
+            }
+
+            //Add all the tags listeners
             var listenerList = new List<EngineEventListener>();
             foreach (var evType in TagCard.JokerData.TagData.EventTypesTrigger)
             {
@@ -147,20 +166,29 @@ namespace ConsoleBalatro.Engine.Cards.Tags
                 EngineEventHandler.StartListening(listener);
                 listenerList.Add(listener);
             }
+            //track the listeners for stopping post-activation.
             TagListeners.Add(TagCard.JokerData.TagData.MyTagID, listenerList);
 
+            //If there is an on add action, activate it now. We're doing the add.
             var onAddAct = TagCard.JokerData.TagData.OnAddAction;
             if(onAddAct != null)
             {
                 onAddAct(null);//TODO: args needed????
+                //After an on-add activation, destroy this tag.
+                //NOTE: This means tags can only have ONE activation, whether triggered via listeners or on-add.
+                //This makes sense gameplay-wise (tags only trigger once when they "pop"), but is slightly counter-intuitive code-wise.
+                ZoneManager.PreDestructionZone.DrawTargetFrom(ZoneManager.TagZone, TagCard);
+                OnTagRemove(TagCard);
+                ZoneManager.DestroyCard(TagCard, ZoneManager.PreDestructionZone);
             }
 
-            EventContext evContext = new() { Context = EventContextType.TagAdded };
+            //Finally, trigger the post-add tagAdd event.
+            EventContext evContextPostAdd = new() { Context = EventContextType.TagAdded };
             EngineEventHandler.TriggerEvent(new EngineTagAddedEventArgs()
             {
                 isPostAdd = true,
                 TagCard = TagCard,
-                MyContext = evContext,
+                MyContext = evContextPostAdd,
             });
         }
 

@@ -17,6 +17,8 @@ namespace ConsoleBalatro.Engine.Cards.Tags
         }
         public int MyTagID;
         public TagType MyType;
+        public bool ImmuneToDouble = false;
+
         public List<EventContextType> EventTypesTrigger = new();
         public Func<EngineEventArgs, Card, bool> DoTrigger = (_, _) => true; //Defaults to always true
         public Action<EngineEventArgs> Activate;

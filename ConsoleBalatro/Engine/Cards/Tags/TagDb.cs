@@ -26,9 +26,9 @@ namespace ConsoleBalatro.Engine.Cards.Tags
             {
                 var jdb = PrepBlockForTag("Investment Tag", c);
                 jdb.TagData.EventTypesTrigger.Add(EventContextType.GatherPostRoundMoney);
-                jdb.TagData.DoTrigger = (args, ct) =>
+                jdb.TagData.DoTrigger = (args, _) =>
                 {
-                    return args is EngineGatherPostRoundMoneyArgs moneyArgs && FlowHandler.CurrentSelectedBlind == BlindType.BOSS;
+                    return args is EngineGatherPostRoundMoneyArgs && FlowHandler.CurrentSelectedBlind == BlindType.BOSS;
                 };
                 jdb.TagData.Activate = args =>
                 {
@@ -38,44 +38,7 @@ namespace ConsoleBalatro.Engine.Cards.Tags
 
                 return jdb;
             } },
-            {TagType.DOUBLE_TAG, c =>
-            {
-                var jdb = PrepBlockForTag("Double Tag", c);
-                jdb.TagData.EventTypesTrigger.Add(EventContextType.TagAdded);
-                jdb.TagData.DoTrigger = (args, ct) =>
-                {
-                    return args is EngineTagAddedEventArgs tagArgs && tagArgs.isPostAdd;
-                };
-                jdb.TagData.Activate = args =>
-                {
-                    if(args is EngineTagAddedEventArgs tagArgs)
-                        OnTagAdd(tagArgs.TagCard.MakeCopy());
-                };
-
-                return jdb;
-            } },
-            {TagType.MEGA_ARCANA, c =>
-            {
-                var jdb = PrepBlockForTag("Mega Arcana Tag", c);
-                jdb.TagData.EventTypesTrigger.Add(EventContextType.PostGameStatePop);
-                jdb.TagData.EventTypesTrigger.Add(EventContextType.PostGameStatePush);
-                jdb.TagData.DoTrigger = (args, ct) =>
-                {
-                    return args is EngineGameStateChangeArgs stateArgs && stateArgs.NewState != null && stateArgs.NewState.GameState != GameState.SelectingPackOption && !stateArgs.StateChangeIsInterrupted; ;
-                };
-
-                jdb.TagData.Activate = args =>
-                {
-                    if(args is EngineGameStateChangeArgs stateArgs)
-                    {
-                        stateArgs.StateChangeIsInterrupted = true;
-                        Card targPack = ConsumableManager.MakePack(Enums.PackType.MEGA_TAROT);
-                        PackActions.OpenPack(targPack);
-                    }
-                };
-
-                return jdb;
-            } },
+            {TagType.DOUBLE_TAG, BuildDoubleTag },
             {TagType.DOUBLE_MONEY, c => {
                 var jdb = PrepBlockForTag("Double Money Tag", c);
                 jdb.TagData.OnAddAction = _ =>
@@ -186,6 +149,31 @@ namespace ConsoleBalatro.Engine.Cards.Tags
                 MyCard = c,
                 TagData = new TagDataBlock(),
             };
+        }
+
+        public static JokerCardDataBlock BuildDoubleTag(Card c)
+        {
+            var jokerDataBlock = PrepBlockForTag("Double Tag", c);
+            jokerDataBlock.DataDict.Add("ACTIVATED", new JokerData() { MyDataType = JokerDataType.BOOL, BoolData = false });
+            var tagDataBlock = new TagDataBlock();
+            tagDataBlock.ImmuneToDouble = true;
+            tagDataBlock.EventTypesTrigger.Add(EventContextType.TagAdded);
+            tagDataBlock.DoTrigger = (args, ct) => args is EngineTagAddedEventArgs tagArgs
+                && tagArgs.isPostAdd
+                && !tagArgs.TagCard.JokerData.TagData.ImmuneToDouble
+                && ct.JokerData.DataDict.ContainsKey("ACTIVATED")
+                && !ct.JokerData.DataDict["ACTIVATED"].BoolData;
+            
+            tagDataBlock.Activate = args =>
+            {
+                if(args is EngineTagAddedEventArgs tagArgs)
+                {
+                    jokerDataBlock.DataDict["ACTIVATED"].BoolData = true;
+                    OnTagAdd(tagArgs.TagCard.MakeCopy());
+                }
+            };
+            jokerDataBlock.TagData = tagDataBlock;
+            return jokerDataBlock;
         }
 
         public static JokerCardDataBlock BuildImmediateTag(string name, Card c, Action<EngineEventArgs> OnAddAction)

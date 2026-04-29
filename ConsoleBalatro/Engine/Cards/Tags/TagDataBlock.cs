@@ -21,7 +21,7 @@ namespace ConsoleBalatro.Engine.Cards.Tags
 
         public List<EventContextType> EventTypesTrigger = new();
         public Func<EngineEventArgs, Card, bool> DoTrigger = (_, _) => true; //Defaults to always true
-        public Action<EngineEventArgs> Activate;
+        public Action<EngineEventArgs> Activate = _ => { };
         public Action<EngineEventArgs> OnAddAction = null;
     }
 }

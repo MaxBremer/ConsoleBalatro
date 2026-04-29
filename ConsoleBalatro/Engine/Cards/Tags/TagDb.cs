@@ -1,7 +1,9 @@
 ﻿using ConsoleBalatro.Engine.Cards.Consumables;
+using ConsoleBalatro.Engine.Cards.Enums;
 using ConsoleBalatro.Engine.Cards.Jokers;
 using ConsoleBalatro.Engine.Events;
 using ConsoleBalatro.Engine.Events.Args;
+using ConsoleBalatro.Engine.Market;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -12,7 +14,8 @@ namespace ConsoleBalatro.Engine.Cards.Tags
 {
     public static class TagDb
     {
-        private static Stack<PackTagQueueEntry> PackTagsWaiting;
+        private static Queue<PackType> QueuedPackType = new();
+        private static bool PackQueueListenerInitialized = false;
 
         private static Dictionary<int, List<EngineEventListener>> TagListeners = new();
 
@@ -21,56 +24,47 @@ namespace ConsoleBalatro.Engine.Cards.Tags
         {
             {TagType.INVESTMENT, c =>
             {
-                var jokerDataBlock = PrepBlockForTag("Investment Tag");
-                var tagDataBlock = new TagDataBlock();
-                tagDataBlock.EventTypesTrigger.Add(EventContextType.GatherPostRoundMoney);
-                Func<EngineEventArgs, Card, bool> doTriggerFunc = (args, ct) =>
+                var jdb = PrepBlockForTag("Investment Tag", c);
+                jdb.TagData.EventTypesTrigger.Add(EventContextType.GatherPostRoundMoney);
+                jdb.TagData.DoTrigger = (args, ct) =>
                 {
                     return args is EngineGatherPostRoundMoneyArgs moneyArgs && FlowHandler.CurrentSelectedBlind == BlindType.BOSS;
                 };
-                tagDataBlock.DoTrigger = doTriggerFunc;
-                Action<EngineEventArgs> activation = args =>
+                jdb.TagData.Activate = args =>
                 {
                     if(args is EngineGatherPostRoundMoneyArgs moneyArgs)
-                        moneyArgs.JokersContributed.Add((jokerDataBlock, 25));//TODO: Data dict val???
+                        moneyArgs.JokersContributed.Add((jdb, 25));//TODO: Data dict val???
                 };
-                tagDataBlock.Activate = activation;
 
-                jokerDataBlock.TagData = tagDataBlock;
-                return jokerDataBlock;
+                return jdb;
             } },
             {TagType.DOUBLE_TAG, c =>
             {
-                var jokerDataBlock = PrepBlockForTag("Double Tag");
-                var tagDataBlock = new TagDataBlock();
-                tagDataBlock.EventTypesTrigger.Add(EventContextType.TagAdded);
-                Func<EngineEventArgs, Card, bool> doTriggerFunc = (args, ct) =>
+                var jdb = PrepBlockForTag("Double Tag", c);
+                jdb.TagData.EventTypesTrigger.Add(EventContextType.TagAdded);
+                jdb.TagData.DoTrigger = (args, ct) =>
                 {
                     return args is EngineTagAddedEventArgs tagArgs && tagArgs.isPostAdd;
                 };
-                tagDataBlock.DoTrigger = doTriggerFunc;
-                Action<EngineEventArgs> activation = args =>
+                jdb.TagData.Activate = args =>
                 {
                     if(args is EngineTagAddedEventArgs tagArgs)
                         OnTagAdd(tagArgs.TagCard.MakeCopy());
                 };
-                tagDataBlock.Activate = activation;
 
-                jokerDataBlock.TagData = tagDataBlock;
-                return jokerDataBlock;
+                return jdb;
             } },
             {TagType.MEGA_ARCANA, c =>
             {
-                var jokerDataBlock = PrepBlockForTag("Mega Arcana Tag");
-                var tagDataBlock = new TagDataBlock();
-                tagDataBlock.EventTypesTrigger.Add(EventContextType.PostGameStatePop);
-                tagDataBlock.EventTypesTrigger.Add(EventContextType.PostGameStatePush);
-                Func<EngineEventArgs, Card, bool> doTriggerFunc = (args, ct) =>
+                var jdb = PrepBlockForTag("Mega Arcana Tag", c);
+                jdb.TagData.EventTypesTrigger.Add(EventContextType.PostGameStatePop);
+                jdb.TagData.EventTypesTrigger.Add(EventContextType.PostGameStatePush);
+                jdb.TagData.DoTrigger = (args, ct) =>
                 {
                     return args is EngineGameStateChangeArgs stateArgs && stateArgs.NewState != null && stateArgs.NewState.GameState != GameState.SelectingPackOption && !stateArgs.StateChangeIsInterrupted; ;
                 };
-                tagDataBlock.DoTrigger = doTriggerFunc;
-                Action<EngineEventArgs> activation = args =>
+
+                jdb.TagData.Activate = args =>
                 {
                     if(args is EngineGameStateChangeArgs stateArgs)
                     {
@@ -79,21 +73,197 @@ namespace ConsoleBalatro.Engine.Cards.Tags
                         PackActions.OpenPack(targPack);
                     }
                 };
-                tagDataBlock.Activate = activation;
 
-                jokerDataBlock.TagData = tagDataBlock;
-                return jokerDataBlock;
+                return jdb;
             } },
+            {TagType.DOUBLE_MONEY, c => {
+                var jdb = PrepBlockForTag("Double Money Tag", c);
+                jdb.TagData.OnAddAction = _ =>
+                {
+                    if(Globals.Money > 0)
+                        Globals.EmitMoneyGain(Math.Min(Globals.Money, 20), jdb.MyCard);
+                };
+                return jdb;
+            } },
+            {TagType.NEGATIVE, c => BuildEditionShopTag("Negative Tag", Edition.NEGATIVE, c) },
+            {TagType.HOLO, c => BuildEditionShopTag("Holo Tag", Edition.HOLOGRAPHIC, c) },
+            {TagType.FOIL, c => BuildEditionShopTag("Foil Tag", Edition.FOIL, c) },
+            {TagType.POLYCHROME, c => BuildEditionShopTag("Polychrome Tag", Edition.POLYCHROME, c) },
+            {TagType.MEGA_JOKER, c => BuildMegaPackTag("Mega Joker Tag", PackType.MEGA_JOKER, c) },
+            {TagType.MEGA_ARCANA, c => BuildMegaPackTag("Mega Arcana Tag", PackType.MEGA_TAROT, c) },
+            {TagType.MEGA_PLANET, c => BuildMegaPackTag("Mega Planet Tag", PackType.MEGA_PLANET, c) },
+            {TagType.MEGA_STANDARD, c => BuildMegaPackTag("Mega Standard Tag", PackType.MEGA_STANDARD, c) },
+            {TagType.SPECTRAL, c => BuildMegaPackTag("Spectral Tag", PackType.MEGA_SPECTRAL, c) },
+            {TagType.TOP_UP, c => BuildImmediateTag("Top-Up Tag", c, _ =>
+            {
+                for (int i = 0; i < 2 && ZoneManager.JokerZone.HasRoom; i++)
+                    {
+                        var commonJoker = MarketOptionsManager.PullRandomJokerFromPool(JokerRarity.COMMON, removeFromPool: true);
+                        if (commonJoker == null)
+                            break;
+                        ZoneManager.JokerZone.AddCard(commonJoker, invisibleAdd: false);
+                    }
+            }) },
+            {TagType.UNCOMMON, c => BuildRarityShopTag("Uncommon Tag", JokerRarity.UNCOMMON, c) },
+            {TagType.RARE, c => BuildRarityShopTag("Rare Tag", JokerRarity.RARE, c) },
+            {TagType.HANDY, c => BuildImmediateTag("Handy Tag", c, _ => Globals.EmitMoneyGain(EngineEventHandler.CountOfSaved(EventContextType.HandPlayDone), c))},
+            {TagType.GARBAGE, c => BuildImmediateTag("Garbage Tag", c, _ => Globals.EmitMoneyGain(EngineEventHandler.CountOfSaved(EventContextType.HandPlayDone), c))},
+            {TagType.ORBITAL, c => BuildImmediateTag("Orbital Tag", c, _ =>
+            {
+                var upgradable = Enum.GetValues(typeof(PlayedHandType)).Cast<PlayedHandType>().ToList();
+                if (upgradable.Count == 0)
+                    return;
+                var chosen = upgradable[Random.Shared.Next(upgradable.Count)];
+                for (int i = 0; i < 3; i++)
+                    ScoreHandler.LevelUpHand(chosen);
+            }) },
+            {TagType.VOUCHER, c => 
+            {
+                var jdb = PrepBlockForTag("Voucher Tag", c);
+                jdb.TagData.EventTypesTrigger.Add(EventContextType.MarketSetupDone);
+                jdb.TagData.Activate = _ =>
+                {
+                    MarketOptionsManager.DrawMarketItem(BuyItemType.VOUCHER, ZoneManager.VoucherMarketZone, overrideSpaceLimits: true);
+                };
+                return jdb;
+            } },
+            {TagType.BOSS_REROLL, c => BuildImmediateTag("Boss Reroll Tag", c, _ => FlowHandler.RerollBossBlind())},
+            {TagType.COUPON, c =>
+            {
+                var jdb = PrepBlockForTag("Coupon Tag", c);
+                jdb.TagData.EventTypesTrigger.Add(EventContextType.MarketSetupDone);
+                jdb.TagData.DoTrigger = (_, _) =>
+                {
+                    var allTargets = new List<Card>();
+                    allTargets.AddRange(ZoneManager.MainMarketZone.Cards);
+                    allTargets.AddRange(ZoneManager.PackMarketZone.Cards);
+
+                    return allTargets.Any(x => x.BuyCost != 0);
+                };
+                jdb.TagData.Activate = _ =>
+                {
+                    MarketGeneralManager.MakeMarketFree();
+                };
+                return jdb;
+            } },
+            {TagType.REROLLS, c =>
+            {
+                var jdb = PrepBlockForTag("Rerolls Tag", c);
+                jdb.TagData.EventTypesTrigger.Add(EventContextType.MarketSetupDone);
+                jdb.TagData.DoTrigger = (_, _) =>
+                {
+                    return Globals.CurrentRerollCost != 0;
+                };
+                jdb.TagData.Activate = _ =>
+                {
+                    Globals.CurrentRerollCost = 0;
+                };
+                return jdb;
+            } },
+            {TagType.JUGGLE, c =>
+            {
+                var jdb = PrepBlockForTag("Juggle Tag", c);
+                jdb.TagData.EventTypesTrigger.Add(EventContextType.StartPlayRound);
+                jdb.TagData.Activate = args =>
+                {
+                    if(args is EnginePlayRoundSetupArgs playArgs)
+                    {
+                        playArgs.TempHandSizeBonus += 3;
+                    }
+                };
+                return jdb;
+            } },
+            {TagType.SPEED, c => BuildImmediateTag("Speed Tag", c, _ => Globals.EmitMoneyGain(EngineEventHandler.CountOfSaved(EventContextType.BlindSkip) * 5, c))},
         };
 
-        public static JokerCardDataBlock PrepBlockForTag(string name)
+        public static JokerCardDataBlock PrepBlockForTag(string name, Card c)
         {
             return new JokerCardDataBlock()
             {
                 isJoker = false,
                 isTag = true,
                 JokerName = name,
+                MyCard = c,
+                TagData = new TagDataBlock(),
             };
+        }
+
+        public static JokerCardDataBlock BuildImmediateTag(string name, Card c, Action<EngineEventArgs> OnAddAction)
+        {
+            var jokerDataBlock = PrepBlockForTag(name, c);
+            jokerDataBlock.TagData.OnAddAction = OnAddAction;
+            return jokerDataBlock;
+        }
+
+        private static JokerCardDataBlock BuildEditionShopTag(string name, Edition edition, Card c)
+        {
+            var jokerDataBlock = PrepBlockForTag(name, c);
+            jokerDataBlock.TagData.EventTypesTrigger.Add(EventContextType.StartMarket);
+
+            jokerDataBlock.TagData.Activate = _ =>
+            {
+                //TODO: TECHNICALLY THIS IS NOT CORRECT.
+                //CURRENTLY DOES: AT START OF MARKET, BEFORE POPULATION, DRAW A JOKER OF CORRECT REQUIREMENTS.
+                //SHOULD DO: WHEN A JOKER IS NEXT DRAWN TO MARKET, SET ITS EDITION AND OVERRIDE COST.
+                var toAdd = MarketOptionsManager.PullRandomJokerFromPool(null);
+                if (toAdd == null)
+                    return;
+                toAdd.SetEditionOfficial(edition);
+                toAdd.BuyCostOverride = 0;
+                MarketOptionsManager.DrawTargetMarketItem(BuyItemType.JOKER, ZoneManager.MainMarketZone, toAdd);
+            };
+            return jokerDataBlock;
+        }
+
+        private static JokerCardDataBlock BuildRarityShopTag(string name, JokerRarity rarity, Card c)
+        {
+            var jokerDataBlock = PrepBlockForTag(name, c);
+            jokerDataBlock.TagData.EventTypesTrigger.Add(EventContextType.StartMarket);
+            jokerDataBlock.TagData.Activate = _ =>
+            {
+                var toAdd = MarketOptionsManager.PullRandomJokerFromPool(rarity);
+                if (toAdd == null)
+                    return;
+                toAdd.BuyCostOverride = 0;
+                MarketOptionsManager.DrawTargetMarketItem(BuyItemType.JOKER, ZoneManager.MainMarketZone, toAdd);
+            };
+            return jokerDataBlock;
+        }
+
+        private static JokerCardDataBlock BuildMegaPackTag(string name, PackType packType, Card c) => BuildImmediateTag(name, c, _ => EnqueuePackCard(packType));
+        
+
+        private static void EnqueuePackCard(PackType packType)
+        {
+            EnsurePackQueueListener();
+            QueuedPackType.Enqueue(packType);
+            TryOpenQueuedPack();
+        }
+
+        private static void EnsurePackQueueListener()
+        {
+            if (PackQueueListenerInitialized)
+                return;
+            EngineEventHandler.StartListening(new EngineEventListener()
+            {
+                MyContextType = EventContextType.PostGameStatePop,
+                MyAction = _ => TryOpenQueuedPack(),
+            });
+            PackQueueListenerInitialized = true;
+        }
+
+        private static void TryOpenQueuedPack()
+        {
+            if(QueuedPackType.Count == 0 ||
+                Globals.GameStateStack == null ||
+                Globals.GameStateStack.Count == 0 ||
+                Globals.CurrentGameState == GameState.SelectingPackOption)
+            {
+                return;
+            }
+
+            var nextPack = QueuedPackType.Dequeue();
+            PackActions.OpenPack(ConsumableManager.MakePack(nextPack));
         }
 
         public static void MakeCardTagOfType(Card c, TagType type)

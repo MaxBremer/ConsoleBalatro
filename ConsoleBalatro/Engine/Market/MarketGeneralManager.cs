@@ -1,5 +1,6 @@
 ﻿using ConsoleBalatro.Engine.Cards;
 using ConsoleBalatro.Engine.Cards.Consumables;
+using ConsoleBalatro.Engine.Events;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -14,10 +15,17 @@ namespace ConsoleBalatro.Engine.Market
         {
             MarketOptionsManager.DrawItemsByMainMarketOddsUntilFull(ZoneManager.MainMarketZone, true);
 
+            Globals.CurrentRerollCost = Globals.BaseRerollCost;
+
             for (int i = 0; i < ZoneManager.PackMarketZone.MaxCapacity; i++)
             {
                 ZoneManager.PackMarketZone.AddCard(ConsumableManager.MakePackByOdds(), invisibleAdd: false); //not an invisible add due to graphics, idk maybe needed later.
             }
+
+            EngineEventHandler.TriggerEvent(new EngineEventArgs()
+            {
+                MyContext = new EventContext() { Context = EventContextType.MarketSetupDone },
+            });
         }
 
         public static void MarketClosing()
@@ -40,7 +48,7 @@ namespace ConsoleBalatro.Engine.Market
                 return;
             }
             Globals.EmitMoneyLoss(Globals.CurrentRerollCost, Globals.RerollButtonCard, false);
-            //TODO: increase reroll cost
+            Globals.CurrentRerollCost += 1;
             var toRem = new List<Card>();
             toRem.AddRange(ZoneManager.MainMarketZone.Cards);
             foreach (var c in toRem)
@@ -83,6 +91,21 @@ namespace ConsoleBalatro.Engine.Market
             while (ZoneManager.VoucherMarketZone.HasRoom)
             {
                 MarketOptionsManager.DrawMarketItem(BuyItemType.VOUCHER, ZoneManager.VoucherMarketZone);
+            }
+        }
+
+        //Just used for coupon voucher: makes current market free
+        public static void MakeMarketFree(bool includeVouchers = false)
+        {
+            var allTargets = new List<Card>();
+            allTargets.AddRange(ZoneManager.MainMarketZone.Cards);
+            allTargets.AddRange(ZoneManager.PackMarketZone.Cards);
+            if (includeVouchers)
+                allTargets.AddRange(ZoneManager.VoucherMarketZone.Cards);
+
+            foreach (var c in allTargets)
+            {
+                c.BuyCostOverride = 0;
             }
         }
     }

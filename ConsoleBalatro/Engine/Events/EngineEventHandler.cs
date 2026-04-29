@@ -11,6 +11,9 @@ namespace ConsoleBalatro.Engine.Events
         private static List<EventContextType> TypesToSave = new List<EventContextType>()
         {
             EventContextType.ConsumableUsed,
+            EventContextType.HandPlayDone,
+            EventContextType.HandDiscardDone,
+            EventContextType.BlindSkip,
         };
 
         public static List<EngineEventArgs> SavedEvents = new();
@@ -28,12 +31,17 @@ namespace ConsoleBalatro.Engine.Events
 
         public static EngineEventArgs LastSavedOfType(EventContextType evType)
         {
-            return SavedEvents.Where(x => x.MyContext.Context == evType).LastOrDefault();
+            return SavedEvents.LastOrDefault(x => x.MyContext.Context == evType);
         }
 
         public static EngineEventArgs LastSavedOfTypeConditional(EventContextType evType, Func<EngineEventArgs, bool> condition)
         {
-            return SavedEvents.Where(x => x.MyContext.Context == evType && condition(x)).LastOrDefault();
+            return SavedEvents.LastOrDefault(x => x.MyContext.Context == evType && condition(x));
+        }
+
+        public static int CountOfSaved(EventContextType evType)
+        {
+            return SavedEvents.Count(x => x.MyContext.Context == evType);
         }
 
         public static void StartListening(EngineEventListener listener)

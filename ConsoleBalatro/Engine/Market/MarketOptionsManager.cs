@@ -190,21 +190,45 @@ namespace ConsoleBalatro.Engine.Market
             DrawMarketItem(itemType, ZoneManager.ConsumableZone);
         }
 
-        public static void DrawMarketItem(BuyItemType itemType, CardZone zoneToDrawTo, bool applyMarketModifiers = false)
+        public static void DrawMarketItem(BuyItemType itemType, CardZone zoneToDrawTo, bool applyMarketModifiers = false, bool overrideSpaceLimits = false)
         {
             //TODO: When duplicates allowed, draw from some static pool.
-            var cardDrawn = zoneToDrawTo.DrawFromAndReturn(MarketPoolsToDrawFrom[itemType]);
+            var cardDrawn = zoneToDrawTo.DrawFromAndReturn(MarketPoolsToDrawFrom[itemType], ignoreSpaceLimits: overrideSpaceLimits);
 
             //TODO: Wow this is so gross. Look at that nesting.
             //like I get why I did it but... please. make it better.
             if(applyMarketModifiers && cardDrawn != null)
             {
                 //First, editions. Later maybe others?
-                if (RandomEditionOdds.ContainsKey(itemType))
+                if (RandomEditionOdds.ContainsKey(itemType) && cardDrawn.Edition == Edition.BASE)
                 {
                     foreach (var ed in RandomEditionOdds[itemType].Keys)
                     {
                         if(Random.Shared.Next(1000) < RandomEditionOdds[itemType][ed])
+                        {
+                            cardDrawn.Edition = ed;
+                            break; //Not do this? later rolls override?
+                        }
+                    }
+                }
+            }
+        }
+
+        public static void DrawTargetMarketItem(BuyItemType itemType, CardZone zoneToDrawTo, Card targetCard, bool applyMarketModifiers = false)
+        {
+            //TODO: When duplicates allowed, draw from some static pool.
+            var cardDrawn = zoneToDrawTo.DrawTargetFromAndReturn(MarketPoolsToDrawFrom[itemType], targetCard);
+
+            //TODO: Wow this is so gross. Look at that nesting.
+            //like I get why I did it but... please. make it better.
+            if (applyMarketModifiers && cardDrawn != null)
+            {
+                //First, editions. Later maybe others?
+                if (RandomEditionOdds.ContainsKey(itemType) && cardDrawn.Edition == Edition.BASE)
+                {
+                    foreach (var ed in RandomEditionOdds[itemType].Keys)
+                    {
+                        if (Random.Shared.Next(1000) < RandomEditionOdds[itemType][ed])
                         {
                             cardDrawn.Edition = ed;
                             break; //Not do this? later rolls override?
@@ -254,7 +278,7 @@ namespace ConsoleBalatro.Engine.Market
                     //TEMPORARILY: default to Joker
                     chosenType = BuyItemType.JOKER;
                 }
-                DrawMarketItem(chosenType, zoneToDrawTo, applyMarketModifiers);
+                DrawMarketItem(chosenType, zoneToDrawTo, applyMarketModifiers: applyMarketModifiers);
             }
         }
 
@@ -266,6 +290,18 @@ namespace ConsoleBalatro.Engine.Market
                 passList.Add(itemType);
             }
             DrawMarketItems(passList, drawTo);
+        }
+
+        public static Card PullRandomJokerFromPool(JokerRarity? rarity, bool removeFromPool = false)
+        {
+            var pool = MarketPoolsToDrawFrom[BuyItemType.JOKER];
+            var valid = pool.Cards.Where(x => x.isJoker && (!rarity.HasValue || x.JokerData.Rarity == rarity.Value)).ToList();
+            if (valid.Count == 0)
+                return Globals.USE_DEFAULT_JOKER_IF_POOL_EMPTY ? JokerDb.GenerateDefaultJokerCard() : null;
+            var chosen = valid[Random.Shared.Next(valid.Count)];
+            if (removeFromPool)
+                pool.RemoveCard(chosen);
+            return chosen;
         }
     }
 

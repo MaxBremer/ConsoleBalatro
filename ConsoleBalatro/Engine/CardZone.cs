@@ -84,17 +84,17 @@ namespace ConsoleBalatro.Engine
             }
         }
 
-        public void DrawTargetFrom(CardZone zone, Card target, bool invisibleAdd = false)
+        public void DrawTargetFrom(CardZone zone, Card target, bool invisibleAdd = false, bool ignoreSpaceLimits = false)
         {
-            if (!HasRoom || !zone.Cards.Contains(target))
+            if ((!ignoreSpaceLimits && !HasRoom) || !zone.Cards.Contains(target))
                 return;
             zone.RemoveCard(target);
-            AddCard(target, invisibleAdd: invisibleAdd);
+            AddCard(target, invisibleAdd: invisibleAdd, overrideSpace: ignoreSpaceLimits);
         }
 
-        public void DrawTargetsFrom(CardZone zone, List<Card> targets, bool invisibleAdd = false)
+        public void DrawTargetsFrom(CardZone zone, List<Card> targets, bool invisibleAdd = false, bool ignoreSpaceLimits = false)
         {
-            if (!HasRoomFor(targets.Count) || !targets.All(x => zone.Cards.Contains(x)))
+            if ((!ignoreSpaceLimits && !HasRoomFor(targets.Count)) || !targets.All(x => zone.Cards.Contains(x)))
                 return;
             foreach (var target in targets)
             {
@@ -103,11 +103,19 @@ namespace ConsoleBalatro.Engine
         }
 
         //Add optional params for override space and invisible add/remove if needed in the future
-        public Card DrawFromAndReturn(CardZone zone)
+        public Card DrawFromAndReturn(CardZone zone, bool ignoreSpaceLimits = false)
         {
-            if (!HasRoom || zone.Cards.Count == 0)
+            if ((!ignoreSpaceLimits && !HasRoom) || zone.Cards.Count == 0)
                 return null;
             var target = zone.Cards.First();
+            DrawTargetFrom(zone, target, ignoreSpaceLimits: ignoreSpaceLimits);
+            return target;
+        }
+
+        public Card DrawTargetFromAndReturn(CardZone zone, Card target)
+        {
+            if (!HasRoom || !zone.Cards.Contains(target))
+                return null;
             DrawTargetFrom(zone, target);
             return target;
         }

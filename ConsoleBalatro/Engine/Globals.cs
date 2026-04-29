@@ -22,6 +22,7 @@ namespace ConsoleBalatro.Engine
     {
         //SETTINGS
         public const bool GUARANTEE_UNIQUE_TAGS = false;
+        public const bool USE_DEFAULT_JOKER_IF_POOL_EMPTY = true;
         private static int _reqChipsBlind = -1;
 
         public static Dictionary<Rank, int> RankChipVals = new()
@@ -77,7 +78,7 @@ namespace ConsoleBalatro.Engine
 
         public static int CurNumCardsSelected => ZoneManager.CardsSelectedInHand.Count();
 
-        public static int StartingHandSize = 8;
+        public static int BaseHandSize = 8;
 
         public static int MainMarketCount = 2;
         public static int PackMarketCount = 2;
@@ -221,6 +222,12 @@ namespace ConsoleBalatro.Engine
             ScoreHandler.FinalPlayChipsCalc();
             ZoneManager.HiddenPlayZone.DrawUntilCapacityFrom(ZoneManager.CurrentlyBeingPlayedZone);
             CurHandsRemaining -= 1;
+
+            EngineEventHandler.TriggerEvent(new EngineEventArgs()
+            {
+                MyContext = new EventContext() { Context = EventContextType.HandPlayDone },
+            });
+
             if(TotalCurrentChips >= RequiredChipsForCurrentBlind)
             {
                 FlowHandler.ClosePlayRound();
@@ -241,6 +248,10 @@ namespace ConsoleBalatro.Engine
             ZoneManager.DiscardSelectedFromHand();
             if (doRedraw)
                 ZoneManager.DrawHandful();
+            EngineEventHandler.TriggerEvent(new EngineEventArgs()
+            {
+                MyContext = new EventContext() { Context = EventContextType.HandDiscardDone }
+            });
             CurDiscardsRemaining -= 1;
         }
 
@@ -369,6 +380,9 @@ namespace ConsoleBalatro.Engine
             {
                 PackActions.OpenPack(beingPurchased);
                 ZoneManager.DestroyCard(beingPurchased, beingPurchased.MyZone);
+            }else if(beingPurchased.BuyCostOverride != null)
+            {
+                beingPurchased.BuyCostOverride = null;//Currently after purchase, any buy cost override is reset.
             }
         }
 

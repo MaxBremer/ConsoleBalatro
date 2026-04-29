@@ -11,6 +11,8 @@ namespace ConsoleBalatro.Engine.Cards.Jokers
 {
     public static class JokerDb
     {
+        public static string DEFAULT_JOKER_NAME = "JOLLY JOKER";
+
         //Costs of jokers... should prob just include in the db.
         //Or maybe better to separate this stuff out, idk.
         public static Dictionary<string, int> JokerCosts = new()
@@ -498,5 +500,7 @@ namespace ConsoleBalatro.Engine.Cards.Jokers
             MakeCardJoker(c, JokerName);
             return c;
         }
+
+        public static Card GenerateDefaultJokerCard() => GenerateJokerCard(DEFAULT_JOKER_NAME);
     }
 }

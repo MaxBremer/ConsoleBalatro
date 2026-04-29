@@ -107,8 +107,8 @@ namespace ConsoleBalatro.Engine
         public static void InitializePlayRoundZones()
         {
             //TODO: Hand size change changes this zones size.
-            HandZone = MakeHand(Globals.StartingHandSize);
-            HandSize = Globals.StartingHandSize; //Yes, this is redundant with the above line. Live with it. It doesn't hurt anything.
+            HandZone = MakeHand(Globals.BaseHandSize);
+            HandSize = Globals.BaseHandSize; //Yes, this is redundant with the above line. Live with it. It doesn't hurt anything.
             DiscardZone = MakeZone("Discard");
             HiddenPlayZone = MakeZone("Played");
         }

@@ -34,6 +34,9 @@ namespace ConsoleBalatro.Engine.Events
         CardsSelectedForPlay,
         HandPlayedCalculated,
 
+        HandDiscardDone,
+        HandPlayDone,
+
         SelectedCardBeingConsideredForCalc,
         CardInHandAfterScoring,
 
@@ -59,8 +62,11 @@ namespace ConsoleBalatro.Engine.Events
         EndBlindSelection,
 
         BlindChange,
+        BlindSkip,
 
         GatherPostRoundMoney,
+
+        MarketSetupDone,
 
         HandsChange,
         DiscardsChange,

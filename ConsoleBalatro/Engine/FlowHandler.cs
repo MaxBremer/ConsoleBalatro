@@ -50,6 +50,8 @@ namespace ConsoleBalatro.Engine
         public static bool SkipAvailable => CurrentSelectedBlind != BlindType.BOSS;
         public static bool ShouldDrawVoucher = true;
 
+        public static EnginePlayRoundSetupArgs CurrentTempChanges = null;
+
         public static void InitializeFlowListeners()
         {
             //XTO-DO: Might not be any flow listeners, idk. This is here if I need it.
@@ -137,17 +139,32 @@ namespace ConsoleBalatro.Engine
                 //SET UP BOSS BLIND BEFORE ANYTHING
                 ZoneManager.HiddenBlindAttributeZone.AddCard(BossBlindDb.GenerateBlindCard(CurrentBossBlind), invisibleAdd: false); //NO INVISIBLE ADD. AGAIN. WHAT IS IT EVEN GOOD FOR?
             }
-            EngineEventHandler.TriggerEvent(new EngineEventArgs() { MyContext = new() { Context = EventContextType.StartPlayRound } });
+            var setupArgs = new EnginePlayRoundSetupArgs() { MyContext = new() { Context = EventContextType.StartPlayRound } };
+            EngineEventHandler.TriggerEvent(setupArgs);
+            ProcessTempRoundBuffs(setupArgs);
             Globals.PushGameState(new GameStateObj() { GameState = GameState.PlayRound });
             Globals.SetStartOfRoundStats();
             ZoneManager.ShuffleDeck();
             //Scores should already be reset, as they're reset post-round.
             //but u know. can never be too sure.
 
-            EngineEventHandler.TriggerEvent(new EngineEventArgs() { MyContext = new() { Context = EventContextType.StartPlayRoundSetupOver } });
-
             Globals.RequiredChipsForCurrentBlind = GetChipsForBlindType(blindType);
             ZoneManager.DrawHandful();
+
+            EngineEventHandler.TriggerEvent(new EngineEventArgs() { MyContext = new() { Context = EventContextType.StartPlayRoundSetupOver } });
+        }
+
+        private static void ProcessTempRoundBuffs(EnginePlayRoundSetupArgs args)
+        {
+            if (!args.AnyBuffsApplied())
+                return;
+
+            if(args.TempHandSizeBonus != 0)
+            {
+                ZoneManager.HandSize += args.TempHandSizeBonus;
+            }
+
+            CurrentTempChanges = args;
         }
 
         public static void ClosePlayRound()
@@ -158,6 +175,7 @@ namespace ConsoleBalatro.Engine
             ZoneManager.ClosePlayRound();
             ScoreHandler.ResetScoresPostRound();
             EngineEventHandler.TriggerEvent(new EngineEventArgs() { MyContext = new() { Context = EventContextType.EndPlayRound } });
+            UndoTempRoundBuffs();
 
             Globals.PopCurrGameState();
 
@@ -173,6 +191,17 @@ namespace ConsoleBalatro.Engine
             //Post-round with the money menu
 
             InitializePostRound(postRoundMoney);
+        }
+
+        private static void UndoTempRoundBuffs()
+        {
+            if (CurrentTempChanges == null)
+                return;
+
+            if(CurrentTempChanges.TempHandSizeBonus != 0)
+                ZoneManager.HandSize -= CurrentTempChanges.TempHandSizeBonus;
+
+            CurrentTempChanges = null;
         }
 
         public static void InitializePostRound(List<(string, int)> postRoundMoney)
@@ -304,10 +333,26 @@ namespace ConsoleBalatro.Engine
             //Refresh/Reroll Voucher
             MarketGeneralManager.ResetVoucher();
 
+            //Roll a new boss blind
+            //TODO: final boss blinds
+            RerollBossBlind();
+
+            //Set up new skip tags
+            InitNewTags(Globals.GUARANTEE_UNIQUE_TAGS);
+
+            //Increment the current ante
+            CurrentAnte += 1;
+
+            //and set current blind to small.
+            CurrentSelectedBlind = BlindType.SMALL;
+        }
+
+        public static void RerollBossBlind()
+        {
             //Select new Boss Blind
             string targetBossBlindName;
             //TODO: Account for the big boss blinds at the end.
-            if(BossBlindDb.AvailableBossBlinds == null || BossBlindDb.AvailableBossBlinds.Count == 0)
+            if (BossBlindDb.AvailableBossBlinds == null || BossBlindDb.AvailableBossBlinds.Count == 0)
             {
                 //If no boss options available, reset the pool.
                 BossBlindDb.BossBlindsAlreadyUsed.Clear();
@@ -315,12 +360,6 @@ namespace ConsoleBalatro.Engine
             targetBossBlindName = BossBlindDb.AvailableBossBlinds[Random.Shared.Next(BossBlindDb.AvailableBossBlinds.Count)];
             BossBlindDb.BossBlindsAlreadyUsed.Add(targetBossBlindName);
             CurrentBossBlind = targetBossBlindName;
-
-            InitNewTags(Globals.GUARANTEE_UNIQUE_TAGS);
-
-            CurrentAnte += 1;
-
-            CurrentSelectedBlind = BlindType.SMALL;
         }
 
         public static void InitNewTags(bool makeUnique)
@@ -346,7 +385,8 @@ namespace ConsoleBalatro.Engine
                 return;
             }
 
-            //TODO: ADD/ACTIVATE CURRENT TAG
+            EngineEventHandler.TriggerEvent(new EngineEventArgs() { MyContext = new EventContext() { Context = EventContextType.BlindSkip } });
+            TagDb.AddTagOfType(CurrentTag);
 
             IncrementBlind();
         }

@@ -5,12 +5,18 @@ VisualStudioVersion = 17.14.37012.4 d17.14
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ConsoleBalatro", "ConsoleBalatro\ConsoleBalatro.csproj", "{53576691-8084-4633-A507-6571A0E41B16}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ConsoleBalatro.Tests", "ConsoleBalatro.Tests\ConsoleBalatro.Tests.csproj", "{A0A0DADA-5F67-4A28-9E06-7EEC50EE2515}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
 		Release|Any CPU = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{A0A0DADA-5F67-4A28-9E06-7EEC50EE2515}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{A0A0DADA-5F67-4A28-9E06-7EEC50EE2515}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{A0A0DADA-5F67-4A28-9E06-7EEC50EE2515}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{A0A0DADA-5F67-4A28-9E06-7EEC50EE2515}.Release|Any CPU.Build.0 = Release|Any CPU
 		{53576691-8084-4633-A507-6571A0E41B16}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
 		{53576691-8084-4633-A507-6571A0E41B16}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{53576691-8084-4633-A507-6571A0E41B16}.Release|Any CPU.ActiveCfg = Release|Any CPU

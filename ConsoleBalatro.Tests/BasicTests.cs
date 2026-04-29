@@ -1,6 +1,7 @@
 using ConsoleBalatro.Engine;
 using ConsoleBalatro.Engine.Cards;
 using ConsoleBalatro.Engine.Cards.Enums;
+using Xunit;
 
 namespace ConsoleBalatro.Tests;
 

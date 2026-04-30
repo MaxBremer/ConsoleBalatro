@@ -24,6 +24,16 @@ namespace ConsoleBalatro.Engine.Events
         public static List<EngineEventListener> ToBeRemoved = new();
         public static int CallDepth = 0;
 
+        public static void ResetFullEventHandler()
+        {
+            GeneralListeners.Clear();
+            SpecificListeners.Clear();
+            ToBeAdded.Clear();
+            ToBeRemoved.Clear();
+            SavedEvents.Clear();
+            CallDepth = 0;
+        }
+
         public static void ResetSavedEvents()
         {
             SavedEvents.Clear();

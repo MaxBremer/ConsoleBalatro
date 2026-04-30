@@ -164,7 +164,7 @@ namespace ConsoleBalatro.Engine
                 var targetSuit = suitGroupLens.Where(x => x.Count >= LenFlush).First().Key;
                 retCards.Clear();
                 retCards.AddRange(suitGroups[targetSuit]);
-                ret = PlayedHandType.FLUSHFIVE;
+                ret = PlayedHandType.FLUSH;
                 hasFlush = true;
             }
 
@@ -190,7 +190,7 @@ namespace ConsoleBalatro.Engine
             {
                 ret = PlayedHandType.FOUROFAKIND;
                 retCards.Clear();
-                var targetRank = rankGroupLens.Where(x => cards.Count == 4).First().Key;
+                var targetRank = rankGroupLens.First(x => x.Count == 4).Key;
                 retCards.AddRange(rankGroups[targetRank]);
             }
 
@@ -199,6 +199,7 @@ namespace ConsoleBalatro.Engine
                 ret = PlayedHandType.STRAIGHTFLUSH;
                 retCards.Clear();
                 var targetSuit = suitGroupLens.Where(x => x.Count >= LenFlush).OrderByDescending(x => x.Count).First().Key;
+                retCards.AddRange(hasStraightPair.Item2);
             }
 
             if(rankGroupMax >= 5)

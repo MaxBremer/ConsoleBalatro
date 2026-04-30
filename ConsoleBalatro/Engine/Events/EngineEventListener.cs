@@ -15,5 +15,7 @@ namespace ConsoleBalatro.Engine.Events
 
         public Action<EngineEventArgs> MyAction;
         public EventContextType MyContextType = EventContextType.NONE;
+
+        public bool RemoveAfterTriggering = false;
     }
 }

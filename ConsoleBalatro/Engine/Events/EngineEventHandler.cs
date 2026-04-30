@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -136,6 +137,8 @@ namespace ConsoleBalatro.Engine.Events
             CallDepth++;
             listener.Trigger(args);
             CallDepth--;
+            if (listener.RemoveAfterTriggering && !ToBeRemoved.Contains(listener))
+                ToBeRemoved.Add(listener);
         }
     }
 }

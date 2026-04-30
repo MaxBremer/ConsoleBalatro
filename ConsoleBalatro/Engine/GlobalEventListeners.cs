@@ -76,12 +76,12 @@ namespace ConsoleBalatro.Engine
                     Globals.EmitChipsAdd(30, c);
                 }else if(c.Enhancement == Enhancement.LUCKY)
                 {
-                    if(Globals.RollRandom(1, 5))
+                    if(Globals.RollRandom(1, 5, c))
                     {
                         Globals.EmitMultAdd(20, c);
                     }
 
-                    if(Globals.RollRandom(1, 15))
+                    if(Globals.RollRandom(1, 15, c))
                     {
                         Globals.EmitMoneyGain(20, c);
                     }

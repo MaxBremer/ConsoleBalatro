@@ -531,7 +531,7 @@ namespace ConsoleBalatro.Engine.Cards.Consumables
                 ret.IsActivatable = _ => ZoneManager.JokerZone.Cards.Count > 0 && ZoneManager.JokerZone.Cards.Where(x => x.Edition == Edition.BASE).Any();
                 ret.Use = _ =>
                 {
-                    var doAtAll = Globals.RollRandom(ret.DataDict["MINCHANCEAMOUNT"].IntData, ret.DataDict["MAXCHANCEAMOUNT"].IntData);
+                    var doAtAll = Globals.RollRandom(ret.DataDict["MINCHANCEAMOUNT"].IntData, ret.DataDict["MAXCHANCEAMOUNT"].IntData, c);
                     //TODO: if failure emit event, so print can show
                     if (doAtAll)
                     {

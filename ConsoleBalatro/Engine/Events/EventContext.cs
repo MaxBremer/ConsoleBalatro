@@ -74,6 +74,8 @@ namespace ConsoleBalatro.Engine.Events
         ConsumableUsed,
 
         TagAdded,
+
+        RandomRollHappening,
     }
     public class EventContext
     {

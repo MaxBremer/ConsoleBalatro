@@ -24,21 +24,63 @@ namespace ConsoleBalatro.Tests
             var contributions = CaptureScoringContributions();
             Globals.PlayCurrentlySelectedHand();
 
-            //So remember, base hand score doesn't emit anything. Only cards calced do.
-            Assert.Equal(11, contributions.ChipsFromEmits);//Should gain 11 chips from the Ace only
-            Assert.Equal(0d, contributions.MultAfterEmits);//No mult gained from anywhere
-            Assert.Equal(16, contributions.FinalTotalGain);//5 for high card base + 11 for Ace.
+            TestWithExpectations(contributions, PlayedHandType.HIGHCARD, Rank.ACE, Suit.SPADES, 1, 11, 16);
+        }
 
-            //There should only be 1 chip source and no mult sources, that 1 chip source should be ace of spades.
-            Assert.NotEmpty(contributions.ChipSources);
-            Assert.Single(contributions.ChipSources);
-            Assert.Empty(contributions.MultSources);
-            Assert.Equal(Rank.ACE, contributions.ChipSources[0].Rank);
-            Assert.Equal(Suit.SPADES, contributions.ChipSources[0].Suit);
+        [Theory]
+        [InlineData("9C,9D,2S,3H,4C", PlayedHandType.PAIR, Rank.NINE, Suit.CLUBS, 2, 18, 56)]
+        [InlineData("9C,9D,2S,2H,4C", PlayedHandType.TWOPAIR, Rank.NINE, Suit.CLUBS, 4, 22, 84)]
+        [InlineData("JC,JD,JS,3H,4C", PlayedHandType.THREEOFAKIND, Rank.JACK, Suit.CLUBS, 3, 30, 180)]
+        [InlineData("AC,5D,2S,3H,4C", PlayedHandType.STRAIGHT, Rank.ACE, Suit.CLUBS, 5, 25, 220)]//Ace-low straight
+        [InlineData("AC,1D,JS,QH,KC", PlayedHandType.STRAIGHT, Rank.ACE, Suit.CLUBS, 5, 51, 324)]//Ace-high straight
+        [InlineData("9H,9H,2H,3H,4H", PlayedHandType.FLUSH, Rank.NINE, Suit.HEARTS, 5, 27, 248)]
+        [InlineData("9H,9S,2D,2C,2H", PlayedHandType.FULLHOUSE, Rank.NINE, Suit.HEARTS, 5, 24, 256)]
+        [InlineData("1H,1C,1S,1D,4H", PlayedHandType.FOUROFAKIND, Rank.TEN, Suit.HEARTS, 4, 40, 700)]
+        [InlineData("8H,9H,7H,6H,5H", PlayedHandType.STRAIGHTFLUSH, Rank.EIGHT, Suit.HEARTS, 5, 35, 1080)]
+        [InlineData("AH,AH,AH,AH,AS", PlayedHandType.FIVEOFAKIND, Rank.ACE, Suit.HEARTS, 5, 55, 2100)]
+        [InlineData("8H,8H,7H,7H,7H", PlayedHandType.FLUSHHOUSE, Rank.EIGHT, Suit.HEARTS, 5, 37, 2478)]
+        [InlineData("AS,AS,AS,AS,AS", PlayedHandType.FLUSHFIVE, Rank.ACE, Suit.SPADES, 5, 55, 3440)]
+        public void ScorePlayedHand_GivenHandAndOutcome_SuccesfullyCalculates(string handToBuild, PlayedHandType playedHandType, Rank firstChipSourceRank, Suit firstChipSourceSuit, int numChipContributors, int chipsFromEmits, int totalChipsAtEnd)
+        {
+            ResetToFirstBlindPlayRound();
 
-            //Should be one played hand, a high card ace.
-            Assert.Single(contributions.PlayedHandTypes);
-            Assert.Equal(PlayedHandType.HIGHCARD, contributions.PlayedHandTypes[0]);
+            var selected = BuildKnownHand(handToBuild);
+
+            var contributions = CaptureScoringContributions();
+            Globals.PlayCurrentlySelectedHand();
+
+            TestWithExpectations(contributions, playedHandType, firstChipSourceRank, firstChipSourceSuit, numChipContributors, chipsFromEmits, totalChipsAtEnd);
+        }
+
+        [Theory]
+        [InlineData(11, 16, 1, 0, 0d, Edition.BASE, Enhancement.NONE, Seal.NONE)]
+        [InlineData(41, 46, 2, 0, 0d, Edition.BASE, Enhancement.BONUSCHIPS, Seal.NONE)]
+        [InlineData(61, 66, 2, 0, 0d, Edition.FOIL, Enhancement.NONE, Seal.NONE)]
+        [InlineData(11, 80, 1, 1, 4d, Edition.BASE, Enhancement.MULT, Seal.NONE)]
+        [InlineData(11, 176, 1, 1, 10d, Edition.HOLOGRAPHIC, Enhancement.NONE, Seal.NONE)]
+        [InlineData(11, 240, 1, 2, 14d, Edition.HOLOGRAPHIC, Enhancement.MULT, Seal.NONE)]
+        [InlineData(22, 783, 2, 4, 28d, Edition.HOLOGRAPHIC, Enhancement.MULT, Seal.RED)]
+        [InlineData(22, 27, 2, 0, 0d, Edition.BASE, Enhancement.NONE, Seal.RED)]
+        [InlineData(82, 87, 4, 0, 0d, Edition.BASE, Enhancement.BONUSCHIPS, Seal.RED)]
+        [InlineData(82, 1827, 4, 2,20d, Edition.HOLOGRAPHIC, Enhancement.BONUSCHIPS, Seal.RED)]
+        [InlineData(61, 1386, 2, 1, 20d, Edition.FOIL, Enhancement.LUCKY, Seal.NONE)]
+        public void ScorePlayedHand_HighCardWithEditionEnhancementAndSeal_SuccessfullyCalculates(int chipContributions, int totalChipsAtEnd, int numChipContributors = 1, int numMultContributors = 0, double multAmountContribution = 0d, Edition edition = Edition.BASE, Enhancement enhancement = Enhancement.NONE, Seal seal = Seal.NONE)
+        {
+            ResetToFirstBlindPlayRound();
+
+            var selected = BuildKnownHand("AS,2D,3C,4H,6S");
+            selected[0].Edition = edition;
+            selected[0].Enhancement = enhancement;
+            selected[0].Seal = seal;
+
+            if(enhancement == Enhancement.LUCKY)
+                RigNextRoll();
+            
+            var contributions = CaptureScoringContributions();
+            Globals.PlayCurrentlySelectedHand();
+
+            TestWithExpectations(contributions, PlayedHandType.HIGHCARD, Rank.ACE, Suit.SPADES, numChipContributors, chipContributions, totalChipsAtEnd, numMultContributors: numMultContributors, multFromEmits: multAmountContribution);
+
         }
 
         [Fact]
@@ -56,34 +98,32 @@ namespace ConsoleBalatro.Tests
             Assert.Equal(4, Globals.CurHandsRemaining);//Base hands per round is 4
         }
 
-        [Theory]
-        [InlineData("9C,9D,2S,3H,4C", PlayedHandType.PAIR, Rank.NINE, Suit.CLUBS, 2, 18, 56)]
-        [InlineData("9C,9D,2S,2H,4C", PlayedHandType.TWOPAIR, Rank.NINE, Suit.CLUBS, 4, 22, 84)]
-        [InlineData("JC,JD,JS,3H,4C", PlayedHandType.THREEOFAKIND, Rank.JACK, Suit.CLUBS, 3, 30, 180)]
-        [InlineData("AC,5D,2S,3H,4C", PlayedHandType.STRAIGHT, Rank.ACE, Suit.CLUBS, 5, 25, 220)]
-        [InlineData("9H,9H,2H,3H,4H", PlayedHandType.FLUSH, Rank.NINE, Suit.HEARTS, 5, 27, 248)]
-        [InlineData("9H,9S,2D,2C,2H", PlayedHandType.FULLHOUSE, Rank.NINE, Suit.HEARTS, 5, 24, 256)]
-        [InlineData("1H,1C,1S,1D,4H", PlayedHandType.FOUROFAKIND, Rank.TEN, Suit.HEARTS, 4, 40, 700)]
-        [InlineData("8H,9H,7H,6H,5H", PlayedHandType.STRAIGHTFLUSH, Rank.EIGHT, Suit.HEARTS, 5, 35, 1080)]
-        [InlineData("AH,AH,AH,AH,AS", PlayedHandType.FIVEOFAKIND, Rank.ACE, Suit.HEARTS, 5, 55, 2100)]
-        [InlineData("8H,8H,7H,7H,7H", PlayedHandType.FLUSHHOUSE, Rank.EIGHT, Suit.HEARTS, 5, 37, 2478)]
-        [InlineData("AS,AS,AS,AS,AS", PlayedHandType.FLUSHFIVE, Rank.ACE, Suit.SPADES, 5, 55, 3440)]
-        public void ScorePlayedHand_GivenHandAndOutcome_SuccesfullyCalculates(string handToBuild, PlayedHandType playedHandType, Rank firstChipSourceRank, Suit firstChipSourceSuit, int numChipContributors, int chipsFromEmits, int totalChipsAtEnd)
+        [Fact]
+        public void ScorePlayedHand_NotPlayRound_FailsGracefully()
         {
-            ResetToFirstBlindPlayRound();
+            ResetToBlindSelection();
 
-            var selected = BuildKnownHand(handToBuild);
+            var expectedBefore = Globals.TotalCurrentChips;
 
-            var contributions = CaptureScoringContributions();
             Globals.PlayCurrentlySelectedHand();
 
+            Assert.Equal(expectedBefore, Globals.TotalCurrentChips);
+            Assert.Empty(ZoneManager.CurrentlyBeingPlayedZone.Cards);
+            Assert.Empty(ZoneManager.HiddenPlayZone.Cards);
+            Assert.Equal(GameState.BlindsMenu, Globals.CurrentGameState);
+        }
+
+        #region Helpers
+
+        private static void TestWithExpectations(ContributionCapture contributions, PlayedHandType playedHandType, Rank firstChipSourceRank, Suit firstChipSourceSuit, int numChipContributors, int chipsFromEmits, int totalChipsAtEnd, int numMultContributors = 0, double multFromEmits = 0d)
+        {
             //So remember, base hand score doesn't emit anything. Only cards calced do.
             Assert.Equal(chipsFromEmits, contributions.ChipsFromEmits);
-            Assert.Equal(0d, contributions.MultAfterEmits);//No mult gained from anywhere
+            Assert.Equal(multFromEmits, contributions.MultAfterEmits);//No mult gained from anywhere
             Assert.Equal(totalChipsAtEnd, contributions.FinalTotalGain);
 
             Assert.NotEmpty(contributions.ChipSources);
-            Assert.Empty(contributions.MultSources);
+            Assert.Equal(numMultContributors, contributions.MultSources.Count);
             Assert.Equal(numChipContributors, contributions.ChipSources.Count);
             Assert.Equal(firstChipSourceRank, contributions.ChipSources[0].Rank);
             Assert.Equal(firstChipSourceSuit, contributions.ChipSources[0].Suit);
@@ -92,7 +132,22 @@ namespace ConsoleBalatro.Tests
             Assert.Equal(playedHandType, contributions.PlayedHandTypes[0]);
         }
 
-        #region Helpers
+        private static void RigNextRoll()
+        {
+            var listener = new EngineEventListener()
+            {
+                MyContextType = EventContextType.RandomRollHappening,
+            };
+            listener.MyAction = args =>
+            {
+                if (args is EngineRandomRollArgs rollArgs && rollArgs.OverrideResult == null)
+                {
+                    rollArgs.OverrideResult = true;
+                    listener.RemoveAfterTriggering = true;
+                }
+            };
+            EngineEventHandler.StartListening(listener);
+        }
 
         private static List<Card> BuildKnownHand(string handDef)
         {

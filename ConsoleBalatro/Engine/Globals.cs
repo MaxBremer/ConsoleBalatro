@@ -142,11 +142,6 @@ namespace ConsoleBalatro.Engine
             RerollButtonCard = new();
         }
 
-        public static void ScorePlayedHand()
-        {
-            PlayCurrentlySelectedHand();
-        }
-
         public static void PlayCurrentlySelectedHand()
         {
             if(CurrentGameState != GameState.PlayRound || CurNumCardsSelected == 0)

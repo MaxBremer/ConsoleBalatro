@@ -22,7 +22,7 @@ public class ScoringFlowTests
         var selected = BuildKnownHand("AS,2D,3C,4H,6S");
 
         var contributions = CaptureScoringContributions();
-        Globals.ScorePlayedHand();
+        Globals.PlayCurrentlySelectedHand();
 
         Assert.Equal(21, contributions.ChipsFromEmits);
         Assert.Equal(1d, contributions.MultAfterEmits);
@@ -43,7 +43,7 @@ public class ScoringFlowTests
         ZoneManager.JokerZone.AddCards(joker);
 
         var contributions = CaptureScoringContributions();
-        Globals.ScorePlayedHand();
+        Globals.PlayCurrentlySelectedHand();
 
         Assert.Equal(53, contributions.ChipsFromEmits);
         Assert.Equal(5d, contributions.MultAfterEmits);
@@ -61,7 +61,7 @@ public class ScoringFlowTests
         selected[0].Debuffed = true;
 
         var contributions = CaptureScoringContributions();
-        Globals.ScorePlayedHand();
+        Globals.PlayCurrentlySelectedHand();
 
         Assert.Equal(10, contributions.ChipsFromEmits); // 2+3+4+1
         Assert.DoesNotContain(selected[0], contributions.ChipSources);
@@ -73,7 +73,7 @@ public class ScoringFlowTests
     {
         var expectedBefore = Globals.TotalCurrentChips;
 
-        Globals.ScorePlayedHand();
+        Globals.PlayCurrentlySelectedHand();
 
         Assert.Equal(expectedBefore, Globals.TotalCurrentChips);
         Assert.Empty(ZoneManager.CurrentlyBeingPlayedZone.Cards);
@@ -163,14 +163,15 @@ public class ScoringFlowTests
 
     private static void SetupControlledGameState()
     {
-        Globals.InitializeMain();
+        ZoneManager.HandZone = ZoneManager.MakeHand(8);
+        ZoneManager.CurrentlyBeingPlayedZone = ZoneManager.MakeZone("CurrentlyBeingPlayed");
+        ZoneManager.HiddenPlayZone = ZoneManager.MakeZone("Played");
+        ZoneManager.DiscardZone = ZoneManager.MakeZone("Discard");
+        ZoneManager.JokerZone = ZoneManager.MakeJokerZone();
+        ZoneManager.ActiveVoucherZone = ZoneManager.MakeZone("ActiveVoucher");
 
-        ZoneManager.HandZone.Cards.Clear();
-        ZoneManager.CurrentlyBeingPlayedZone.Cards.Clear();
-        ZoneManager.HiddenPlayZone.Cards.Clear();
-        ZoneManager.DiscardZone.Cards.Clear();
-        ZoneManager.JokerZone.Cards.Clear();
-        ZoneManager.ActiveVoucherZone.Cards.Clear();
+        ScoreHandler.InitializeHandStatTracker();
+        GlobalEventListeners.SetupGlobalListeners();
 
         Globals.PushGameState(new GameStateObj { GameState = GameState.PlayRound });
         Globals.CurHandsRemaining = 2;

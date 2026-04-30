@@ -119,6 +119,8 @@ namespace ConsoleBalatro.Engine
             bool hasFullHouse = false;
 
             var rankGroups = GroupByRank(cards);
+            if(rankGroups.ContainsKey(Rank.NONE))
+                rankGroups.Remove(Rank.NONE);
             var rankGroupLens = rankGroups.Select(x => (x.Key, x.Value.Count)).ToList();
             var rankGroupMax = rankGroupLens.Select(x => x.Count).Max();
             var suitGroups = GroupBySuit(cards);

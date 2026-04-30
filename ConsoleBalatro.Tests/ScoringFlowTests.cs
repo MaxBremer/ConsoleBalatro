@@ -53,18 +53,21 @@ namespace ConsoleBalatro.Tests
         }
 
         [Theory]
-        [InlineData(11, 16, 1, 0, 0d, Edition.BASE, Enhancement.NONE, Seal.NONE)]
-        [InlineData(41, 46, 2, 0, 0d, Edition.BASE, Enhancement.BONUSCHIPS, Seal.NONE)]
-        [InlineData(61, 66, 2, 0, 0d, Edition.FOIL, Enhancement.NONE, Seal.NONE)]
-        [InlineData(11, 80, 1, 1, 4d, Edition.BASE, Enhancement.MULT, Seal.NONE)]
-        [InlineData(11, 176, 1, 1, 10d, Edition.HOLOGRAPHIC, Enhancement.NONE, Seal.NONE)]
-        [InlineData(11, 240, 1, 2, 14d, Edition.HOLOGRAPHIC, Enhancement.MULT, Seal.NONE)]
+        [InlineData(11, 16)]
+        [InlineData(41, 46, 2, 0, 0d, Edition.BASE, Enhancement.BONUSCHIPS)]
+        [InlineData(61, 66, 2, 0, 0d, Edition.FOIL)]
+        [InlineData(11, 80, 1, 1, 4d, Edition.BASE, Enhancement.MULT)]
+        [InlineData(11, 176, 1, 1, 10d, Edition.HOLOGRAPHIC)]
+        [InlineData(11, 240, 1, 2, 14d, Edition.HOLOGRAPHIC, Enhancement.MULT)]
         [InlineData(22, 783, 2, 4, 28d, Edition.HOLOGRAPHIC, Enhancement.MULT, Seal.RED)]
         [InlineData(22, 27, 2, 0, 0d, Edition.BASE, Enhancement.NONE, Seal.RED)]
         [InlineData(82, 87, 4, 0, 0d, Edition.BASE, Enhancement.BONUSCHIPS, Seal.RED)]
         [InlineData(82, 1827, 4, 2,20d, Edition.HOLOGRAPHIC, Enhancement.BONUSCHIPS, Seal.RED)]
-        [InlineData(61, 1386, 2, 1, 20d, Edition.FOIL, Enhancement.LUCKY, Seal.NONE)]
-        public void ScorePlayedHand_HighCardWithEditionEnhancementAndSeal_SuccessfullyCalculates(int chipContributions, int totalChipsAtEnd, int numChipContributors = 1, int numMultContributors = 0, double multAmountContribution = 0d, Edition edition = Edition.BASE, Enhancement enhancement = Enhancement.NONE, Seal seal = Seal.NONE)
+        [InlineData(61, 1386, 2, 1, 20d, Edition.FOIL, Enhancement.LUCKY)]
+        [InlineData(11, 24, 1, 0, 0d, Edition.POLYCHROME, Enhancement.NONE, Seal.NONE, 1, 1.5d)]
+        [InlineData(11, 120, 1, 1, 4d, Edition.POLYCHROME, Enhancement.MULT, Seal.NONE, 1, 1.5d)]
+        [InlineData(22, 465, 2, 2, 8d, Edition.POLYCHROME, Enhancement.MULT, Seal.RED, 2, 2.25d)]//TODO: Rounds down, but result is +.75. Should round up?
+        public void ScorePlayedHand_HighCardWithEditionEnhancementAndSeal_SuccessfullyCalculates(int chipContributions, int totalChipsAtEnd, int numChipContributors = 1, int numMultContributors = 0, double multAmountContribution = 0d, Edition edition = Edition.BASE, Enhancement enhancement = Enhancement.NONE, Seal seal = Seal.NONE, int numMultMultContributors = 0, double multMultContributed = 1d)
         {
             ResetToFirstBlindPlayRound();
 
@@ -79,8 +82,46 @@ namespace ConsoleBalatro.Tests
             var contributions = CaptureScoringContributions();
             Globals.PlayCurrentlySelectedHand();
 
-            TestWithExpectations(contributions, PlayedHandType.HIGHCARD, Rank.ACE, Suit.SPADES, numChipContributors, chipContributions, totalChipsAtEnd, numMultContributors: numMultContributors, multFromEmits: multAmountContribution);
+            TestWithExpectations(contributions, PlayedHandType.HIGHCARD, Rank.ACE, Suit.SPADES, numChipContributors, chipContributions, totalChipsAtEnd, numMultContributors: numMultContributors, multFromEmits: multAmountContribution, numMultMultContributors: numMultMultContributors, multMultFromEmits: multMultContributed);
+        }
 
+        [Theory]
+        [InlineData(false)]
+        [InlineData(true)]
+        public void ScorePlayedHand_PairWithInHandModifiers_SuccessfullyCalculates(bool addRedSeal)
+        {
+            ResetToFirstBlindPlayRound();
+
+            var selected = BuildKnownHand("AS,AD,3C,4H,6S");
+
+            selected[2].SetEnhancementOfficial(Enhancement.STEEL);
+            if (addRedSeal)
+                selected[2].Seal = Seal.RED;
+            selected[2].isSelected = false;
+
+            var contributions = CaptureScoringContributions();
+            Globals.PlayCurrentlySelectedHand();
+
+            TestWithExpectations(contributions, PlayedHandType.PAIR, Rank.ACE, Suit.SPADES, 2, 22, addRedSeal ? 144 : 96, numMultMultContributors: addRedSeal ? 2 : 1, multMultFromEmits: addRedSeal ? 2.25d : 1.5d);
+        }
+
+        [Theory]
+        [InlineData(false)]
+        [InlineData(true)]
+        public void ScorePlayedHand_WithStoneCard_SuccessfullyCalculates(bool doSecondStone)
+        {
+            ResetToFirstBlindPlayRound();
+
+            var selected = BuildKnownHand("AS,AD,3C,4H,6S");
+
+            selected[2].SetEnhancementOfficial(Enhancement.STONE);
+            if (doSecondStone)
+                selected[3].SetEnhancementOfficial(Enhancement.STONE);
+
+            var contributions = CaptureScoringContributions();
+            Globals.PlayCurrentlySelectedHand();
+
+            TestWithExpectations(contributions, PlayedHandType.PAIR, Rank.ACE, Suit.SPADES, doSecondStone ? 4 : 3, doSecondStone ? 122 : 72, doSecondStone ? 264 : 164);
         }
 
         [Fact]
@@ -102,6 +143,7 @@ namespace ConsoleBalatro.Tests
         public void ScorePlayedHand_NotPlayRound_FailsGracefully()
         {
             ResetToBlindSelection();
+            var selected = BuildKnownHand("AS,2D,3C,4H,6S");//Played hand WOULD be high-card Ace.
 
             var expectedBefore = Globals.TotalCurrentChips;
 
@@ -115,16 +157,18 @@ namespace ConsoleBalatro.Tests
 
         #region Helpers
 
-        private static void TestWithExpectations(ContributionCapture contributions, PlayedHandType playedHandType, Rank firstChipSourceRank, Suit firstChipSourceSuit, int numChipContributors, int chipsFromEmits, int totalChipsAtEnd, int numMultContributors = 0, double multFromEmits = 0d)
+        private static void TestWithExpectations(ContributionCapture contributions, PlayedHandType playedHandType, Rank firstChipSourceRank, Suit firstChipSourceSuit, int numChipContributors, int chipsFromEmits, int totalChipsAtEnd, int numMultContributors = 0, double multFromEmits = 0d, int numMultMultContributors = 0, double multMultFromEmits = 1d)
         {
             //So remember, base hand score doesn't emit anything. Only cards calced do.
             Assert.Equal(chipsFromEmits, contributions.ChipsFromEmits);
-            Assert.Equal(multFromEmits, contributions.MultAfterEmits);//No mult gained from anywhere
+            Assert.Equal(multFromEmits, contributions.MultFromEmits);
+            Assert.Equal(multMultFromEmits, contributions.MultMultFromEmits);
             Assert.Equal(totalChipsAtEnd, contributions.FinalTotalGain);
 
             Assert.NotEmpty(contributions.ChipSources);
             Assert.Equal(numMultContributors, contributions.MultSources.Count);
             Assert.Equal(numChipContributors, contributions.ChipSources.Count);
+            Assert.Equal(numMultMultContributors, contributions.MultMultSources.Count);
             Assert.Equal(firstChipSourceRank, contributions.ChipSources[0].Rank);
             Assert.Equal(firstChipSourceSuit, contributions.ChipSources[0].Suit);
 
@@ -182,8 +226,14 @@ namespace ConsoleBalatro.Tests
 
                     if (gain.MultGainEmitted >= 0)
                     {
-                        capture.MultAfterEmits += gain.MultGainEmitted;
+                        capture.MultFromEmits += gain.MultGainEmitted;
                         capture.MultSources.Add(gain.SourceOfEmit);
+                    }
+
+                    if(gain.MultMultEmitted >= 0)
+                    {
+                        capture.MultMultFromEmits *= gain.MultMultEmitted;
+                        capture.MultMultSources.Add(gain.SourceOfEmit);
                     }
                 }
             });
@@ -216,10 +266,12 @@ namespace ConsoleBalatro.Tests
         private sealed class ContributionCapture
         {
             public int ChipsFromEmits { get; set; }
-            public double MultAfterEmits { get; set; }
+            public double MultFromEmits { get; set; }
+            public double MultMultFromEmits { get; set; } = 1d;
             public int FinalTotalGain { get; set; }
             public List<Card> ChipSources { get; } = new();
             public List<Card> MultSources { get; } = new();
+            public List<Card> MultMultSources { get; } = new();
 
             public List<PlayedHandType> PlayedHandTypes { get; set; } = new();
         }

@@ -53,3 +53,5 @@ CodeCoverage/
 TestResult.xml
 nunit-*.xml
 /.vs/
+/.github
+/.vs/ConsoleBalatro/v17/.futdcache.v2

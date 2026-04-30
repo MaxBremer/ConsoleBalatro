@@ -40,7 +40,7 @@ public class ScoringFlowTests
 
         var joker = new Card();
         JokerDb.MakeCardJoker(joker, "JIMBO"); // +4 mult once
-        ZoneManager.JokerZone.AddCards(joker);
+        ZoneManager.JokerZone.AddCard(joker);
 
         var contributions = CaptureScoringContributions();
         Globals.PlayCurrentlySelectedHand();

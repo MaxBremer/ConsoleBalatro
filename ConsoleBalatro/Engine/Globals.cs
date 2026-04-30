@@ -85,7 +85,7 @@ namespace ConsoleBalatro.Engine
         public static int VoucherMarketCount = 1;
 
         public static int MaxHandsPerRound = 4;
-        public static int MaxDiscardsPerRoudn = 3;
+        public static int MaxDiscardsPerRound = 3;
 
         public static int CurMaxInterest = 5;
 
@@ -140,6 +140,27 @@ namespace ConsoleBalatro.Engine
             PackActions.InitializePackData();
 
             RerollButtonCard = new();
+        }
+
+        public static void ResetGlobalValues()
+        {
+            TotalCurrentChips = 0;
+            Money = 0;
+            MinimumMoneyAllowed = 0;
+            BaseRerollCost = 5;
+            CurrentRerollCost = BaseRerollCost;
+
+            SelectionMax = 5;
+            BaseHandSize = 8;
+
+            MainMarketCount = 2;
+            PackMarketCount = 2;
+            VoucherMarketCount = 1;
+
+            MaxHandsPerRound = 4;
+            MaxDiscardsPerRound = 3;
+
+            CurMaxInterest = 5;
         }
 
         public static void PlayCurrentlySelectedHand()
@@ -407,7 +428,7 @@ namespace ConsoleBalatro.Engine
         public static void SetStartOfRoundStats()
         {
             CurHandsRemaining = MaxHandsPerRound;
-            CurDiscardsRemaining = MaxDiscardsPerRoudn;
+            CurDiscardsRemaining = MaxDiscardsPerRound;
         }
 
         public static GameStateObj PopCurrGameState()

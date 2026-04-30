@@ -51,6 +51,11 @@ namespace ConsoleBalatro.Engine.Market
 
         public static void InitializeMarketPools()
         {
+            foreach (var k in MarketPoolsToDrawFrom.Keys)
+            {
+                MarketPoolsToDrawFrom[k].ClearCards();
+            }
+            MarketPoolsToDrawFrom.Clear();
             foreach (BuyItemType buyItem in Enum.GetValues(typeof(BuyItemType)))
             {
                 //Done I think????

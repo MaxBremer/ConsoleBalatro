@@ -25,36 +25,53 @@ namespace ConsoleBalatro.Engine
 
         public static void InitializePackData()
         {
-            PackDataForOpenings = new();
-            PackDataForOpenings.Add(BuyItemType.PLAYING_CARD, new PackOpeningData()
+            PackDataForOpenings = new()
             {
-                RelevantBuyItemType = BuyItemType.PLAYING_CARD,
-                ZoneToDrawTo = ZoneManager.DeckZone,
-                DrawsToZone = true,
-            });
-            PackDataForOpenings.Add(BuyItemType.JOKER, new PackOpeningData()
-            {
-                RelevantBuyItemType = BuyItemType.JOKER,
-                ZoneToDrawTo = ZoneManager.JokerZone,
-                DrawsToZone = true,
-            });
-            PackDataForOpenings.Add(BuyItemType.PLANET_CARD, new PackOpeningData()
-            {
-                RelevantBuyItemType = BuyItemType.PLANET_CARD,
-                isImmediateActivation = true,
-            });
-            PackDataForOpenings.Add(BuyItemType.TAROT_CARD, new PackOpeningData()
-            {
-                RelevantBuyItemType = BuyItemType.TAROT_CARD,
-                isImmediateActivation = true,
-                drawHandOnOpen = true,
-            });
-            PackDataForOpenings.Add(BuyItemType.SPECTRAL_CARD, new PackOpeningData()
-            {
-                RelevantBuyItemType = BuyItemType.SPECTRAL_CARD,
-                isImmediateActivation = true,
-                drawHandOnOpen = true,
-            });
+                {
+                    BuyItemType.PLAYING_CARD,
+                    new PackOpeningData()
+                    {
+                        RelevantBuyItemType = BuyItemType.PLAYING_CARD,
+                        ZoneToDrawTo = ZoneManager.DeckZone,
+                        DrawsToZone = true,
+                    }
+                },
+                {
+                    BuyItemType.JOKER,
+                    new PackOpeningData()
+                    {
+                        RelevantBuyItemType = BuyItemType.JOKER,
+                        ZoneToDrawTo = ZoneManager.JokerZone,
+                        DrawsToZone = true,
+                    }
+                },
+                {
+                    BuyItemType.PLANET_CARD,
+                    new PackOpeningData()
+                    {
+                        RelevantBuyItemType = BuyItemType.PLANET_CARD,
+                        isImmediateActivation = true,
+                    }
+                },
+                {
+                    BuyItemType.TAROT_CARD,
+                    new PackOpeningData()
+                    {
+                        RelevantBuyItemType = BuyItemType.TAROT_CARD,
+                        isImmediateActivation = true,
+                        drawHandOnOpen = true,
+                    }
+                },
+                {
+                    BuyItemType.SPECTRAL_CARD,
+                    new PackOpeningData()
+                    {
+                        RelevantBuyItemType = BuyItemType.SPECTRAL_CARD,
+                        isImmediateActivation = true,
+                        drawHandOnOpen = true,
+                    }
+                }
+            };
         }
 
         public static void OpenPack(Card pack)

@@ -49,6 +49,8 @@ namespace ConsoleBalatro.Engine
 
         public static void InitializeHandStatTracker()
         {
+            CurrentHandStats.Clear();
+            HandLevels.Clear();
             foreach (var k in BaseHandScores.Keys)
             {
                 CurrentHandStats.Add(k, BaseHandScores[k]);

@@ -6,34 +6,8 @@ using Xunit;
 
 namespace ConsoleBalatro.Tests;
 
-public class FlowHandlerRoundStateTests
+public class FlowHandlerRoundStateTests : TestClassBase
 {
-    private static void ResetEngineForTest()
-    {
-        EngineEventHandler.GeneralListeners.Clear();
-        EngineEventHandler.SpecificListeners.Clear();
-        EngineEventHandler.ToBeAdded.Clear();
-        EngineEventHandler.ToBeRemoved.Clear();
-        EngineEventHandler.SavedEvents.Clear();
-        EngineEventHandler.CallDepth = 0;
-
-        Globals.ClearGameStateStack();
-        Globals.InitializeMain();
-        Globals.ClearGameStateStack();
-
-        FlowHandler.CurrentAnte = 0;
-        FlowHandler.CurrentSelectedBlind = BlindType.SMALL;
-        FlowHandler.CurrentTempChanges = null;
-        FlowHandler.CurrentBossBlind = BossBlindDb.BossBlindNames.First();
-
-        Globals.Money = 0;
-        Globals.CurMaxInterest = 5;
-        Globals.SetStartOfRoundStats();
-        Globals.RequiredChipsForCurrentBlind = -1;
-
-        ZoneManager.HiddenBlindAttributeZone.ClearCards(true);
-    }
-
     [Fact]
     public void MenuStart_ToBlindSelection_PushesBlindsMenuState()
     {
@@ -73,9 +47,9 @@ public class FlowHandlerRoundStateTests
 
         Assert.Equal(GameState.PlayRound, Globals.CurrentGameState);
         Assert.Equal(Globals.MaxHandsPerRound, Globals.CurHandsRemaining);
-        Assert.Equal(Globals.MaxDiscardsPerRoudn, Globals.CurDiscardsRemaining);
+        Assert.Equal(Globals.MaxDiscardsPerRound, Globals.CurDiscardsRemaining);
         Assert.Equal(FlowHandler.GetChipsForBlindType(BlindType.BIG), Globals.RequiredChipsForCurrentBlind);
-        Assert.Equal(0, ZoneManager.HiddenBlindAttributeZone.Cards.Count);
+        Assert.Empty(ZoneManager.HiddenBlindAttributeZone.Cards);
     }
 
     [Fact]
@@ -91,7 +65,7 @@ public class FlowHandlerRoundStateTests
 
         Assert.Equal(GameState.PostRoundRewardsMenu, Globals.CurrentGameState);
         Assert.Equal(BlindType.BIG, FlowHandler.CurrentSelectedBlind);
-        Assert.Equal(0, ZoneManager.HiddenBlindAttributeZone.Cards.Count);
+        Assert.Empty(ZoneManager.HiddenBlindAttributeZone.Cards);
         Assert.Contains(Globals.CurrentGameStateObj.PostRoundMoneySources, x => x.Item1 == "Blind" && x.Item2 == 3);
         Assert.Contains(Globals.CurrentGameStateObj.PostRoundMoneySources, x => x.Item1 == "Interest" && x.Item2 == 2);
         Assert.Contains(Globals.CurrentGameStateObj.PostRoundMoneySources, x => x.Item1 == "Hands Remaining" && x.Item2 == 2);

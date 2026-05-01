@@ -25,6 +25,7 @@ namespace ConsoleBalatro.Tests
             Globals.PlayCurrentlySelectedHand();
 
             TestWithExpectations(contributions, PlayedHandType.HIGHCARD, Rank.ACE, Suit.SPADES, 1, 11, 16);
+            Assert.Equal(5, ZoneManager.HiddenPlayZone.Cards.Count);//Cards should be moved to play zone.
         }
 
         [Theory]
@@ -57,6 +58,10 @@ namespace ConsoleBalatro.Tests
         [InlineData(41, 46, 2, 0, 0d, Edition.BASE, Enhancement.BONUSCHIPS)]
         [InlineData(61, 66, 2, 0, 0d, Edition.FOIL)]
         [InlineData(11, 80, 1, 1, 4d, Edition.BASE, Enhancement.MULT)]
+        [InlineData(11, 32, 1, 0, 0d, Edition.BASE, Enhancement.GLASS, Seal.NONE, 1, 2d)]
+        [InlineData(11, 48, 1, 0, 0d, Edition.POLYCHROME, Enhancement.GLASS, Seal.NONE, 2, 3d)]
+        [InlineData(22, 243, 2, 0, 0d, Edition.POLYCHROME, Enhancement.GLASS, Seal.RED, 4, 9d)]
+        [InlineData(22, 108, 2, 0, 0d, Edition.BASE, Enhancement.GLASS, Seal.RED, 2, 4d)]
         [InlineData(11, 176, 1, 1, 10d, Edition.HOLOGRAPHIC)]
         [InlineData(11, 240, 1, 2, 14d, Edition.HOLOGRAPHIC, Enhancement.MULT)]
         [InlineData(22, 783, 2, 4, 28d, Edition.HOLOGRAPHIC, Enhancement.MULT, Seal.RED)]
@@ -77,9 +82,11 @@ namespace ConsoleBalatro.Tests
             selected[0].Seal = seal;
 
             if(enhancement == Enhancement.LUCKY)
-                RigNextRoll();
-            
-            var contributions = CaptureScoringContributions();
+                RigNextRoll(true);
+            else if(enhancement == Enhancement.GLASS)
+                RigNextRoll(false);
+
+                var contributions = CaptureScoringContributions();
             Globals.PlayCurrentlySelectedHand();
 
             TestWithExpectations(contributions, PlayedHandType.HIGHCARD, Rank.ACE, Suit.SPADES, numChipContributors, chipContributions, totalChipsAtEnd, numMultContributors: numMultContributors, multFromEmits: multAmountContribution, numMultMultContributors: numMultMultContributors, multMultFromEmits: multMultContributed);
@@ -122,6 +129,18 @@ namespace ConsoleBalatro.Tests
             Globals.PlayCurrentlySelectedHand();
 
             TestWithExpectations(contributions, PlayedHandType.PAIR, Rank.ACE, Suit.SPADES, doSecondStone ? 4 : 3, doSecondStone ? 122 : 72, doSecondStone ? 264 : 164);
+        }
+
+        [Fact]
+        public void ScorePlayedHand_GlassCard_DestroysAfterScoring()
+        {
+            ResetToFirstBlindPlayRound();
+            var selected = BuildKnownHand("AS,2D,3C,4H,6S");
+            selected[0].SetEnhancementOfficial(Enhancement.GLASS);
+            RigNextRoll(true);
+            Globals.PlayCurrentlySelectedHand();
+            Assert.Empty(ZoneManager.CurrentlyBeingPlayedZone.Cards);
+            Assert.Equal(4, ZoneManager.HiddenPlayZone.Cards.Count);//cause glass card was destroyed.
         }
 
         [Fact]
@@ -176,7 +195,7 @@ namespace ConsoleBalatro.Tests
             Assert.Equal(playedHandType, contributions.PlayedHandTypes[0]);
         }
 
-        private static void RigNextRoll()
+        private static void RigNextRoll(bool desiredResult)
         {
             var listener = new EngineEventListener()
             {
@@ -186,7 +205,7 @@ namespace ConsoleBalatro.Tests
             {
                 if (args is EngineRandomRollArgs rollArgs && rollArgs.OverrideResult == null)
                 {
-                    rollArgs.OverrideResult = true;
+                    rollArgs.OverrideResult = desiredResult;
                     listener.RemoveAfterTriggering = true;
                 }
             };

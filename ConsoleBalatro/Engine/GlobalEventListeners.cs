@@ -66,8 +66,9 @@ namespace ConsoleBalatro.Engine
                 var c = triggerArgs.CardThatIsTriggering;
                 if(c.Enhancement == Enhancement.GLASS)
                 {
-                    //TODO: Chance of glass card dying after.
                     Globals.EmitMultMult(2, c);
+                    if (Globals.RollRandom(1, 4, c))
+                        ZoneManager.DestroyCard(c, c.MyZone);
                 }else if(c.Enhancement == Enhancement.MULT)
                 {
                     Globals.EmitMultAdd(4, c);

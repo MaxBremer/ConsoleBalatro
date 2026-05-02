@@ -15,29 +15,29 @@ namespace ConsoleBalatro.Engine.Cards.Jokers
 
         //Costs of jokers... should prob just include in the db.
         //Or maybe better to separate this stuff out, idk.
-        public static Dictionary<string, int> JokerCosts = new()
+        public static Dictionary<string, JokerTypeData> JokerMetadata = new()
         {
-            {"JIMBO", 2 },
-            {"GREEDY JOKER", 5 },
-            {"LSTY JOKER", 5 },
-            {"WRATHFUL JOKER", 5 },
-            {"GLUTTONOUS JOKER", 5 },
-            {"JOLLY JOKER", 3 },
-            {"ZANY JOKER", 4 },
-            {"MAD JOKER", 4 },
-            {"CRAZY JOKER", 4 },
-            {"DROLL JOKER", 4 },
-            {"SLY JOKER", 3 },
-            {"WILY JOKER", 4 },
-            {"CLEVER JOKER", 4 },
-            {"DEVIOUS JOKER", 4 },
-            {"CRAFTY JOKER", 4 },
-            {"HALF JOKER", 5 },
-            {"STENCIL JOKER", 8 },
-            {"FOUR FINGERS", 7 },
-            {"MIME", 5 },
-            {"CREDIT CARD", 1 },
-            {"GOLDEN JOKER", 5 },
+            {"JIMBO", new JokerTypeData { DBName = "JIMBO", Price = 2 } },
+            {"GREEDY JOKER", new JokerTypeData { DBName = "GREEDY JOKER", Price = 5 } },
+            {"LSTY JOKER", new JokerTypeData { DBName = "LSTY JOKER", Price = 5 } },
+            {"WRATHFUL JOKER", new JokerTypeData { DBName = "WRATHFUL JOKER", Price = 5 } },
+            {"GLUTTONOUS JOKER", new JokerTypeData { DBName = "GLUTTONOUS JOKER", Price = 5 } },
+            {"JOLLY JOKER", new JokerTypeData { DBName = "JOLLY JOKER", Price = 3 } },
+            {"ZANY JOKER", new JokerTypeData { DBName = "ZANY JOKER", Price = 4 } },
+            {"MAD JOKER", new JokerTypeData { DBName = "MAD JOKER", Price = 4 } },
+            {"CRAZY JOKER", new JokerTypeData { DBName = "CRAZY JOKER", Price = 4 } },
+            {"DROLL JOKER", new JokerTypeData { DBName = "DROLL JOKER", Price = 4 } },
+            {"SLY JOKER", new JokerTypeData { DBName = "SLY JOKER", Price = 3 } },
+            {"WILY JOKER", new JokerTypeData { DBName = "WILY JOKER", Price = 4 } },
+            {"CLEVER JOKER", new JokerTypeData { DBName = "CLEVER JOKER", Price = 4 } },
+            {"DEVIOUS JOKER", new JokerTypeData { DBName = "DEVIOUS JOKER", Price = 4 } },
+            {"CRAFTY JOKER", new JokerTypeData { DBName = "CRAFTY JOKER", Price = 4 } },
+            {"HALF JOKER", new JokerTypeData { DBName = "HALF JOKER", Price = 5 } },
+            {"STENCIL JOKER", new JokerTypeData { DBName = "STENCIL JOKER", Price = 8 } },
+            {"FOUR FINGERS", new JokerTypeData { DBName = "FOUR FINGERS", Price = 7 } },
+            {"MIME", new JokerTypeData { DBName = "MIME", Price = 5 } },
+            {"CREDIT CARD", new JokerTypeData { DBName = "CREDIT CARD", Price = 1 } },
+            {"GOLDEN JOKER", new JokerTypeData { DBName = "GOLDEN JOKER", Price = 5 } },
         };
 
         public static List<string> JokerDbNames => JokerData.Keys.ToList();
@@ -482,14 +482,23 @@ namespace ConsoleBalatro.Engine.Cards.Jokers
             } },
         };
 
+        public static string GetRandomJokerOfRarity(JokerRarity rarity)
+        {
+            var jokersOfRarity = JokerMetadata.Where(x => x.Value.Rarity == rarity).ToList();
+            if (!jokersOfRarity.Any())
+                return null;
+            var randomIndex = Random.Shared.Next(jokersOfRarity.Count);
+            return jokersOfRarity[randomIndex].Key;
+        }
+
         public static void MakeCardJoker(Card c, string JokerName)
         {
             var toSet = JokerData[JokerName](c);
             c.JokerData = toSet;
             c.JokerData.MyCard = c;
-            if (JokerCosts.ContainsKey(JokerName))
+            if (JokerMetadata.ContainsKey(JokerName))
             {
-                c.BaseCost = JokerCosts[JokerName];
+                c.BaseCost = JokerMetadata[JokerName].Price;
             }
         }
 

@@ -42,6 +42,15 @@ namespace ConsoleBalatro.Engine.Cards.Consumables
             {BuyItemType.SPECTRAL_CARD, "Spectral Cards to use immediately." },
         };
 
+        private static Dictionary<Seal, string> SealString = new()
+        {
+            { Seal.NONE, "No Seal" },
+            { Seal.RED, "Red Seal" },
+            { Seal.GOLD, "Gold Seal" },
+            { Seal.BLUE, "Blue Seal" },
+            { Seal.PURPLE, "Purple Seal" },
+        };
+
         public static Dictionary<PackType, PackData> PackBasicNums = new()
         {
             { PackType.NONE, new() { 
@@ -211,26 +220,13 @@ namespace ConsoleBalatro.Engine.Cards.Consumables
         public static List<string> SpectralNames => SpectralConsumablesDb.Keys.ToList();
         public static Dictionary<string, Func<Card, ConsumableCardDataBlock>> SpectralConsumablesDb = new()
         {
-            {"TALISMAN", c =>
-            {
-                var ret = new ConsumableCardDataBlock();
-                ret.ConsumableName = "Talisman";
-                ret.DBName = "TALISMAN";
-
-                ret.DataDict.Add("INTAMOUNT", new() {IntData = 1, MyDataType = JokerDataType.INT});
-                ret.DescriptionBuilder = _ => "Add a Gold Seal to " + ret.DataDict["INTAMOUNT"].IntData + " selected card(s) in hand.";
-
-                ret.IsActivatable = _ => EngineUtils.NumCardsSelectedInHand > 0 && EngineUtils.NumCardsSelectedInHand <= ret.DataDict["INTAMOUNT"].IntData;
-                ret.Use = _ =>
-                {
-                    foreach (var card in ZoneManager.CardsSelectedInHand)
-                    {
-                        card.Seal = Seal.GOLD;
-                    }
-                };
-
-                return ret;
-            } },
+            {"TALISMAN", c => BuildSealSpectral("Talisman", Seal.GOLD, c) },
+            {"DEJA VU", c => BuildSealSpectral("Deja Vu", Seal.RED, c) },
+            {"TRANCE", c => BuildSealSpectral("Trance", Seal.BLUE, c) },
+            {"MEDIUM", c => BuildSealSpectral("Medium", Seal.PURPLE, c) },
+            { "GRIM", c => BuildCardGenSpectral("Grim", "ACE", 2, c)},
+            { "FAMILIAR", c => BuildCardGenSpectral("Familiar", "FACE", 3, c)},
+            { "INCANTATION", c => BuildCardGenSpectral("Incantation", "NUMBERED", 4, c)},
             {"SIGIL", c =>
             {
                 var ret = new ConsumableCardDataBlock();
@@ -322,6 +318,132 @@ namespace ConsoleBalatro.Engine.Cards.Consumables
                     Globals.EmitMoneyGain(ret.DataDict["MONEYAMOUNT"].IntData, ret.MyCard);
                 };
 
+                return ret;
+            } },
+            {"AURA", c =>             {
+                var ret = new ConsumableCardDataBlock();
+                ret.ConsumableName = "Aura";
+                ret.DBName = "AURA";
+                ret.DataDict.Add("INTAMOUNT", new() {IntData = 1, MyDataType = JokerDataType.INT});
+                ret.DescriptionBuilder = _ => "Add FOIL, HOLOGRAPHIC, or POLYCHROME edition (chosen at random) to " + ret.DataDict["INTAMOUNT"].IntData + " selected card(s) in hand.";
+                ret.IsActivatable = _ => ZoneManager.CardsSelectedInHand.Count > 0 && ZoneManager.CardsSelectedInHand.Count <= ret.DataDict["INTAMOUNT"].IntData;
+                ret.Use = _ =>
+                {
+                    var opts = new List<Edition>() { Edition.FOIL, Edition.HOLOGRAPHIC, Edition.POLYCHROME };
+                    foreach (var card in ZoneManager.CardsSelectedInHand)
+                    {
+                        var chosenOpt = opts[Globals.ChooseRandomInclusive(0, opts.Count - 1)];
+                        card.SetEditionOfficial(chosenOpt);
+                    }
+                };
+                return ret;
+            } },
+
+            {"WRAITH", c =>
+            {
+                var ret = new ConsumableCardDataBlock();
+                ret.ConsumableName = "Wraith";
+                ret.DBName = "WRAITH";
+                ret.DescriptionBuilder = _ => "Generates a random Rare Joker (must have room), but sets money to 0.";
+                ret.IsActivatable = _ => ZoneManager.JokerZone.HasRoom;
+                ret.Use = _ =>
+                {
+                    var rareJoker = MarketOptionsManager.PullRandomJokerFromPool(JokerRarity.RARE, removeFromPool: true);
+                    if (rareJoker != null)
+                    {
+                        ZoneManager.JokerZone.AddCard(rareJoker);
+                    }
+                    Globals.EmitMoneyLoss(Globals.Money, c, false);
+                };
+                return ret;
+            } },
+            {"CRYPTID", c =>
+            {
+                var ret = new ConsumableCardDataBlock();
+                ret.ConsumableName = "Cryptid";
+                ret.DBName = "CRYPTID";
+                ret.DataDict.Add("INTAMOUNT", new() {IntData = 2, MyDataType = JokerDataType.INT});
+                ret.DescriptionBuilder = _ => "Creates " + ret.DataDict["INTAMOUNT"].IntData + " exact copies of a selected card in your hand.";
+                ret.IsActivatable = _ => EngineUtils.NumCardsSelectedInHand == 1;
+                ret.Use = _ =>
+                {
+                    var targetCard = ZoneManager.CardsSelectedInHand[0];
+                    for (int i = 0; i < ret.DataDict["INTAMOUNT"].IntData; i++)
+                    {
+                        var newCard = new Card();
+                        targetCard.TurnIntoCopyOfMe(newCard);
+                        ZoneManager.HandZone.AddCard(newCard, overrideSpace: true);
+                    }
+                };
+                return ret;
+            } },
+            {"ANKH", c =>
+            {
+                var ret = new ConsumableCardDataBlock();
+                ret.ConsumableName = "Ankh";
+                ret.DBName = "ANKH";
+                ret.DescriptionBuilder = _ => "Create a copy of one of your Jokers. Destroy the rest.";
+                ret.IsActivatable = _ => ZoneManager.JokerZone.Cards.Count > 0;
+                ret.Use = _ =>
+                {
+                    var targetCard = ZoneManager.JokerZone.Cards[Globals.ChooseRandomInclusive(0, ZoneManager.JokerZone.Cards.Count - 1)];
+                    foreach (var otherJoke in ZoneManager.JokerZone.Cards.Where(x => x != targetCard))
+                    {
+                        ZoneManager.DestroyCard(otherJoke, ZoneManager.JokerZone);
+                    }
+                    ZoneManager.JokerZone.AddCard(targetCard.MakeCopy(), overrideSpace: true);
+                };
+                return ret;
+            } },
+            {"HEX", c =>
+            {
+                var ret = new ConsumableCardDataBlock();
+                ret.ConsumableName = "Hex";
+                ret.DBName = "HEX";
+                ret.DescriptionBuilder = _ => "Make one of your Jokers POLYCHROME. Destroy the rest.";
+                ret.IsActivatable = _ => ZoneManager.JokerZone.Cards.Where(x => x.Edition == Edition.BASE).Any();
+                ret.Use = _ =>
+                {
+                    var targetCard = ZoneManager.JokerZone.Cards[Globals.ChooseRandomInclusive(0, ZoneManager.JokerZone.Cards.Count - 1)];
+                    foreach (var otherJoke in ZoneManager.JokerZone.Cards.Where(x => x != targetCard))
+                    {
+                        ZoneManager.DestroyCard(otherJoke, ZoneManager.JokerZone);
+                    }
+                    targetCard.SetEditionOfficial(Edition.POLYCHROME);
+                };
+                return ret;
+            } },
+            {"SOUL", c =>
+            {
+                var ret = new ConsumableCardDataBlock();
+                ret.ConsumableName = "The Soul";
+                ret.DBName = "SOUL";
+                ret.DescriptionBuilder = _ => "Generates a random Legendary Joker (Must have room).";
+                ret.IsActivatable = _ => ZoneManager.JokerZone.HasRoom;
+                ret.Use = _ =>
+                {
+                    var rareJoker = MarketOptionsManager.PullRandomJokerFromPool(JokerRarity.LEGENDARY, removeFromPool: true);//TODO: Legos not in pool?
+                    if (rareJoker != null)
+                    {
+                        ZoneManager.JokerZone.AddCard(rareJoker);
+                    }
+                };
+                return ret;
+            } },
+            {"BLACK HOLE", c =>
+            {
+                var ret = new ConsumableCardDataBlock();
+                ret.ConsumableName = "Black Hole";
+                ret.DBName = "BLACK HOLE";
+                ret.DescriptionBuilder = _ => "Level up ALL hands.";
+                ret.IsActivatable = _ => true;
+                ret.Use = _ =>
+                {
+                    foreach (var hand in Enum.GetValues(typeof(PlayedHandType)).Cast<PlayedHandType>())
+                    {
+                        ScoreHandler.LevelUpHand(hand);
+                    }
+                };
                 return ret;
             } },
         };
@@ -970,6 +1092,63 @@ namespace ConsoleBalatro.Engine.Cards.Consumables
             target.BaseCost = 3; //default planet card cost.
         }
 
+        #region Helpers
+
         private static bool EvaluateCardForFool(EngineEventArgs args) => args is EngineConsumableUseArgs conArgs && (conArgs.TypeUsed == ConsumableType.TAROT || conArgs.TypeUsed == ConsumableType.PLANET);
+
+        private static ConsumableCardDataBlock BuildSealSpectral(string conName, Seal sealType, Card c)
+        {
+            var ret = new ConsumableCardDataBlock();
+            ret.ConsumableName = conName;
+            ret.DBName = conName.ToUpper();
+
+            ret.DataDict.Add("INTAMOUNT", new() { IntData = 1, MyDataType = JokerDataType.INT });
+            ret.DescriptionBuilder = _ => "Add a " + SealString[sealType] + " to " + ret.DataDict["INTAMOUNT"].IntData + " selected card(s) in hand.";
+
+            ret.IsActivatable = _ => EngineUtils.NumCardsSelectedInHand > 0 && EngineUtils.NumCardsSelectedInHand <= ret.DataDict["INTAMOUNT"].IntData;
+            ret.Use = _ =>
+            {
+                foreach (var card in ZoneManager.CardsSelectedInHand)
+                {
+                    card.Seal = sealType;
+                }
+            };
+
+            return ret;
+        }
+
+        private static ConsumableCardDataBlock BuildCardGenSpectral(string conName, string rankGroupToPull, int numberToMake, Card c)
+        {
+            var ret = new ConsumableCardDataBlock();
+            ret.ConsumableName = conName;
+            ret.DBName = conName.ToUpper();
+            ret.DataDict.Add("INTAMOUNT", new() { MyDataType = JokerDataType.INT, IntData = numberToMake });
+            ret.DataDict.Add("DESTROYAMOUNT", new() { MyDataType = JokerDataType.INT, IntData = 1 });
+            ret.DescriptionBuilder = _ => "Destroy " + ret.DataDict["DESTROYAMOUNT"].IntData + " random card in your hand, but add " + ret.DataDict["INTAMOUNT"].IntData + " random " + rankGroupToPull + " instead.";
+            ret.IsActivatable = _ => ZoneManager.HandZone.Cards.Count > 0;
+            ret.Use = _ =>
+            {
+                for (int i = 0; i < ret.DataDict["DESTROYAMOUNT"].IntData; i++)
+                {
+                    var toRem = ZoneManager.HandZone.Cards[Random.Shared.Next(ZoneManager.HandZone.Cards.Count)];
+                    ZoneManager.DestroyCard(toRem, ZoneManager.HandZone);
+                }
+                var toAdd = new List<Card>();
+                var validRanks = EngineUtils.RankGroups[rankGroupToPull];
+                var validEnhancements = Enum.GetValues(typeof(Enhancement)).Cast<Enhancement>().Where(r => r != Enhancement.NONE).ToList();
+                for (int i = 0; i < ret.DataDict["INTAMOUNT"].IntData; i++)
+                {
+                    var newCard = new Card();
+                    EngineUtils.RandomizePlayingCard(newCard, validRanks: validRanks);
+                    newCard.Enhancement = validEnhancements[Random.Shared.Next(validEnhancements.Count)];
+                    toAdd.Add(newCard);
+                }
+                ZoneManager.HandZone.AddCards(toAdd, overrideSpace: true);
+            };
+
+            return ret;
+        }
+
+        #endregion
     }
 }

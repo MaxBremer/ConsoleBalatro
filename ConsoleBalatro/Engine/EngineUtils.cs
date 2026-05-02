@@ -105,6 +105,15 @@ namespace ConsoleBalatro.Engine
             PlayedHandType.FLUSHFIVE,
         };
 
+        public static Dictionary<string, List<Rank>> RankGroups = new Dictionary<string, List<Rank>>()
+        {
+            { "NUMBERED", new() { Rank.TWO, Rank.THREE, Rank.FOUR, Rank.FIVE, Rank.SIX, Rank.SEVEN, Rank.EIGHT, Rank.NINE, Rank.TEN } },
+            { "FACE", new() { Rank.JACK, Rank.QUEEN, Rank.KING } },
+            { "ACE", new() { Rank.ACE } },
+        };
+
+        public static bool isFace(Card c) => RankGroups["FACE"].Contains(c.Rank);
+
         public static (PlayedHandType, List<Card>) BestHandFromCards(List<Card> cards)
         {
             var ret = PlayedHandType.HIGHCARD;
@@ -341,6 +350,14 @@ namespace ConsoleBalatro.Engine
             }
 
             return (false, new List<Card>());
+        }
+
+        public static void RandomizePlayingCard(Card c, List<Rank> validRanks = null, List<Suit> validSuits = null)
+        {
+            var ranksToUse = validRanks ?? Enum.GetValues(typeof(Rank)).Cast<Rank>().Where(r => r != Rank.NONE).ToList();
+            var suitsToUse = validSuits ?? Enum.GetValues(typeof(Suit)).Cast<Suit>().Where(s => s != Suit.NONE).ToList();
+            c.Rank = ranksToUse[Random.Shared.Next(ranksToUse.Count)];
+            c.Suit = suitsToUse[Random.Shared.Next(suitsToUse.Count)];
         }
 
         private static Dictionary<Rank, List<Card>> GroupByRank(List<Card> cards)

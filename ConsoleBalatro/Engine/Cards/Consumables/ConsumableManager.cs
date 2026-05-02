@@ -815,6 +815,11 @@ namespace ConsoleBalatro.Engine.Cards.Consumables
             {PlayedHandType.FLUSHHOUSE, "Ceres" },
         };
 
+        public static void UseConsumable(Card c)
+        {
+            UseConsumable(c, c.MyZone);
+        }
+
         //Use a consumable card, given the card and the zone it's from.
         //TODO: shouldn't the cards MyZone field suffice?
         //I think it's cause I'm not consistently setting MyZone well. Def should fix that. TODO.

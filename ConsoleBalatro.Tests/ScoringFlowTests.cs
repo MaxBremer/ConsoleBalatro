@@ -195,37 +195,6 @@ namespace ConsoleBalatro.Tests
             Assert.Equal(playedHandType, contributions.PlayedHandTypes[0]);
         }
 
-        private static void RigNextRoll(bool desiredResult)
-        {
-            var listener = new EngineEventListener()
-            {
-                MyContextType = EventContextType.RandomRollHappening,
-            };
-            listener.MyAction = args =>
-            {
-                if (args is EngineRandomRollArgs rollArgs && rollArgs.OverrideResult == null)
-                {
-                    rollArgs.OverrideResult = desiredResult;
-                    listener.RemoveAfterTriggering = true;
-                }
-            };
-            EngineEventHandler.StartListening(listener);
-        }
-
-        private static List<Card> BuildKnownHand(string handDef)
-        {
-            ZoneManager.HandZone.Cards.Clear();
-            var cards = CardFactory.CardListFromDefString(handDef, ",");
-            ZoneManager.HandZone.AddCards(cards);
-
-            foreach (var c in cards)
-            {
-                c.isSelected = true;
-            }
-
-            return cards;
-        }
-
         private static ContributionCapture CaptureScoringContributions()
         {
             var capture = new ContributionCapture();

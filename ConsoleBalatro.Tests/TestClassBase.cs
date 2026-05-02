@@ -1,6 +1,9 @@
 ﻿using ConsoleBalatro.Engine;
+using ConsoleBalatro.Engine.Cards;
 using ConsoleBalatro.Engine.Cards.Blinds;
+using ConsoleBalatro.Engine.Cards.Jokers;
 using ConsoleBalatro.Engine.Events;
+using ConsoleBalatro.Engine.Events.Args;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -48,6 +51,44 @@ namespace ConsoleBalatro.Tests
         {
             ResetToBlindSelection();
             FlowHandler.StartSelectedBlind();
+        }
+
+        public List<Card> BuildKnownHand(string handDef, bool selectAll = true)
+        {
+            ZoneManager.HandZone.Cards.Clear();
+            var cards = CardFactory.CardListFromDefString(handDef, ",");
+            ZoneManager.HandZone.AddCards(cards);
+            if (selectAll)
+            {
+                foreach (var c in cards)
+                {
+                    c.isSelected = true;
+                }
+            }
+
+            return cards;
+        }
+
+        public void AddJoker(string jokerName)
+        {
+            ZoneManager.JokerZone.AddCard(JokerDb.GenerateJokerCard(jokerName));
+        }
+
+        public void RigNextRoll(bool desiredResult)
+        {
+            var listener = new EngineEventListener()
+            {
+                MyContextType = EventContextType.RandomRollHappening,
+            };
+            listener.MyAction = args =>
+            {
+                if (args is EngineRandomRollArgs rollArgs && rollArgs.OverrideResult == null)
+                {
+                    rollArgs.OverrideResult = desiredResult;
+                    listener.RemoveAfterTriggering = true;
+                }
+            };
+            EngineEventHandler.StartListening(listener);
         }
     }
 }

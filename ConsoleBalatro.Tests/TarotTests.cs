@@ -12,14 +12,14 @@ using Xunit;
 
 namespace ConsoleBalatro.Tests
 {
-    public class ConsumableTests : TestClassBase
+    public class TarotTests : TestClassBase
     {
         [Fact]
         public void ActivateConsumable_TheEmperor_ShouldPopulateConsumableZone()
         {
             ResetToBlindSelection();
 
-            ZoneManager.ConsumableZone.DrawTargetFrom(MarketOptionsManager.MarketPoolsToDrawFrom[BuyItemType.TAROT_CARD], MarketOptionsManager.MarketPoolsToDrawFrom[BuyItemType.TAROT_CARD].Cards.Where(x => x.ConsumableData.ConsumableName == "The Emperor").First());
+            AddTarot("The Emperor");
             var consumable = ZoneManager.ConsumableZone.Cards[0];
             ConsumableManager.UseConsumable(consumable);
             Assert.Equal(2, ZoneManager.ConsumableZone.Cards.Count);
@@ -32,7 +32,7 @@ namespace ConsoleBalatro.Tests
         {
             ResetToBlindSelection();
 
-            ZoneManager.ConsumableZone.DrawTargetFrom(MarketOptionsManager.MarketPoolsToDrawFrom[BuyItemType.TAROT_CARD], MarketOptionsManager.MarketPoolsToDrawFrom[BuyItemType.TAROT_CARD].Cards.Where(x => x.ConsumableData.ConsumableName == "High Priestess").First());
+            AddTarot("High Priestess");
             var consumable = ZoneManager.ConsumableZone.Cards[0];
             ConsumableManager.UseConsumable(consumable);
             Assert.Equal(2, ZoneManager.ConsumableZone.Cards.Count);
@@ -46,14 +46,14 @@ namespace ConsoleBalatro.Tests
         {
             ResetToBlindSelection();
             var prevPoolCount = MarketOptionsManager.MarketPoolsToDrawFrom[BuyItemType.TAROT_CARD].Cards.Count;
-            ZoneManager.ConsumableZone.DrawTargetFrom(MarketOptionsManager.MarketPoolsToDrawFrom[BuyItemType.TAROT_CARD], MarketOptionsManager.MarketPoolsToDrawFrom[BuyItemType.TAROT_CARD].Cards.Where(x => x.ConsumableData.ConsumableName == "The Emperor").First());
+            AddTarot("The Emperor");
             var consumable = ZoneManager.ConsumableZone.Cards[0];
             ConsumableManager.UseConsumable(consumable);
             Globals.PerformSell(ZoneManager.ConsumableZone.Cards[0], ZoneManager.ConsumableZone);
             Globals.PerformSell(ZoneManager.ConsumableZone.Cards[0], ZoneManager.ConsumableZone);
             //ALL TAROTS SHOULD BE RETURNED TO POOL
             Assert.Equal(prevPoolCount, MarketOptionsManager.MarketPoolsToDrawFrom[BuyItemType.TAROT_CARD].Cards.Count);
-            ZoneManager.ConsumableZone.DrawTargetFrom(MarketOptionsManager.MarketPoolsToDrawFrom[BuyItemType.TAROT_CARD], MarketOptionsManager.MarketPoolsToDrawFrom[BuyItemType.TAROT_CARD].Cards.Where(x => x.ConsumableData.ConsumableName == "The Fool").First());
+            AddTarot("The Fool");
             consumable = ZoneManager.ConsumableZone.Cards[0];
             ConsumableManager.UseConsumable(consumable);
 
@@ -66,7 +66,7 @@ namespace ConsoleBalatro.Tests
         {
             ResetToBlindSelection();
 
-            ZoneManager.ConsumableZone.DrawTargetFrom(MarketOptionsManager.MarketPoolsToDrawFrom[BuyItemType.TAROT_CARD], MarketOptionsManager.MarketPoolsToDrawFrom[BuyItemType.TAROT_CARD].Cards.Where(x => x.ConsumableData.ConsumableName == "The Hermit").First());
+            AddTarot("The Hermit");
 
             Globals.Money = 15;
             var consumable = ZoneManager.ConsumableZone.Cards[0];
@@ -79,7 +79,7 @@ namespace ConsoleBalatro.Tests
         {
             ResetToBlindSelection();
 
-            ZoneManager.ConsumableZone.DrawTargetFrom(MarketOptionsManager.MarketPoolsToDrawFrom[BuyItemType.TAROT_CARD], MarketOptionsManager.MarketPoolsToDrawFrom[BuyItemType.TAROT_CARD].Cards.Where(x => x.ConsumableData.ConsumableName == "The Hermit").First());
+            AddTarot("The Hermit");
 
             Globals.Money = 25;
             var consumable = ZoneManager.ConsumableZone.Cards[0];
@@ -99,7 +99,7 @@ namespace ConsoleBalatro.Tests
         public void ActivateConsumable_SingleTargetConsumables_ConvertsSuccessfully(string conName, Enhancement targetEnhance, bool twoTargets = false)
         {
             ResetToFirstBlindPlayRound();
-            ZoneManager.ConsumableZone.DrawTargetFrom(MarketOptionsManager.MarketPoolsToDrawFrom[BuyItemType.TAROT_CARD], MarketOptionsManager.MarketPoolsToDrawFrom[BuyItemType.TAROT_CARD].Cards.Where(x => x.ConsumableData.ConsumableName == conName).First());
+            AddTarot(conName);
             if (twoTargets)
                 BuildKnownHand("AS,2S");
             else
@@ -118,7 +118,7 @@ namespace ConsoleBalatro.Tests
         public void ActivateConsumable_TheHangedMan_ShouldDestroyCards()
         {
             ResetToFirstBlindPlayRound();
-            ZoneManager.ConsumableZone.DrawTargetFrom(MarketOptionsManager.MarketPoolsToDrawFrom[BuyItemType.TAROT_CARD], MarketOptionsManager.MarketPoolsToDrawFrom[BuyItemType.TAROT_CARD].Cards.Where(x => x.ConsumableData.ConsumableName == "The Hanged Man").First());
+            AddTarot("The Hanged Man");
             BuildKnownHand("AS,2S,3S");
             ZoneManager.HandZone.Cards[2].isSelected = false;
             var consumable = ZoneManager.ConsumableZone.Cards[0];
@@ -132,7 +132,7 @@ namespace ConsoleBalatro.Tests
         public void ActivateConsumable_Strength_ShouldIncreaseRank()
         {
             ResetToFirstBlindPlayRound();
-            ZoneManager.ConsumableZone.DrawTargetFrom(MarketOptionsManager.MarketPoolsToDrawFrom[BuyItemType.TAROT_CARD], MarketOptionsManager.MarketPoolsToDrawFrom[BuyItemType.TAROT_CARD].Cards.Where(x => x.ConsumableData.ConsumableName == "Strength").First());
+            AddTarot("Strength");
             BuildKnownHand("AS,2S");
             var consumable = ZoneManager.ConsumableZone.Cards[0];
             ConsumableManager.UseConsumable(consumable);
@@ -146,7 +146,7 @@ namespace ConsoleBalatro.Tests
         public void AcitvateConsumable_WheelOfFortune_ShouldGiveJokerEdition()
         {
             ResetToFirstBlindPlayRound();
-            ZoneManager.ConsumableZone.DrawTargetFrom(MarketOptionsManager.MarketPoolsToDrawFrom[BuyItemType.TAROT_CARD], MarketOptionsManager.MarketPoolsToDrawFrom[BuyItemType.TAROT_CARD].Cards.Where(x => x.ConsumableData.ConsumableName == "Wheel of Fortune").First());
+            AddTarot("Wheel of Fortune");
             AddJoker("JIMBO");
             var joker = ZoneManager.JokerZone.Cards[0];
             Assert.Equal(Edition.BASE, joker.Edition);
@@ -165,7 +165,7 @@ namespace ConsoleBalatro.Tests
         public void ActivateConsumable_SuitConsumables_ConvertSuitsCorrectly(string conName, Suit targetSuit)
         {
             ResetToFirstBlindPlayRound();
-            ZoneManager.ConsumableZone.DrawTargetFrom(MarketOptionsManager.MarketPoolsToDrawFrom[BuyItemType.TAROT_CARD], MarketOptionsManager.MarketPoolsToDrawFrom[BuyItemType.TAROT_CARD].Cards.Where(x => x.ConsumableData.ConsumableName == conName).First());
+            AddTarot(conName);
             BuildKnownHand("AS,2S,3S");
             var consumable = ZoneManager.ConsumableZone.Cards[0];
             ConsumableManager.UseConsumable(consumable);
@@ -179,7 +179,7 @@ namespace ConsoleBalatro.Tests
         public void ActivateConsumable_Death_ShouldConvertCard()
         {
             ResetToFirstBlindPlayRound();
-            ZoneManager.ConsumableZone.DrawTargetFrom(MarketOptionsManager.MarketPoolsToDrawFrom[BuyItemType.TAROT_CARD], MarketOptionsManager.MarketPoolsToDrawFrom[BuyItemType.TAROT_CARD].Cards.Where(x => x.ConsumableData.ConsumableName == "Death").First());
+            AddTarot("Death");
             BuildKnownHand("AS,2S");
             ZoneManager.HandZone.Cards[1].SetEditionOfficial(Edition.HOLOGRAPHIC);
             ZoneManager.HandZone.Cards[1].SetEnhancementOfficial(Enhancement.STEEL);
@@ -200,7 +200,7 @@ namespace ConsoleBalatro.Tests
         public void ActivateConsumable_Temperance_ShouldGenerateMoney()
         {
             ResetToFirstBlindPlayRound();
-            ZoneManager.ConsumableZone.DrawTargetFrom(MarketOptionsManager.MarketPoolsToDrawFrom[BuyItemType.TAROT_CARD], MarketOptionsManager.MarketPoolsToDrawFrom[BuyItemType.TAROT_CARD].Cards.Where(x => x.ConsumableData.ConsumableName == "Temperance").First());
+            AddTarot("Temperance");
             Globals.Money = 0;
             AddJoker("JIMBO");
             var sellVal = ZoneManager.JokerZone.Cards[0].SellCost;
@@ -215,7 +215,7 @@ namespace ConsoleBalatro.Tests
         public void ActivateConsumable_Judgement_ShouldGenerateRandomJoker()
         {
             ResetToFirstBlindPlayRound();
-            ZoneManager.ConsumableZone.DrawTargetFrom(MarketOptionsManager.MarketPoolsToDrawFrom[BuyItemType.TAROT_CARD], MarketOptionsManager.MarketPoolsToDrawFrom[BuyItemType.TAROT_CARD].Cards.Where(x => x.ConsumableData.ConsumableName == "Judgement").First());
+            AddTarot("Judgement");
             var consumable = ZoneManager.ConsumableZone.Cards[0];
             ConsumableManager.UseConsumable(consumable);
             Assert.Empty(ZoneManager.ConsumableZone.Cards);

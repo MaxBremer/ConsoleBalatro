@@ -4,6 +4,7 @@ using ConsoleBalatro.Engine.Cards.Blinds;
 using ConsoleBalatro.Engine.Cards.Jokers;
 using ConsoleBalatro.Engine.Events;
 using ConsoleBalatro.Engine.Events.Args;
+using ConsoleBalatro.Engine.Market;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -89,6 +90,11 @@ namespace ConsoleBalatro.Tests
                 }
             };
             EngineEventHandler.StartListening(listener);
+        }
+
+        public void AddTarot(string tarotName)
+        {
+            ZoneManager.ConsumableZone.DrawTargetFrom(MarketOptionsManager.MarketPoolsToDrawFrom[BuyItemType.TAROT_CARD], MarketOptionsManager.MarketPoolsToDrawFrom[BuyItemType.TAROT_CARD].Cards.Where(x => x.ConsumableData.ConsumableName == tarotName).First());
         }
     }
 }

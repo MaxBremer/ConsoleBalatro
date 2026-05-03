@@ -112,6 +112,14 @@ namespace ConsoleBalatro.Engine
             { "ACE", new() { Rank.ACE } },
         };
 
+        public static Dictionary<Edition, string> EditionDescriptors = new Dictionary<Edition, string>()
+        {
+            { Edition.NEGATIVE, "(+1 joker slot)" },
+            { Edition.FOIL, "(+50 Chips)" },
+            { Edition.HOLOGRAPHIC, "(+10 Mult)" },
+            { Edition.POLYCHROME, "(X1.5 Mult)" },
+        };
+
         public static bool isFace(Card c) => RankGroups["FACE"].Contains(c.Rank);
 
         public static (PlayedHandType, List<Card>) BestHandFromCards(List<Card> cards)

@@ -25,6 +25,8 @@ namespace ConsoleBalatro.Engine.Cards.Tags
             {TagType.INVESTMENT, c =>
             {
                 var jdb = PrepBlockForTag("Investment Tag", c);
+                jdb.DataDict.Add("INTAMOUNT", new JokerData() {MyDataType = JokerDataType.INT, IntData = 25});
+                jdb.DescriptionBuilder = _ => "Gain $" + jdb.DataDict["INTAMOUNT"].IntData + " after defeating the next Boss Blind.";
                 jdb.TagData.EventTypesTrigger.Add(EventContextType.GatherPostRoundMoney);
                 jdb.TagData.DoTrigger = (args, _) =>
                 {
@@ -33,18 +35,19 @@ namespace ConsoleBalatro.Engine.Cards.Tags
                 jdb.TagData.Activate = args =>
                 {
                     if(args is EngineGatherPostRoundMoneyArgs moneyArgs)
-                        moneyArgs.JokersContributed.Add((jdb, 25));//TODO: Data dict val???
+                        moneyArgs.JokersContributed.Add((jdb, jdb.DataDict["INTAMOUNT"].IntData));
                 };
 
                 return jdb;
             } },
             {TagType.DOUBLE_TAG, BuildDoubleTag },
             {TagType.DOUBLE_MONEY, c => {
-                var jdb = PrepBlockForTag("Double Money Tag", c);
+                var jdb = PrepBlockForTag("Economy Tag", c);
+                jdb.DescriptionBuilder = _ => "Doubles your money (max. $40).";
                 jdb.TagData.OnAddAction = _ =>
                 {
                     if(Globals.Money > 0)
-                        Globals.EmitMoneyGain(Math.Min(Globals.Money, 20), jdb.MyCard);
+                        Globals.EmitMoneyGain(Math.Min(Globals.Money, 40), jdb.MyCard);//TODO: Maximum is datadict val?
                 };
                 return jdb;
             } },
@@ -52,11 +55,11 @@ namespace ConsoleBalatro.Engine.Cards.Tags
             {TagType.HOLO, c => BuildEditionShopTag("Holo Tag", Edition.HOLOGRAPHIC, c) },
             {TagType.FOIL, c => BuildEditionShopTag("Foil Tag", Edition.FOIL, c) },
             {TagType.POLYCHROME, c => BuildEditionShopTag("Polychrome Tag", Edition.POLYCHROME, c) },
-            {TagType.MEGA_JOKER, c => BuildMegaPackTag("Mega Joker Tag", PackType.MEGA_JOKER, c) },
-            {TagType.MEGA_ARCANA, c => BuildMegaPackTag("Mega Arcana Tag", PackType.MEGA_TAROT, c) },
-            {TagType.MEGA_PLANET, c => BuildMegaPackTag("Mega Planet Tag", PackType.MEGA_PLANET, c) },
-            {TagType.MEGA_STANDARD, c => BuildMegaPackTag("Mega Standard Tag", PackType.MEGA_STANDARD, c) },
-            {TagType.SPECTRAL, c => BuildMegaPackTag("Spectral Tag", PackType.MEGA_SPECTRAL, c) },
+            {TagType.MEGA_JOKER, c => BuildMegaPackTag("Buffoon Tag", PackType.MEGA_JOKER, c) },
+            {TagType.MEGA_ARCANA, c => BuildMegaPackTag("Charm Tag", PackType.MEGA_TAROT, c) },
+            {TagType.MEGA_PLANET, c => BuildMegaPackTag("Meteor Tag", PackType.MEGA_PLANET, c) },
+            {TagType.MEGA_STANDARD, c => BuildMegaPackTag("Standard Tag", PackType.MEGA_STANDARD, c) },
+            {TagType.SPECTRAL, c => BuildMegaPackTag("Ethereal Tag", PackType.BASIC_SPECTRAL, c) },
             {TagType.TOP_UP, c => BuildImmediateTag("Top-Up Tag", c, _ =>
             {
                 for (int i = 0; i < 2 && ZoneManager.JokerZone.HasRoom; i++)
@@ -69,32 +72,38 @@ namespace ConsoleBalatro.Engine.Cards.Tags
             }) },
             {TagType.UNCOMMON, c => BuildRarityShopTag("Uncommon Tag", JokerRarity.UNCOMMON, c) },
             {TagType.RARE, c => BuildRarityShopTag("Rare Tag", JokerRarity.RARE, c) },
-            {TagType.HANDY, c => BuildImmediateTag("Handy Tag", c, _ => Globals.EmitMoneyGain(EngineEventHandler.CountOfSaved(EventContextType.HandPlayDone), c))},
-            {TagType.GARBAGE, c => BuildImmediateTag("Garbage Tag", c, _ => Globals.EmitMoneyGain(EngineEventHandler.CountOfSaved(EventContextType.HandPlayDone), c))},
-            {TagType.ORBITAL, c => BuildImmediateTag("Orbital Tag", c, _ =>
-            {
+            {TagType.HANDY, c => BuildImmediateTag("Handy Tag", c, _ => Globals.EmitMoneyGain(EngineEventHandler.CountOfSaved(EventContextType.HandPlayDone), c), hardDesc: "Gain $1 for each hand played this run.")},//TODO: Datadict val for amt per hand?
+            {TagType.GARBAGE, c => BuildImmediateTag("Garbage Tag", c, _ => Globals.EmitMoneyGain(EngineEventHandler.CountOfSaved(EventContextType.HandDiscardDone), c), hardDesc: "Gain $1 for each unused discard this run.")},//TODO: See above.
+            {TagType.ORBITAL, c => {
+                var ret = PrepBlockForTag("Orbital Tag", c);
                 var upgradable = Enum.GetValues(typeof(PlayedHandType)).Cast<PlayedHandType>().ToList();
-                if (upgradable.Count == 0)
-                    return;
-                var chosen = upgradable[Random.Shared.Next(upgradable.Count)];
-                for (int i = 0; i < 3; i++)
-                    ScoreHandler.LevelUpHand(chosen);
-            }) },
+                var targetUpgrade = upgradable[Random.Shared.Next(upgradable.Count)];
+                ret.DescriptionBuilder = _ => "Upgrades " + targetUpgrade.ToString() + " by three levels.";
+                ret.TagData.OnAddAction = _ =>
+                {
+                    for (int i = 0; i < 3; i++)
+                        ScoreHandler.LevelUpHand(targetUpgrade);
+                };
+
+                return ret;
+            } },
             {TagType.VOUCHER, c => 
             {
                 var jdb = PrepBlockForTag("Voucher Tag", c);
                 jdb.TagData.EventTypesTrigger.Add(EventContextType.MarketSetupDone);
+                jdb.DescriptionBuilder = _ => "Adds a Voucher to the next Shop";
                 jdb.TagData.Activate = _ =>
                 {
                     MarketOptionsManager.DrawMarketItem(BuyItemType.VOUCHER, ZoneManager.VoucherMarketZone, overrideSpaceLimits: true);
                 };
                 return jdb;
             } },
-            {TagType.BOSS_REROLL, c => BuildImmediateTag("Boss Reroll Tag", c, _ => FlowHandler.RerollBossBlind())},
+            {TagType.BOSS_REROLL, c => BuildImmediateTag("Boss Tag", c, _ => FlowHandler.RerollBossBlind(), hardDesc: "Re-rolls the next Boss Blind.")},
             {TagType.COUPON, c =>
             {
                 var jdb = PrepBlockForTag("Coupon Tag", c);
                 jdb.TagData.EventTypesTrigger.Add(EventContextType.MarketSetupDone);
+                jdb.DescriptionBuilder = _ => "In the next shop, initial Jokers, Consumables, Cards and Booster Packs are free ($0).";
                 jdb.TagData.DoTrigger = (_, _) =>
                 {
                     var allTargets = new List<Card>();
@@ -111,7 +120,8 @@ namespace ConsoleBalatro.Engine.Cards.Tags
             } },
             {TagType.REROLLS, c =>
             {
-                var jdb = PrepBlockForTag("Rerolls Tag", c);
+                var jdb = PrepBlockForTag("D6 Tag", c);
+                jdb.DescriptionBuilder = _ => "In the next Shop, Rerolls start at $0.";
                 jdb.TagData.EventTypesTrigger.Add(EventContextType.MarketSetupDone);
                 jdb.TagData.DoTrigger = (_, _) =>
                 {
@@ -127,16 +137,18 @@ namespace ConsoleBalatro.Engine.Cards.Tags
             {
                 var jdb = PrepBlockForTag("Juggle Tag", c);
                 jdb.TagData.EventTypesTrigger.Add(EventContextType.StartPlayRound);
+                jdb.DataDict.Add("INTAMOUNT", new JokerData() {MyDataType = JokerDataType.INT, IntData = 3 });
+                jdb.DescriptionBuilder = _ => "+" + jdb.DataDict["INTAMOUNT"].IntData + " Hand Size for the next round only.";
                 jdb.TagData.Activate = args =>
                 {
                     if(args is EnginePlayRoundSetupArgs playArgs)
                     {
-                        playArgs.TempHandSizeBonus += 3;
+                        playArgs.TempHandSizeBonus += jdb.DataDict["INTAMOUNT"].IntData;
                     }
                 };
                 return jdb;
             } },
-            {TagType.SPEED, c => BuildImmediateTag("Speed Tag", c, _ => Globals.EmitMoneyGain(EngineEventHandler.CountOfSaved(EventContextType.BlindSkip) * 5, c))},
+            {TagType.SPEED, c => BuildImmediateTag("Speed Tag", c, _ => Globals.EmitMoneyGain(EngineEventHandler.CountOfSaved(EventContextType.BlindSkip) * 5, c), hardDesc: "Gives $5 for each Blind you've skipped this run.")},//TODO: Datadict val?
         };
 
         public static JokerCardDataBlock PrepBlockForTag(string name, Card c)
@@ -155,6 +167,7 @@ namespace ConsoleBalatro.Engine.Cards.Tags
         {
             var jokerDataBlock = PrepBlockForTag("Double Tag", c);
             jokerDataBlock.DataDict.Add("ACTIVATED", new JokerData() { MyDataType = JokerDataType.BOOL, BoolData = false });
+            jokerDataBlock.DescriptionBuilder = _ => "Gives a copy of the next Tag selected (excluding Double Tags).";
             var tagDataBlock = new TagDataBlock();
             tagDataBlock.ImmuneToDouble = true;
             tagDataBlock.EventTypesTrigger.Add(EventContextType.TagAdded);
@@ -176,10 +189,14 @@ namespace ConsoleBalatro.Engine.Cards.Tags
             return jokerDataBlock;
         }
 
-        public static JokerCardDataBlock BuildImmediateTag(string name, Card c, Action<EngineEventArgs> OnAddAction)
+        public static JokerCardDataBlock BuildImmediateTag(string name, Card c, Action<EngineEventArgs> OnAddAction, string hardDesc = "")
         {
             var jokerDataBlock = PrepBlockForTag(name, c);
             jokerDataBlock.TagData.OnAddAction = OnAddAction;
+            if (!string.IsNullOrEmpty(hardDesc))
+            {
+                jokerDataBlock.DescriptionBuilder = _ => hardDesc;
+            }
             return jokerDataBlock;
         }
 
@@ -200,6 +217,7 @@ namespace ConsoleBalatro.Engine.Cards.Tags
                 toAdd.BuyCostOverride = 0;
                 MarketOptionsManager.DrawTargetMarketItem(BuyItemType.JOKER, ZoneManager.MainMarketZone, toAdd);
             };
+            jokerDataBlock.DescriptionBuilder = _ => "The next base edition Joker you find in a Shop becomes " + edition.ToString() + " " + EngineUtils.EditionDescriptors[edition] + " and free.";
             return jokerDataBlock;
         }
 
@@ -215,10 +233,15 @@ namespace ConsoleBalatro.Engine.Cards.Tags
                 toAdd.BuyCostOverride = 0;
                 MarketOptionsManager.DrawTargetMarketItem(BuyItemType.JOKER, ZoneManager.MainMarketZone, toAdd);
             };
+            jokerDataBlock.DescriptionBuilder = _ => "The next shop will have a free " + rarity.ToString() + " Joker.";
             return jokerDataBlock;
         }
 
-        private static JokerCardDataBlock BuildMegaPackTag(string name, PackType packType, Card c) => BuildImmediateTag(name, c, _ => EnqueuePackCard(packType));
+        private static JokerCardDataBlock BuildMegaPackTag(string name, PackType packType, Card c) { 
+            var ret = BuildImmediateTag(name, c, _ => EnqueuePackCard(packType));
+            ret.DescriptionBuilder = _ => "Immediately open a free " + ConsumableManager.PackBasicNums[packType].PackName + ".";
+            return ret;
+        }
         
 
         private static void EnqueuePackCard(PackType packType)

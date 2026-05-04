@@ -450,6 +450,7 @@ namespace ConsoleBalatro.Tests
             Assert.Equal(TagType.ORBITAL, record.TagsTriggeredInstantly[0].JokerData.TagData.MyType);
 
             Assert.False(AllHandsLevelOne());
+            Assert.Equal(4, ScoreHandler.HandLevels.First(x => x.Value != 1).Value);
         }
 
         #region Helpers

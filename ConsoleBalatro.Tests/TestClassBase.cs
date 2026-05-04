@@ -31,7 +31,7 @@ namespace ConsoleBalatro.Tests
             FlowHandler.CurrentAnte = 0;
             FlowHandler.CurrentSelectedBlind = BlindType.SMALL;
             FlowHandler.CurrentTempChanges = null;
-            FlowHandler.CurrentBossBlind = BossBlindDb.BossBlindNames.First();
+            FlowHandler.CurrentBossBlind = "";
 
             Globals.Money = 0;
             Globals.CurMaxInterest = 5;

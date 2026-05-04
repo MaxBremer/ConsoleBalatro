@@ -193,6 +193,63 @@ namespace ConsoleBalatro.Tests
             Assert.Equal(initialHandSize + 3, ZoneManager.HandZone.Cards.Count);
         }
 
+        [Fact]
+        public void SkipOneRound_TriggersBossRerollTag_CorrectlyRerollsBoss()
+        {
+            ResetToBlindSelection();
+            FlowHandler.CurSmallBlindTag = TagType.BOSS_REROLL;
+            var record = CaptureTagEvents();
+            var oldBoss = FlowHandler.CurrentBossBlind;
+            Assert.False(string.IsNullOrEmpty(oldBoss));
+            FlowHandler.DoSkip();
+            Assert.Equal(1, record.TagAddEventCount);
+            Assert.Equal(1, record.TriggerInstantCount);
+            Assert.Equal(0, record.TriggerListenerCount);
+            Assert.Equal(TagType.BOSS_REROLL, record.TagsAdded[0].JokerData.TagData.MyType);
+            Assert.NotEqual(oldBoss, FlowHandler.CurrentBossBlind);
+            Assert.False(string.IsNullOrEmpty(FlowHandler.CurrentBossBlind));
+        }
+
+        [Fact]
+        public void SkipBothRoundsPlayBoss_TriggersInvestmentTag_CorrectlyAddsPostRoundMoney()
+        {
+            ResetToBlindSelection();
+            FlowHandler.CurSmallBlindTag = TagType.INVESTMENT;
+            FlowHandler.CurBigBlindTag = TagType.COUPON;//Won't matter, we never go to market in this test, just need a known tag I can ignore.
+            var record = CaptureTagEvents();
+            FlowHandler.DoSkip();
+            Assert.Equal(1, record.TagAddEventCount);
+            Assert.Equal(0, record.TriggerInstantCount);
+            Assert.Equal(0, record.TriggerListenerCount);
+            Assert.Equal(TagType.INVESTMENT, record.TagsAdded[0].JokerData.TagData.MyType);
+            FlowHandler.DoSkip();
+            Assert.Equal(2, record.TagAddEventCount);
+            Assert.Equal(0, record.TriggerInstantCount);
+            Assert.Equal(0, record.TriggerListenerCount);
+            Assert.Equal(TagType.COUPON, record.TagsAdded[1].JokerData.TagData.MyType);
+
+            Globals.Money = 0;//Ensures that only blind, hands, and investment are money sources after this round.
+            FlowHandler.StartSelectedBlind();
+            PlayHand("AS,AS,AS,AS,AS");
+
+            Assert.Equal(GameState.PostRoundRewardsMenu, Globals.CurrentGameState);
+            Assert.NotEmpty(Globals.GameStateStack);
+            Assert.NotNull(Globals.CurrentGameStateObj);
+            var moneySources = Globals.CurrentGameStateObj.PostRoundMoneySources;
+            //5$ for blind, 3$ for remaining hand, 25$ for investment tag. 33 total.
+            Assert.Equal(33, Globals.CurrentGameStateObj.PostRoundMoneyToGive);
+            Assert.Equal(3, moneySources.Count);
+            Assert.StartsWith("Investment", moneySources[2].Item1);
+            Assert.Equal(25, moneySources[2].Item2);
+            Assert.Equal(2, record.TagAddEventCount);
+            Assert.Equal(0, record.TriggerInstantCount);
+            Assert.Equal(1, record.TriggerListenerCount);
+            Assert.Equal(TagType.INVESTMENT, record.TagsTriggeredViaListener[0].JokerData.TagData.MyType);
+
+            FlowHandler.ClosePostRound();
+            Assert.Equal(33, Globals.Money);
+        }
+
         #region Helpers
         private static TagEventCapture CaptureTagEvents()
         {

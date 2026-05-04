@@ -192,7 +192,7 @@ namespace ConsoleBalatro.Engine
 
         public static void InitializePostRound(List<(string, int)> postRoundMoney)
         {
-            EngineEventHandler.TriggerEvent(new EngineEventArgs() { MyContext = new() { Context = EventContextType.StartPlayRound } });
+            EngineEventHandler.TriggerEvent(new EngineEventArgs() { MyContext = new() { Context = EventContextType.StartPostRound } });
             var gsObj = new GameStateObj() { GameState = GameState.PostRoundRewardsMenu };
             gsObj.PostRoundMoneySources.AddRange(postRoundMoney);
             gsObj.PostRoundMoneyToGive = gsObj.PostRoundMoneySources.Select(x => x.Item2).Sum();

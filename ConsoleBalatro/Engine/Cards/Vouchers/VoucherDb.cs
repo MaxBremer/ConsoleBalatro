@@ -35,6 +35,28 @@ namespace ConsoleBalatro.Engine.Cards.Vouchers
                     return ret;
                 }
             },
+            {
+                "DISCARDSGAINONE",
+                c =>
+                {
+                    var ret = new JokerCardDataBlock();
+                    ret.JokerName = "Gain 1 discard";
+                    ret.Rarity = JokerRarity.UNCOMMON;
+                    ret.DBName = "DISCARDSGAINONE";
+                    ret.DescriptionBuilder = _ => "+ " + ret.DataDict["INTAMOUNT"].IntData + " discards.";
+                    ret.DataDict.Add("INTAMOUNT", new JokerData() {IntData = 1, MyDataType = JokerDataType.INT});
+                    ret.OnJokerGainEffs.Add(() =>
+                    {
+                        Globals.MaxDiscardsPerRound += ret.DataDict["INTAMOUNT"].IntData;
+                    });
+                    ret.OnJokerRemovalEffs.Add(() =>
+                    {
+                        Globals.MaxDiscardsPerRound -= ret.DataDict["INTAMOUNT"].IntData;
+                    });
+
+                    return ret;
+                }
+            },
         };
 
         public static List<string> VoucherDBNames => VoucherData.Keys.ToList();

@@ -17,6 +17,7 @@ namespace ConsoleBalatro.Engine.Events
         CardBuy,
         CardSelect,
         CardDiscarded,
+        CardDestroyed,
         Reroll,
         PackOpen,
         CardDrawnToZone,

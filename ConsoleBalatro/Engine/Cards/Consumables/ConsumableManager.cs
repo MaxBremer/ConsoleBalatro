@@ -1135,7 +1135,7 @@ namespace ConsoleBalatro.Engine.Cards.Consumables
                 }
                 var toAdd = new List<Card>();
                 var validRanks = EngineUtils.RankGroups[rankGroupToPull];
-                var validEnhancements = Enum.GetValues(typeof(Enhancement)).Cast<Enhancement>().Where(r => r != Enhancement.NONE).ToList();
+                var validEnhancements = Enum.GetValues(typeof(Enhancement)).Cast<Enhancement>().Where(r => r != Enhancement.NONE && r != Enhancement.STONE).ToList();
                 for (int i = 0; i < ret.DataDict["INTAMOUNT"].IntData; i++)
                 {
                     var newCard = new Card();

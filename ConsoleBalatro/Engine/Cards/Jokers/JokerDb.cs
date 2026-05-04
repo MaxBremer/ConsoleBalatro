@@ -38,6 +38,8 @@ namespace ConsoleBalatro.Engine.Cards.Jokers
             {"MIME", new JokerTypeData { DBName = "MIME", Price = 5 } },
             {"CREDIT CARD", new JokerTypeData { DBName = "CREDIT CARD", Price = 1 } },
             {"GOLDEN JOKER", new JokerTypeData { DBName = "GOLDEN JOKER", Price = 5 } },
+            {"TEMP UNCOMMON JOKER", new JokerTypeData { DBName = "TEMP UNCOMMON JOKER", Price = 5, Rarity = JokerRarity.UNCOMMON } },
+            {"TEMP RARE JOKER", new JokerTypeData { DBName = "TEMP RARE JOKER", Price = 5, Rarity = JokerRarity.RARE } },
         };
 
         public static List<string> JokerDbNames => JokerData.Keys.ToList();
@@ -479,6 +481,24 @@ namespace ConsoleBalatro.Engine.Cards.Jokers
                 });
 
                 return ret;
+            } },//TODO: REMOVE BELOW AFTER REAL UNCOMMON/RARE ADDED, THESE ONLY FOR UNIT TESTS.
+            { "TEMP UNCOMMON JOKER", c =>
+            {
+                var ret = new JokerCardDataBlock();
+                ret.JokerName = "TEMP UNCOMMON Joker";
+                ret.DBName = "TEMP UNCOMMON JOKER";
+                ret.DescriptionBuilder = _ => "Temporary Uncommon Joker TO BE REMOVED";
+
+                return ret;
+            } },
+            { "TEMP RARE JOKER", c =>
+            {
+                var ret = new JokerCardDataBlock();
+                ret.JokerName = "TEMP RARE Joker";
+                ret.DBName = "TEMP RARE JOKER";
+                ret.DescriptionBuilder = _ => "Temporary Rare Joker TO BE REMOVED";
+
+                return ret;
             } },
         };
 
@@ -499,6 +519,7 @@ namespace ConsoleBalatro.Engine.Cards.Jokers
             if (JokerMetadata.ContainsKey(JokerName))
             {
                 c.BaseCost = JokerMetadata[JokerName].Price;
+                c.JokerData.Rarity = JokerMetadata[JokerName].Rarity;
             }
         }
 

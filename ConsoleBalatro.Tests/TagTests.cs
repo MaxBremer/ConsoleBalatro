@@ -2,6 +2,7 @@
 using ConsoleBalatro.Engine.Cards;
 using ConsoleBalatro.Engine.Cards.Consumables;
 using ConsoleBalatro.Engine.Cards.Enums;
+using ConsoleBalatro.Engine.Cards.Jokers;
 using ConsoleBalatro.Engine.Cards.Tags;
 using ConsoleBalatro.Engine.Events;
 using ConsoleBalatro.Engine.Events.Args;
@@ -402,6 +403,34 @@ namespace ConsoleBalatro.Tests
 
             Assert.True(ZoneManager.MainMarketZone.Cards[0].isJoker);
             Assert.Equal(expectedEdition, ZoneManager.MainMarketZone.Cards[0].Edition);
+        }
+
+        [Theory]
+        [InlineData(TagType.RARE, JokerRarity.RARE)]
+        [InlineData(TagType.UNCOMMON, JokerRarity.UNCOMMON)]
+        public void SkipOneGoToMarket_RarityJokerTagTriggers_GeneratesCorrectRarityJoker(TagType tagType, JokerRarity expectedRarity)
+        {
+            ResetToBlindSelection();
+            FlowHandler.CurSmallBlindTag = tagType;
+            var record = CaptureTagEvents();
+            FlowHandler.DoSkip();
+
+            Assert.Equal(1, record.TagAddEventCount);
+            Assert.Equal(0, record.TriggerInstantCount);
+            Assert.Equal(0, record.TriggerListenerCount);
+            Assert.Equal(tagType, record.TagsAdded[0].JokerData.TagData.MyType);
+
+            FlowHandler.StartSelectedBlind();
+            PlayHand("AS,AS,AS,AS,AS");
+            FlowHandler.ClosePostRound();
+
+            Assert.Equal(1, record.TagAddEventCount);
+            Assert.Equal(0, record.TriggerInstantCount);
+            Assert.Equal(1, record.TriggerListenerCount);
+            Assert.Equal(tagType, record.TagsTriggeredViaListener[0].JokerData.TagData.MyType);
+
+            Assert.True(ZoneManager.MainMarketZone.Cards[0].isJoker);
+            Assert.Equal(expectedRarity, ZoneManager.MainMarketZone.Cards[0].JokerData.Rarity);
         }
 
         #region Helpers

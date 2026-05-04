@@ -204,6 +204,7 @@ namespace ConsoleBalatro.Engine.Cards.Tags
         {
             var jokerDataBlock = PrepBlockForTag(name, c);
             jokerDataBlock.TagData.EventTypesTrigger.Add(EventContextType.StartMarket);
+            jokerDataBlock.TagData.DoTrigger = (_, _) => ZoneManager.MainMarketZone.HasRoom;
 
             jokerDataBlock.TagData.Activate = _ =>
             {
@@ -225,6 +226,7 @@ namespace ConsoleBalatro.Engine.Cards.Tags
         {
             var jokerDataBlock = PrepBlockForTag(name, c);
             jokerDataBlock.TagData.EventTypesTrigger.Add(EventContextType.StartMarket);
+            jokerDataBlock.TagData.DoTrigger = (_, _) => ZoneManager.MainMarketZone.HasRoom;
             jokerDataBlock.TagData.Activate = _ =>
             {
                 var toAdd = MarketOptionsManager.PullRandomJokerFromPool(rarity);

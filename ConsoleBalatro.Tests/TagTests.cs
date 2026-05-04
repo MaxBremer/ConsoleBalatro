@@ -220,6 +220,7 @@ namespace ConsoleBalatro.Tests
             ResetToBlindSelection();
             FlowHandler.CurSmallBlindTag = TagType.INVESTMENT;
             FlowHandler.CurBigBlindTag = TagType.COUPON;//Won't matter, we never go to market in this test, just need a known tag I can ignore.
+            FlowHandler.CurrentBossBlind = "NODISCARD";
             var record = CaptureTagEvents();
             FlowHandler.DoSkip();
             Assert.Equal(1, record.TagAddEventCount);
@@ -433,7 +434,27 @@ namespace ConsoleBalatro.Tests
             Assert.Equal(expectedRarity, ZoneManager.MainMarketZone.Cards[0].JokerData.Rarity);
         }
 
+        [Fact]
+        public void SkipOne_OrbitalTagTriggers_OneHandLevelled()
+        {
+            ResetToBlindSelection();
+            FlowHandler.CurSmallBlindTag = TagType.ORBITAL;
+            var record = CaptureTagEvents();
+
+            Assert.True(AllHandsLevelOne());
+            FlowHandler.DoSkip();
+            Assert.Equal(1, record.TagAddEventCount);
+            Assert.Equal(1, record.TriggerInstantCount);
+            Assert.Equal(0, record.TriggerListenerCount);
+            Assert.Equal(TagType.ORBITAL, record.TagsAdded[0].JokerData.TagData.MyType);
+            Assert.Equal(TagType.ORBITAL, record.TagsTriggeredInstantly[0].JokerData.TagData.MyType);
+
+            Assert.False(AllHandsLevelOne());
+        }
+
         #region Helpers
+        private static bool AllHandsLevelOne() => !ScoreHandler.HandLevels.Any(x => x.Value != 1);
+        
         private static TagEventCapture CaptureTagEvents()
         {
             var capture = new TagEventCapture();

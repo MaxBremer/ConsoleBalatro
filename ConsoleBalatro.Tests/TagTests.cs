@@ -1,5 +1,7 @@
 ﻿using ConsoleBalatro.Engine;
 using ConsoleBalatro.Engine.Cards;
+using ConsoleBalatro.Engine.Cards.Consumables;
+using ConsoleBalatro.Engine.Cards.Enums;
 using ConsoleBalatro.Engine.Cards.Tags;
 using ConsoleBalatro.Engine.Events;
 using ConsoleBalatro.Engine.Events.Args;
@@ -298,6 +300,108 @@ namespace ConsoleBalatro.Tests
             Assert.Equal(TagType.TOP_UP, record.TagsAdded[0].JokerData.TagData.MyType);
             Assert.Equal(TagType.TOP_UP, record.TagsTriggeredInstantly[0].JokerData.TagData.MyType);
             Assert.Equal(2, ZoneManager.JokerZone.Cards.Count);
+        }
+
+        [Fact]
+        public void SkipThenGoToMarket_VoucherTagTriggers_AddsExtraVoucherToMarket()
+        {
+            ResetToBlindSelection();
+            FlowHandler.CurSmallBlindTag = TagType.VOUCHER;
+            var record = CaptureTagEvents();
+
+            FlowHandler.DoSkip();
+            Assert.Equal(1, record.TagAddEventCount);
+            Assert.Equal(0, record.TriggerInstantCount);
+            Assert.Equal(0, record.TriggerListenerCount);
+            Assert.Equal(TagType.VOUCHER, record.TagsAdded[0].JokerData.TagData.MyType);
+
+            FlowHandler.StartSelectedBlind();
+            PlayHand("AS,AS,AS,AS,AS");
+            FlowHandler.ClosePostRound();
+            Assert.Equal(1, record.TagAddEventCount);
+            Assert.Equal(0, record.TriggerInstantCount);
+            Assert.Equal(1, record.TriggerListenerCount);
+            Assert.Equal(TagType.VOUCHER, record.TagsTriggeredViaListener[0].JokerData.TagData.MyType);
+            Assert.Equal(2, ZoneManager.VoucherMarketZone.Cards.Count);
+        }
+
+        [Theory]
+        [InlineData(TagType.MEGA_ARCANA, ConsumableType.TAROT)]
+        [InlineData(TagType.MEGA_PLANET, ConsumableType.PLANET)]
+        [InlineData(TagType.SPECTRAL, ConsumableType.SPECTRAL)]
+        public void SkipOne_ConPackTagsTrigger_GoToPackRoundCorrectly(TagType PackTagType, ConsumableType expectedCon)
+        {
+            ResetToBlindSelection();
+            FlowHandler.CurSmallBlindTag = PackTagType;
+            var record = CaptureTagEvents();
+
+            FlowHandler.DoSkip();
+            Assert.Equal(1, record.TagAddEventCount);
+            Assert.Equal(1, record.TriggerInstantCount);
+            Assert.Equal(0, record.TriggerListenerCount);
+            Assert.Equal(PackTagType, record.TagsAdded[0].JokerData.TagData.MyType);
+            Assert.Equal(PackTagType, record.TagsTriggeredInstantly[0].JokerData.TagData.MyType);
+
+            Assert.Equal(GameState.SelectingPackOption, Globals.CurrentGameState);
+            Assert.NotEmpty(ZoneManager.PackOptionZone.Cards);
+            Assert.True(ZoneManager.PackOptionZone.Cards[0].isConsumable);
+            Assert.Equal(expectedCon, ZoneManager.PackOptionZone.Cards[0].ConsumableData.Type);
+        }
+
+        [Theory]
+        [InlineData(true)]
+        [InlineData(false)]
+        public void SkipOne_CardPackTagTriggers_GoToPackRoundCorrectly(bool isJokerPack)
+        {
+            ResetToBlindSelection();
+            var tagType = isJokerPack ? TagType.MEGA_JOKER : TagType.MEGA_STANDARD;
+            FlowHandler.CurSmallBlindTag = tagType;
+            var record = CaptureTagEvents();
+
+            FlowHandler.DoSkip();
+            Assert.Equal(1, record.TagAddEventCount);
+            Assert.Equal(1, record.TriggerInstantCount);
+            Assert.Equal(0, record.TriggerListenerCount);
+            Assert.Equal(tagType, record.TagsAdded[0].JokerData.TagData.MyType);
+            Assert.Equal(tagType, record.TagsTriggeredInstantly[0].JokerData.TagData.MyType);
+
+            if (isJokerPack)
+                Assert.True(ZoneManager.PackOptionZone.Cards[0].isJoker);
+            else
+            {
+                Assert.NotEqual(Rank.NONE, ZoneManager.PackOptionZone.Cards[0].Rank);
+                Assert.NotEqual(Suit.NONE, ZoneManager.PackOptionZone.Cards[0].Suit);
+            }
+        }
+
+        [Theory]
+        [InlineData(TagType.NEGATIVE, Edition.NEGATIVE)]
+        [InlineData(TagType.POLYCHROME, Edition.POLYCHROME)]
+        [InlineData(TagType.FOIL, Edition.FOIL)]
+        [InlineData(TagType.HOLO, Edition.HOLOGRAPHIC)]
+        public void SkipOneGoToMarket_EditionJokerTagTriggers_GeneratesCorrectEditionJoker(TagType tagType, Edition expectedEdition)
+        {
+            ResetToBlindSelection();
+            FlowHandler.CurSmallBlindTag = tagType;
+            var record = CaptureTagEvents();
+            FlowHandler.DoSkip();
+
+            Assert.Equal(1, record.TagAddEventCount);
+            Assert.Equal(0, record.TriggerInstantCount);
+            Assert.Equal(0, record.TriggerListenerCount);
+            Assert.Equal(tagType, record.TagsAdded[0].JokerData.TagData.MyType);
+
+            FlowHandler.StartSelectedBlind();
+            PlayHand("AS,AS,AS,AS,AS");
+            FlowHandler.ClosePostRound();
+
+            Assert.Equal(1, record.TagAddEventCount);
+            Assert.Equal(0, record.TriggerInstantCount);
+            Assert.Equal(1, record.TriggerListenerCount);
+            Assert.Equal(tagType, record.TagsTriggeredViaListener[0].JokerData.TagData.MyType);
+
+            Assert.True(ZoneManager.MainMarketZone.Cards[0].isJoker);
+            Assert.Equal(expectedEdition, ZoneManager.MainMarketZone.Cards[0].Edition);
         }
 
         #region Helpers

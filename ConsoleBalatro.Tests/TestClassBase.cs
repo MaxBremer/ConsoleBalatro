@@ -1,6 +1,7 @@
 ﻿using ConsoleBalatro.Engine;
 using ConsoleBalatro.Engine.Cards;
 using ConsoleBalatro.Engine.Cards.Blinds;
+using ConsoleBalatro.Engine.Cards.Enums;
 using ConsoleBalatro.Engine.Cards.Jokers;
 using ConsoleBalatro.Engine.Events;
 using ConsoleBalatro.Engine.Events.Args;
@@ -70,9 +71,17 @@ namespace ConsoleBalatro.Tests
             return cards;
         }
 
-        public void PlayHand(string handDef)
+        public void PlayHand(string handDef, bool upgrade = false)
         {
             BuildKnownHand(handDef);
+            if (upgrade)
+            {
+                foreach (var c in ZoneManager.HandZone.Cards)
+                {
+                    c.Seal = Seal.RED;
+                    c.Edition = Edition.HOLOGRAPHIC;
+                }
+            }
             Globals.PlayCurrentlySelectedHand();
         }
 

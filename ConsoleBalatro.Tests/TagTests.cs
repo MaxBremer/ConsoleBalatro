@@ -3,6 +3,7 @@ using ConsoleBalatro.Engine.Cards;
 using ConsoleBalatro.Engine.Cards.Tags;
 using ConsoleBalatro.Engine.Events;
 using ConsoleBalatro.Engine.Events.Args;
+using ConsoleBalatro.Engine.Market;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -248,6 +249,55 @@ namespace ConsoleBalatro.Tests
 
             FlowHandler.ClosePostRound();
             Assert.Equal(33, Globals.Money);
+        }
+
+        [Fact]
+        public void SkipThenGoToMarket_RerollsTagTriggersCorrectly_SetsRerollCostTo0()
+        {
+            ResetToBlindSelection();
+            FlowHandler.CurSmallBlindTag = TagType.REROLLS;
+            var record = CaptureTagEvents();
+
+            FlowHandler.DoSkip();
+            Assert.Equal(1, record.TagAddEventCount);
+            Assert.Equal(0, record.TriggerInstantCount);
+            Assert.Equal(0, record.TriggerListenerCount);
+            Assert.Equal(TagType.REROLLS, record.TagsAdded[0].JokerData.TagData.MyType);
+
+            FlowHandler.StartSelectedBlind();
+            PlayHand("AS,AS,AS,AS,AS");
+            FlowHandler.ClosePostRound();
+            Assert.Equal(1, record.TagAddEventCount);
+            Assert.Equal(0, record.TriggerInstantCount);
+            Assert.Equal(1, record.TriggerListenerCount);
+            Assert.Equal(TagType.REROLLS, record.TagsTriggeredViaListener[0].JokerData.TagData.MyType);
+            Assert.Equal(0, Globals.CurrentRerollCost);
+            MarketGeneralManager.RerollMainMarket();
+            Assert.Equal(1, Globals.CurrentRerollCost);
+            //Make sure its not 0 in next market
+
+            FlowHandler.CloseMarketRound();
+            FlowHandler.StartSelectedBlind();
+            PlayHand("AS,AS,AS,AS,AS");
+            FlowHandler.ClosePostRound();
+            Assert.Equal(5, Globals.CurrentRerollCost);
+        }
+
+        [Fact]
+        public void SkipOne_TopUpTagTriggers_GivesTwoJokers()
+        {
+            ResetToBlindSelection();
+            FlowHandler.CurSmallBlindTag = TagType.TOP_UP;
+            var record = CaptureTagEvents();
+
+            Assert.Empty(ZoneManager.JokerZone.Cards);
+            FlowHandler.DoSkip();
+            Assert.Equal(1, record.TagAddEventCount);
+            Assert.Equal(1, record.TriggerInstantCount);
+            Assert.Equal(0, record.TriggerListenerCount);
+            Assert.Equal(TagType.TOP_UP, record.TagsAdded[0].JokerData.TagData.MyType);
+            Assert.Equal(TagType.TOP_UP, record.TagsTriggeredInstantly[0].JokerData.TagData.MyType);
+            Assert.Equal(2, ZoneManager.JokerZone.Cards.Count);
         }
 
         #region Helpers

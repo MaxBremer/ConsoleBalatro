@@ -32,7 +32,7 @@ class Program
 
         FlowHandler.StartNewAnte();
         FlowHandler.InitializeBlindSelectionRound();
-        FlowHandler.CurSmallBlindTag = ConsoleBalatro.Engine.Cards.Tags.TagType.DOUBLE_MONEY;
+        FlowHandler.CurSmallBlindTag = ConsoleBalatro.Engine.Cards.Tags.TagType.ECONOMY;
 
 
         //Test jokers

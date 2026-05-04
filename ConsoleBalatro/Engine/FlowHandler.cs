@@ -118,20 +118,6 @@ namespace ConsoleBalatro.Engine
             return (int)(CurrentBaseChipAmount * chipsMult);
         }
 
-        private static void AttemptRoundInitialize(Action Initializer)
-        {
-            Initializer();//Idk if we even use this or will or what. Was made in pack tag hell. Such is life.
-        }
-
-        private static void AttemptRoundInitialize<T>(Action<T> Initializer, T toPass)
-        {
-            //Summary of this. Basically:
-            //If the queues are empty for other things to do, just run the initializer
-
-            //TEST: just run it. Make sure this works.
-            Initializer(toPass);//AGAIN: Probably never using. Whatever shut up I hate you.
-        }
-
         public static void InitializePlayRound(BlindType blindType)
         {
             if(blindType == BlindType.BOSS)

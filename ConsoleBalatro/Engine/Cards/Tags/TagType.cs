@@ -19,7 +19,7 @@ namespace ConsoleBalatro.Engine.Cards.Tags
         MEGA_STANDARD,
         SPECTRAL,
         TOP_UP, //2 common jokers
-        DOUBLE_MONEY, //max 40 dollars
+        ECONOMY, //max 40 dollars
         INVESTMENT, //after next boss 25 dollars
         UNCOMMON,
         RARE,

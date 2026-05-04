@@ -70,6 +70,18 @@ namespace ConsoleBalatro.Tests
             return cards;
         }
 
+        public void PlayHand(string handDef)
+        {
+            BuildKnownHand(handDef);
+            Globals.PlayCurrentlySelectedHand();
+        }
+
+        public void DiscardHand(string handDef)
+        {
+            BuildKnownHand(handDef);
+            Globals.DiscardSelectedFromHand();
+        }
+
         public void AddJoker(string jokerName)
         {
             ZoneManager.JokerZone.AddCard(JokerDb.GenerateJokerCard(jokerName));

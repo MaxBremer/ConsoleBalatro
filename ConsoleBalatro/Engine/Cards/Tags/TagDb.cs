@@ -41,7 +41,7 @@ namespace ConsoleBalatro.Engine.Cards.Tags
                 return jdb;
             } },
             {TagType.DOUBLE_TAG, BuildDoubleTag },
-            {TagType.DOUBLE_MONEY, c => {
+            {TagType.ECONOMY, c => {
                 var jdb = PrepBlockForTag("Economy Tag", c);
                 jdb.DescriptionBuilder = _ => "Doubles your money (max. $40).";
                 jdb.TagData.OnAddAction = _ =>
@@ -314,6 +314,11 @@ namespace ConsoleBalatro.Engine.Cards.Tags
                 if(data.DoTrigger(arg, TagCard))
                 {
                     ZoneManager.PreDestructionZone.DrawTargetFrom(ZoneManager.TagZone, TagCard);
+                    EngineEventHandler.TriggerEvent(new EngineTagTriggeredArgs()
+                    {
+                        TagThatTriggered = TagCard,
+                        MyContext = new() { Context = EventContextType.TagActivatedViaListener},
+                    });
                     data.Activate(arg);
                     OnTagRemove(TagCard);
                     ZoneManager.DestroyCard(TagCard, ZoneManager.PreDestructionZone);
@@ -358,6 +363,11 @@ namespace ConsoleBalatro.Engine.Cards.Tags
                 //After an on-add activation, destroy this tag.
                 //NOTE: This means tags can only have ONE activation, whether triggered via listeners or on-add.
                 //This makes sense gameplay-wise (tags only trigger once when they "pop"), but is slightly counter-intuitive code-wise.
+                EngineEventHandler.TriggerEvent(new EngineTagTriggeredArgs()
+                {
+                    TagThatTriggered = TagCard,
+                    MyContext = new() { Context = EventContextType.TagActivatedInstantly },
+                });
                 ZoneManager.PreDestructionZone.DrawTargetFrom(ZoneManager.TagZone, TagCard);
                 OnTagRemove(TagCard);
                 ZoneManager.DestroyCard(TagCard, ZoneManager.PreDestructionZone);

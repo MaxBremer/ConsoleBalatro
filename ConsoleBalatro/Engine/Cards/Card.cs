@@ -375,6 +375,8 @@ namespace ConsoleBalatro.Engine.Cards
 
         public void DestroyCard()
         {
+            return;//FOR NOW, DONT ACTUALLY DO ANYTHING TO DESTROY A CARD. MAYBE LATER IDK.
+            //TODO: CLEAN UP.
             //tbh idk if this actually does anything, but it makes me feel better.
             if(isJoker || isVoucher)
             {

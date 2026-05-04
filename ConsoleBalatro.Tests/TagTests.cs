@@ -168,6 +168,7 @@ namespace ConsoleBalatro.Tests
             Assert.Equal(20, Globals.Money);
         }
 
+        [Fact]
         public void SkipOneRoundThenPlay_TriggersJuggleTag_HandSizeIncreasesCorrectly()
         {
             ResetToBlindSelection();
@@ -175,8 +176,21 @@ namespace ConsoleBalatro.Tests
             var record = CaptureTagEvents();
             FlowHandler.StartSelectedBlind();
             var initialHandSize = Globals.HandSize;
+            PlayHand("AS,AS,AS,AS,AS");
+            FlowHandler.ClosePostRound();
+            FlowHandler.CloseMarketRound();
+            FlowHandler.DoSkip();
+            Assert.Equal(1, record.TagAddEventCount);
+            Assert.Equal(0, record.TriggerInstantCount);
+            Assert.Equal(0, record.TriggerListenerCount);
+            Assert.Equal(TagType.JUGGLE, record.TagsAdded[0].JokerData.TagData.MyType);
 
-
+            FlowHandler.StartSelectedBlind();
+            Assert.Equal(1, record.TagAddEventCount);
+            Assert.Equal(0, record.TriggerInstantCount);
+            Assert.Equal(1, record.TriggerListenerCount);
+            Assert.Equal(initialHandSize + 3, Globals.HandSize);
+            Assert.Equal(initialHandSize + 3, ZoneManager.HandZone.Cards.Count);
         }
 
         #region Helpers

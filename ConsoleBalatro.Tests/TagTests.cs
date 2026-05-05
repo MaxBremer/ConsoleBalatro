@@ -441,7 +441,7 @@ namespace ConsoleBalatro.Tests
             FlowHandler.CurSmallBlindTag = TagType.ORBITAL;
             var record = CaptureTagEvents();
 
-            Assert.True(AllHandsLevelOne());
+            Assert.True(AllHandsLevel(1));
             FlowHandler.DoSkip();
             Assert.Equal(1, record.TagAddEventCount);
             Assert.Equal(1, record.TriggerInstantCount);
@@ -449,12 +449,11 @@ namespace ConsoleBalatro.Tests
             Assert.Equal(TagType.ORBITAL, record.TagsAdded[0].JokerData.TagData.MyType);
             Assert.Equal(TagType.ORBITAL, record.TagsTriggeredInstantly[0].JokerData.TagData.MyType);
 
-            Assert.False(AllHandsLevelOne());
+            Assert.False(AllHandsLevel(1));
             Assert.Equal(4, ScoreHandler.HandLevels.First(x => x.Value != 1).Value);
         }
 
         #region Helpers
-        private static bool AllHandsLevelOne() => !ScoreHandler.HandLevels.Any(x => x.Value != 1);
         
         private static TagEventCapture CaptureTagEvents()
         {

@@ -126,5 +126,7 @@ namespace ConsoleBalatro.Tests
         }
 
         public void UseCon() => ConsumableManager.UseConsumable(ZoneManager.ConsumableZone.Cards[0]);
+
+        public bool AllHandsLevel(int lvl) => !ScoreHandler.HandLevels.Any(x => x.Value != lvl);
     }
 }

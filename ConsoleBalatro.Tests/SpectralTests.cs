@@ -279,7 +279,18 @@ namespace ConsoleBalatro.Tests
             Assert.Equal(JokerRarity.LEGENDARY, ZoneManager.JokerZone.Cards[0].JokerData.Rarity);
         }
 
-        
+        [Fact]
+        public void ActivateConsumable_BlackHole_CorrectlyLevelsAllHands()
+        {
+            ResetToBlindSelection();
+            AddSpectral("Black Hole");
+            Assert.Single(ZoneManager.ConsumableZone.Cards);
+            Assert.True(AllHandsLevel(1));
+            UseCon();
+
+            Assert.Empty(ZoneManager.ConsumableZone.Cards);
+            Assert.True(AllHandsLevel(2));
+        }
 
         #region Helpers
         private static CardChangeCaptures CaptureCardChangeEvents()

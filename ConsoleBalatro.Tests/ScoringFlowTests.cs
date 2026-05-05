@@ -28,6 +28,33 @@ namespace ConsoleBalatro.Tests
             Assert.Equal(5, ZoneManager.HiddenPlayZone.Cards.Count);//Cards should be moved to play zone.
         }
 
+        [Fact]
+        public void ScorePlayedHands_MultipleDifferentHands_CountsOfTimesPlayedTrackedCorrectly()
+        {
+            ResetToFirstBlindPlayRound();
+
+            PlayHand("AS");
+            PlayHand("AS");
+            PlayHand("2D,2D");
+            PlayHand("KC,KC,KC,KC");
+
+            Assert.Equal(2, ScoreHandler.HandNumTimesPlayed[PlayedHandType.HIGHCARD]);
+            Assert.Equal(1, ScoreHandler.HandNumTimesPlayed[PlayedHandType.PAIR]);
+            Assert.Equal(1, ScoreHandler.HandNumTimesPlayed[PlayedHandType.FOUROFAKIND]);
+            Assert.Equal(0, ScoreHandler.HandNumTimesPlayed[PlayedHandType.THREEOFAKIND]);
+
+            FlowHandler.ClosePostRound();
+            FlowHandler.StartSelectedBlind();
+            PlayHand("AS");
+            PlayHand("2D,2D");
+            PlayHand("KC,KC,KC");
+            PlayHand("KC,KC,KC,KC");
+            Assert.Equal(3, ScoreHandler.HandNumTimesPlayed[PlayedHandType.HIGHCARD]);
+            Assert.Equal(2, ScoreHandler.HandNumTimesPlayed[PlayedHandType.PAIR]);
+            Assert.Equal(2, ScoreHandler.HandNumTimesPlayed[PlayedHandType.FOUROFAKIND]);
+            Assert.Equal(1, ScoreHandler.HandNumTimesPlayed[PlayedHandType.THREEOFAKIND]);
+        }
+
         [Theory]
         [InlineData("9C,9D,2S,3H,4C", PlayedHandType.PAIR, Rank.NINE, Suit.CLUBS, 2, 18, 56)]
         [InlineData("9C,9D,2S,2H,4C", PlayedHandType.TWOPAIR, Rank.NINE, Suit.CLUBS, 4, 22, 84)]

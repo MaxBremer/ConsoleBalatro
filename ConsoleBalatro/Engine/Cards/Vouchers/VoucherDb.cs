@@ -14,14 +14,11 @@ namespace ConsoleBalatro.Engine.Cards.Vouchers
         public static Dictionary<string, Func<Card, JokerCardDataBlock>> VoucherData = new()
         {
             {
-                "HANDSTOPLAYGAINONE",
+                "GRABBER",
                 c =>
                 {
-                    var ret = new JokerCardDataBlock();
-                    ret.JokerName = "Gain 1 hand to play";
-                    ret.Rarity = JokerRarity.UNCOMMON;
-                    ret.DBName = "HANDSTOPLAYGAINONE";
-                    ret.DescriptionBuilder = _ => "+ " + ret.DataDict["INTAMOUNT"].IntData + " hands.";
+                    var ret = VoucherDatablock("Grabber");
+                    ret.DescriptionBuilder = _ => "Permanently gain +" + ret.DataDict["INTAMOUNT"].IntData + " hand per round.";
                     ret.DataDict.Add("INTAMOUNT", new JokerData() {IntData = 1, MyDataType = JokerDataType.INT});
                     ret.OnJokerGainEffs.Add(() =>
                     {
@@ -41,7 +38,6 @@ namespace ConsoleBalatro.Engine.Cards.Vouchers
                 {
                     var ret = new JokerCardDataBlock();
                     ret.JokerName = "Gain 1 discard";
-                    ret.Rarity = JokerRarity.UNCOMMON;
                     ret.DBName = "DISCARDSGAINONE";
                     ret.DescriptionBuilder = _ => "+ " + ret.DataDict["INTAMOUNT"].IntData + " discards.";
                     ret.DataDict.Add("INTAMOUNT", new JokerData() {IntData = 1, MyDataType = JokerDataType.INT});
@@ -57,6 +53,7 @@ namespace ConsoleBalatro.Engine.Cards.Vouchers
                     return ret;
                 }
             },
+            
         };
 
         public static List<string> VoucherDBNames => VoucherData.Keys.ToList();
@@ -78,6 +75,14 @@ namespace ConsoleBalatro.Engine.Cards.Vouchers
             var c = new Card();
             MakeCardVoucher(c, VoucherName);
             return c;
+        }
+
+        private static JokerCardDataBlock VoucherDatablock(string name)
+        {
+            var ret = new JokerCardDataBlock();
+            ret.JokerName = name;
+            ret.DBName = name.ToUpper();
+            return ret;
         }
     }
 }

@@ -29,6 +29,8 @@ namespace ConsoleBalatro.Engine
 
         public static Dictionary<PlayedHandType, int> HandLevels = new();
 
+        public static Dictionary<PlayedHandType, int> HandNumTimesPlayed = new();
+
         public static Dictionary<PlayedHandType, (int, int)> HandBuffAmounts = new()
         {
             { PlayedHandType.HIGHCARD, (10, 1) },
@@ -51,11 +53,31 @@ namespace ConsoleBalatro.Engine
         {
             CurrentHandStats.Clear();
             HandLevels.Clear();
+            HandNumTimesPlayed.Clear();
             foreach (var k in BaseHandScores.Keys)
             {
                 CurrentHandStats.Add(k, BaseHandScores[k]);
                 HandLevels.Add(k, 1);
+                HandNumTimesPlayed.Add(k, 0);
             }
+
+            StartHandCountListeners();
+        }
+
+        public static void StartHandCountListeners()
+        {
+            EngineEventHandler.StartListening(new EngineEventListener()
+            {
+                MyContextType = EventContextType.HandPlayedCalculated,
+                MyAction = args =>
+                {
+                    if(args is EngineHandPlayArgs handArgs)
+                    {
+                        var hType = handArgs.HandBeingPlayed;
+                        HandNumTimesPlayed[hType] += 1;
+                    }
+                }
+            });
         }
 
         public static void LevelUpHand(PlayedHandType handType)

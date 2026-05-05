@@ -387,7 +387,9 @@ namespace ConsoleBalatro.Engine.Cards.Consumables
                 ret.Use = _ =>
                 {
                     var targetCard = ZoneManager.JokerZone.Cards[Globals.ChooseRandomInclusive(0, ZoneManager.JokerZone.Cards.Count - 1)];
-                    foreach (var otherJoke in ZoneManager.JokerZone.Cards.Where(x => x != targetCard))
+                    var toRem = new List<Card>();
+                    toRem.AddRange(ZoneManager.JokerZone.Cards.Where(x => x != targetCard));
+                    foreach (var otherJoke in toRem)
                     {
                         ZoneManager.DestroyCard(otherJoke, ZoneManager.JokerZone);
                     }
@@ -405,7 +407,9 @@ namespace ConsoleBalatro.Engine.Cards.Consumables
                 ret.Use = _ =>
                 {
                     var targetCard = ZoneManager.JokerZone.Cards[Globals.ChooseRandomInclusive(0, ZoneManager.JokerZone.Cards.Count - 1)];
-                    foreach (var otherJoke in ZoneManager.JokerZone.Cards.Where(x => x != targetCard))
+                    var toRem = new List<Card>();
+                    toRem.AddRange(ZoneManager.JokerZone.Cards.Where(x => x != targetCard));
+                    foreach (var otherJoke in toRem)
                     {
                         ZoneManager.DestroyCard(otherJoke, ZoneManager.JokerZone);
                     }
@@ -422,7 +426,7 @@ namespace ConsoleBalatro.Engine.Cards.Consumables
                 ret.IsActivatable = _ => ZoneManager.JokerZone.HasRoom;
                 ret.Use = _ =>
                 {
-                    var rareJoker = MarketOptionsManager.PullRandomJokerFromPool(JokerRarity.LEGENDARY, removeFromPool: true);//TODO: Legos not in pool?
+                    var rareJoker = MarketOptionsManager.PullRandomJokerFromPool(JokerRarity.LEGENDARY, removeFromPool: true);
                     if (rareJoker != null)
                     {
                         ZoneManager.JokerZone.AddCard(rareJoker);

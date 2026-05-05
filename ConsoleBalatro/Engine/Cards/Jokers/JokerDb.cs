@@ -19,7 +19,7 @@ namespace ConsoleBalatro.Engine.Cards.Jokers
         {
             {"JIMBO", new JokerTypeData { DBName = "JIMBO", Price = 2 } },
             {"GREEDY JOKER", new JokerTypeData { DBName = "GREEDY JOKER", Price = 5 } },
-            {"LSTY JOKER", new JokerTypeData { DBName = "LSTY JOKER", Price = 5 } },
+            {"LUSTY JOKER", new JokerTypeData { DBName = "LUSTY JOKER", Price = 5 } },
             {"WRATHFUL JOKER", new JokerTypeData { DBName = "WRATHFUL JOKER", Price = 5 } },
             {"GLUTTONOUS JOKER", new JokerTypeData { DBName = "GLUTTONOUS JOKER", Price = 5 } },
             {"JOLLY JOKER", new JokerTypeData { DBName = "JOLLY JOKER", Price = 3 } },
@@ -40,6 +40,7 @@ namespace ConsoleBalatro.Engine.Cards.Jokers
             {"GOLDEN JOKER", new JokerTypeData { DBName = "GOLDEN JOKER", Price = 5 } },
             {"TEMP UNCOMMON JOKER", new JokerTypeData { DBName = "TEMP UNCOMMON JOKER", Price = 5, Rarity = JokerRarity.UNCOMMON } },
             {"TEMP RARE JOKER", new JokerTypeData { DBName = "TEMP RARE JOKER", Price = 5, Rarity = JokerRarity.RARE } },
+            {"TEMP LEGENDARY JOKER", new JokerTypeData { DBName = "TEMP LEGENDARY JOKER", Price = 6, Rarity = JokerRarity.LEGENDARY } },
         };
 
         public static List<string> JokerDbNames => JokerData.Keys.ToList();
@@ -411,10 +412,10 @@ namespace ConsoleBalatro.Engine.Cards.Jokers
 
                 ret.OnJokerRemovalEffs.Add(() =>
                 {
-                    if(!ZoneManager.JokerZone.Cards.Where(x => x.isJoker && x.JokerData.DBName == "FOUR FINGERS").Any())
+                    if(!ZoneManager.JokerZone.Cards.Any(x => x.isJoker && x.JokerData.DBName == "FOUR FINGERS"))
                     {
                         EngineUtils.LenFlush = ret.DataDict["OLDFLUSH"].IntData;
-                        EngineUtils.LenStraight = ret.DataDict["OlDSTRAIGHT"].IntData;
+                        EngineUtils.LenStraight = ret.DataDict["OLDSTRAIGHT"].IntData;
                     }
                 });
 
@@ -497,6 +498,15 @@ namespace ConsoleBalatro.Engine.Cards.Jokers
                 ret.JokerName = "TEMP RARE Joker";
                 ret.DBName = "TEMP RARE JOKER";
                 ret.DescriptionBuilder = _ => "Temporary Rare Joker TO BE REMOVED";
+
+                return ret;
+            } },
+            { "TEMP LEGENDARY JOKER", c =>
+            {
+                var ret = new JokerCardDataBlock();
+                ret.JokerName = "TEMP LEGENDARY Joker";
+                ret.DBName = "TEMP LEGENDARY JOKER";
+                ret.DescriptionBuilder = _ => "Temporary Legendary Joker TO BE REMOVED";
 
                 return ret;
             } },

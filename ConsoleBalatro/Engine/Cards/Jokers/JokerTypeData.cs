@@ -10,6 +10,6 @@ namespace ConsoleBalatro.Engine.Cards.Jokers
     {
         public string DBName;
         public int Price;
-        public JokerRarity Rarity;
+        public JokerRarity Rarity = JokerRarity.COMMON;
     }
 }

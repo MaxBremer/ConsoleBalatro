@@ -1,6 +1,7 @@
 ﻿using ConsoleBalatro.Engine;
 using ConsoleBalatro.Engine.Cards;
 using ConsoleBalatro.Engine.Cards.Blinds;
+using ConsoleBalatro.Engine.Cards.Consumables;
 using ConsoleBalatro.Engine.Cards.Enums;
 using ConsoleBalatro.Engine.Cards.Jokers;
 using ConsoleBalatro.Engine.Events;
@@ -33,6 +34,7 @@ namespace ConsoleBalatro.Tests
             FlowHandler.CurrentSelectedBlind = BlindType.SMALL;
             FlowHandler.CurrentTempChanges = null;
             FlowHandler.CurrentBossBlind = "";
+            BossBlindDb.BossBlindsAlreadyUsed.Clear();
 
             Globals.Money = 0;
             Globals.CurMaxInterest = 5;
@@ -122,5 +124,7 @@ namespace ConsoleBalatro.Tests
         {
             ZoneManager.ConsumableZone.DrawTargetFrom(MarketOptionsManager.MarketPoolsToDrawFrom[BuyItemType.SPECTRAL_CARD], MarketOptionsManager.MarketPoolsToDrawFrom[BuyItemType.SPECTRAL_CARD].Cards.First(x => x.ConsumableData.ConsumableName == spectralName));
         }
+
+        public void UseCon() => ConsumableManager.UseConsumable(ZoneManager.ConsumableZone.Cards[0]);
     }
 }

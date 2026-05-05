@@ -49,8 +49,13 @@ namespace ConsoleBalatro.Engine.Market
 
         public static Dictionary<BuyItemType, CardZone> MarketPoolsToDrawFrom = new();
 
+        public static CardZone SpecialPool_LegendaryJokers;
+
         public static void InitializeMarketPools()
         {
+            //Initialize special pools
+            SpecialPool_LegendaryJokers = ZoneManager.MakeZone("LegendaryJokers");
+
             foreach (var k in MarketPoolsToDrawFrom.Keys)
             {
                 MarketPoolsToDrawFrom[k].ClearCards();
@@ -99,9 +104,13 @@ namespace ConsoleBalatro.Engine.Market
                             var card = new Card();
                             JokerDb.MakeCardJoker(card, joker);
                             //TODO: Need better approach here.
-                            if(card.JokerData.Rarity != Cards.Jokers.JokerRarity.LEGENDARY)
+                            if(card.JokerData.Rarity != JokerRarity.LEGENDARY)
                             {
                                 jokerPool.AddCard(card, invisibleAdd: true);
+                            }
+                            else
+                            {
+                                SpecialPool_LegendaryJokers.AddCard(card, invisibleAdd: true);
                             }
                         }
                         MarketPoolsToDrawFrom.Add(buyItem, jokerPool);
@@ -299,7 +308,7 @@ namespace ConsoleBalatro.Engine.Market
 
         public static Card PullRandomJokerFromPool(JokerRarity? rarity, bool removeFromPool = false)
         {
-            var pool = MarketPoolsToDrawFrom[BuyItemType.JOKER];
+            var pool = rarity == JokerRarity.LEGENDARY ? SpecialPool_LegendaryJokers : MarketPoolsToDrawFrom[BuyItemType.JOKER];
             var valid = pool.Cards.Where(x => x.isJoker && (!rarity.HasValue || x.JokerData.Rarity == rarity.Value)).ToList();
             if (valid.Count == 0)
                 return Globals.USE_DEFAULT_JOKER_IF_POOL_EMPTY ? JokerDb.GenerateDefaultJokerCard() : null;

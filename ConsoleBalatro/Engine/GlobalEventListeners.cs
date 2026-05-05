@@ -29,13 +29,17 @@ namespace ConsoleBalatro.Engine
         public static void ChangeZoneSizeForNegative(EngineEventArgs args)
         {
             //TODO: Setting existing card to negative should ALSO change the zone max size.
-            if(args is EngineCardDrawnToZoneArgs drawArgs && drawArgs.CardBeingDrawn.Edition == Edition.NEGATIVE && drawArgs.ZoneDrawnTo.MaxCapacity != -1)
+            if (args is EngineCardDrawnToZoneArgs drawArgs && drawArgs.CardBeingDrawn.Edition == Edition.NEGATIVE && drawArgs.ZoneDrawnTo.MaxCapacity != -1)
             {
                 drawArgs.ZoneDrawnTo.MaxCapacity += 1;
             }
-            else if(args is EngineCardDiscardedFromZoneArgs discArgs && discArgs.CardBeingDiscarded.Edition == Edition.NEGATIVE && discArgs.ZoneCardIsLeaving.MaxCapacity != -1)
+            else if (args is EngineCardDiscardedFromZoneArgs discArgs && discArgs.CardBeingDiscarded.Edition == Edition.NEGATIVE && discArgs.ZoneCardIsLeaving.MaxCapacity != -1)
             {
                 discArgs.ZoneCardIsLeaving.MaxCapacity -= 1;
+            }
+            else if (args is EngineCardDetailsChangeArgs detailArgs && detailArgs.isEditionChange && detailArgs.isAfter && (detailArgs.NewEdition == Edition.NEGATIVE ^ detailArgs.OldEdition == Edition.NEGATIVE))
+            {
+                detailArgs.CardBeingChanged.MyZone.MaxCapacity += detailArgs.NewEdition == Edition.NEGATIVE ? 1 : -1;
             }
         }
 

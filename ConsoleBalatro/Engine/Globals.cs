@@ -161,6 +161,8 @@ namespace ConsoleBalatro.Engine
             MaxDiscardsPerRound = 3;
 
             CurMaxInterest = 5;
+
+            EngineUtils.ResetUtilValues();
         }
 
         public static void PlayCurrentlySelectedHand()

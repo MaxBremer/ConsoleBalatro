@@ -122,6 +122,13 @@ namespace ConsoleBalatro.Engine
 
         public static bool isFace(Card c) => RankGroups["FACE"].Contains(c.Rank);
 
+        public static void ResetUtilValues()
+        {
+            LenStraight = 5;
+            LenFlush = 5;
+            SkipStrength = 0;
+        }
+
         public static (PlayedHandType, List<Card>) BestHandFromCards(List<Card> cards)
         {
             var ret = PlayedHandType.HIGHCARD;

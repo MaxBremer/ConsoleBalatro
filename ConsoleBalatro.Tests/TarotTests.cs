@@ -20,8 +20,7 @@ namespace ConsoleBalatro.Tests
             ResetToBlindSelection();
 
             AddTarot("The Emperor");
-            var consumable = ZoneManager.ConsumableZone.Cards[0];
-            ConsumableManager.UseConsumable(consumable);
+            UseCon();
             Assert.Equal(2, ZoneManager.ConsumableZone.Cards.Count);
             Assert.NotEqual("The Emperor", ZoneManager.ConsumableZone.Cards[0].ConsumableData.ConsumableName);
             Assert.NotEqual("The Emperor", ZoneManager.ConsumableZone.Cards[1].ConsumableData.ConsumableName);
@@ -33,8 +32,7 @@ namespace ConsoleBalatro.Tests
             ResetToBlindSelection();
 
             AddTarot("High Priestess");
-            var consumable = ZoneManager.ConsumableZone.Cards[0];
-            ConsumableManager.UseConsumable(consumable);
+            UseCon();
             Assert.Equal(2, ZoneManager.ConsumableZone.Cards.Count);
             Assert.Equal(ConsumableType.PLANET, ZoneManager.ConsumableZone.Cards[0].ConsumableData.Type);
             Assert.Equal(ConsumableType.PLANET, ZoneManager.ConsumableZone.Cards[1].ConsumableData.Type);
@@ -47,15 +45,13 @@ namespace ConsoleBalatro.Tests
             ResetToBlindSelection();
             var prevPoolCount = MarketOptionsManager.MarketPoolsToDrawFrom[BuyItemType.TAROT_CARD].Cards.Count;
             AddTarot("The Emperor");
-            var consumable = ZoneManager.ConsumableZone.Cards[0];
-            ConsumableManager.UseConsumable(consumable);
+            UseCon();
             Globals.PerformSell(ZoneManager.ConsumableZone.Cards[0], ZoneManager.ConsumableZone);
             Globals.PerformSell(ZoneManager.ConsumableZone.Cards[0], ZoneManager.ConsumableZone);
             //ALL TAROTS SHOULD BE RETURNED TO POOL
             Assert.Equal(prevPoolCount, MarketOptionsManager.MarketPoolsToDrawFrom[BuyItemType.TAROT_CARD].Cards.Count);
             AddTarot("The Fool");
-            consumable = ZoneManager.ConsumableZone.Cards[0];
-            ConsumableManager.UseConsumable(consumable);
+            UseCon();
 
             Assert.Single(ZoneManager.ConsumableZone.Cards);
             Assert.Equal("The Emperor", ZoneManager.ConsumableZone.Cards[0].ConsumableData.ConsumableName);
@@ -69,8 +65,7 @@ namespace ConsoleBalatro.Tests
             AddTarot("The Hermit");
 
             Globals.Money = 15;
-            var consumable = ZoneManager.ConsumableZone.Cards[0];
-            ConsumableManager.UseConsumable(consumable);
+            UseCon();
             Assert.Equal(30, Globals.Money);
         }
 
@@ -82,8 +77,7 @@ namespace ConsoleBalatro.Tests
             AddTarot("The Hermit");
 
             Globals.Money = 25;
-            var consumable = ZoneManager.ConsumableZone.Cards[0];
-            ConsumableManager.UseConsumable(consumable);
+            UseCon();
             Assert.Equal(45, Globals.Money);
         }
 
@@ -104,8 +98,7 @@ namespace ConsoleBalatro.Tests
                 BuildKnownHand("AS,2S");
             else
                 BuildKnownHand("AS");
-            var consumable = ZoneManager.ConsumableZone.Cards[0];
-            ConsumableManager.UseConsumable(consumable);
+            UseCon();
             Assert.Empty(ZoneManager.ConsumableZone.Cards);
             Assert.Equal(targetEnhance, ZoneManager.HandZone.Cards[0].Enhancement);
             if (twoTargets)
@@ -121,8 +114,7 @@ namespace ConsoleBalatro.Tests
             AddTarot("The Hanged Man");
             BuildKnownHand("AS,2S,3S");
             ZoneManager.HandZone.Cards[2].isSelected = false;
-            var consumable = ZoneManager.ConsumableZone.Cards[0];
-            ConsumableManager.UseConsumable(consumable);
+            UseCon();
             Assert.Empty(ZoneManager.ConsumableZone.Cards);
             Assert.Single(ZoneManager.HandZone.Cards);
             Assert.Equal(Rank.THREE, ZoneManager.HandZone.Cards[0].Rank);
@@ -134,8 +126,7 @@ namespace ConsoleBalatro.Tests
             ResetToFirstBlindPlayRound();
             AddTarot("Strength");
             BuildKnownHand("AS,2S");
-            var consumable = ZoneManager.ConsumableZone.Cards[0];
-            ConsumableManager.UseConsumable(consumable);
+            UseCon();
             Assert.Empty(ZoneManager.ConsumableZone.Cards);
             Assert.Equal(2, ZoneManager.HandZone.Cards.Count);
             Assert.Equal(Rank.TWO, ZoneManager.HandZone.Cards[0].Rank);
@@ -151,8 +142,7 @@ namespace ConsoleBalatro.Tests
             var joker = ZoneManager.JokerZone.Cards[0];
             Assert.Equal(Edition.BASE, joker.Edition);
             RigNextRoll(true);
-            var consumable = ZoneManager.ConsumableZone.Cards[0];
-            ConsumableManager.UseConsumable(consumable);
+            UseCon();
             Assert.Empty(ZoneManager.ConsumableZone.Cards);
             Assert.NotEqual(Edition.BASE, joker.Edition);
         }
@@ -167,8 +157,7 @@ namespace ConsoleBalatro.Tests
             ResetToFirstBlindPlayRound();
             AddTarot(conName);
             BuildKnownHand("AS,2S,3S");
-            var consumable = ZoneManager.ConsumableZone.Cards[0];
-            ConsumableManager.UseConsumable(consumable);
+            UseCon();
             Assert.Empty(ZoneManager.ConsumableZone.Cards);
             Assert.Equal(targetSuit, ZoneManager.HandZone.Cards[0].Suit);
             Assert.Equal(targetSuit, ZoneManager.HandZone.Cards[1].Suit);
@@ -184,9 +173,8 @@ namespace ConsoleBalatro.Tests
             ZoneManager.HandZone.Cards[1].SetEditionOfficial(Edition.HOLOGRAPHIC);
             ZoneManager.HandZone.Cards[1].SetEnhancementOfficial(Enhancement.STEEL);
 
-            var consumable = ZoneManager.ConsumableZone.Cards[0];
-            ConsumableManager.UseConsumable(consumable);
-            
+            UseCon();
+
             var cardCheck = ZoneManager.HandZone.Cards[0];
             Assert.Empty(ZoneManager.ConsumableZone.Cards);
             Assert.Equal(2, ZoneManager.HandZone.Cards.Count);
@@ -204,8 +192,7 @@ namespace ConsoleBalatro.Tests
             Globals.Money = 0;
             AddJoker("JIMBO");
             var sellVal = ZoneManager.JokerZone.Cards[0].SellCost;
-            var consumable = ZoneManager.ConsumableZone.Cards[0];
-            ConsumableManager.UseConsumable(consumable);
+            UseCon();
             Assert.Empty(ZoneManager.ConsumableZone.Cards);
             Assert.Single(ZoneManager.JokerZone.Cards);
             Assert.Equal(sellVal, Globals.Money);
@@ -216,8 +203,7 @@ namespace ConsoleBalatro.Tests
         {
             ResetToFirstBlindPlayRound();
             AddTarot("Judgement");
-            var consumable = ZoneManager.ConsumableZone.Cards[0];
-            ConsumableManager.UseConsumable(consumable);
+            UseCon();
             Assert.Empty(ZoneManager.ConsumableZone.Cards);
             Assert.Single(ZoneManager.JokerZone.Cards);
             var joker = ZoneManager.JokerZone.Cards[0];

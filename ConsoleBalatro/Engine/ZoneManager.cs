@@ -214,5 +214,10 @@ namespace ConsoleBalatro.Engine
         {
             DestructionZone.DrawTargetFrom(fromZone, c);
         }
+
+        public static void DestroyCard(Card c)
+        {
+            DestroyCard(c, c.MyZone);
+        }
     }
 }

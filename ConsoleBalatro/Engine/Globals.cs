@@ -23,6 +23,7 @@ namespace ConsoleBalatro.Engine
         //SETTINGS
         public const bool GUARANTEE_UNIQUE_TAGS = false;
         public const bool USE_DEFAULT_JOKER_IF_POOL_EMPTY = true;
+        public const bool MIRROR_ILLUSION_SEAL_GLITCH = false;
         private static int _reqChipsBlind = -1;
 
         public static Dictionary<Rank, int> RankChipVals = new()
@@ -88,6 +89,12 @@ namespace ConsoleBalatro.Engine
         public static int MaxDiscardsPerRound = 3;
 
         public static int CurMaxInterest = 5;
+
+        public static int BaseBossBlindRerollsAllowed = 0;
+        public static int CurBossBlindRerollsAllowed = 0;
+        public static bool CanRerollBossBlind => CurBossBlindRerollsAllowed != 0;
+
+        public static bool ShopPlayingCardsGetModifiers = false;//NOTE: TEMP. 
 
         private static int _curDisc;
         private static int _curHands;
@@ -161,6 +168,11 @@ namespace ConsoleBalatro.Engine
             MaxDiscardsPerRound = 3;
 
             CurMaxInterest = 5;
+
+            CurBossBlindRerollsAllowed = 0;
+            BaseBossBlindRerollsAllowed = 0;
+
+            ShopPlayingCardsGetModifiers = false;
 
             EngineUtils.ResetUtilValues();
         }

@@ -333,18 +333,31 @@ namespace ConsoleBalatro.Engine
             CurrentSelectedBlind = BlindType.SMALL;
         }
 
-        public static void RerollBossBlind()
+        public static void RerollBossBlind(bool isPlayerReroll = false)
         {
+            if(isPlayerReroll && (Globals.CurBossBlindRerollsAllowed == 0 || !Globals.CanAfford(10)))//TODO: HARD-SET PRICE OF BOSS REROLL SEEMS BAD.
+            {
+                return;
+            }
+
             //Select new Boss Blind
             string targetBossBlindName;
             //TODO: Account for the big boss blinds at the end.
-            if (BossBlindDb.AvailableBossBlinds == null || BossBlindDb.AvailableBossBlinds.Count == 0)
+            if (BossBlindDb.AvailableBossBlinds.Count == 0)
             {
                 //If no boss options available, reset the pool.
                 BossBlindDb.BossBlindsAlreadyUsed.Clear();
             }
+            var oldBossBlind = CurrentBossBlind;
             targetBossBlindName = BossBlindDb.AvailableBossBlinds[Random.Shared.Next(BossBlindDb.AvailableBossBlinds.Count)];
             BossBlindDb.BossBlindsAlreadyUsed.Add(targetBossBlindName);
+            if (isPlayerReroll)
+            {
+                BossBlindDb.BossBlindsAlreadyUsed.Remove(oldBossBlind);//if player reroll, that boss can be reused.
+                Globals.EmitMoneyLoss(10, null, false);
+                if (Globals.CurBossBlindRerollsAllowed > 0)
+                    Globals.CurBossBlindRerollsAllowed--;
+            }
             CurrentBossBlind = targetBossBlindName;
         }
 

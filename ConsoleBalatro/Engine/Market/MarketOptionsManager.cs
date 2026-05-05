@@ -251,6 +251,29 @@ namespace ConsoleBalatro.Engine.Market
                         }
                     }
                 }
+
+                //NOTE: TEMP IMPLEMENTATION OF ILLUSION
+                if(itemType == BuyItemType.PLAYING_CARD && Globals.ShopPlayingCardsGetModifiers)
+                {
+                    var doEdition = Globals.ChooseRandomInclusive(1, 10) <= 2;//20% odds
+                    List<Edition> validEditions = new List<Edition>() { Edition.FOIL, Edition.HOLOGRAPHIC, Edition.POLYCHROME };
+                    var doEnhancement = Globals.ChooseRandomInclusive(1, 10) <= 4;//40% odds
+                    List<Enhancement> validEnhancements = new List<Enhancement>() { Enhancement.MULT, Enhancement.BONUSCHIPS, Enhancement.LUCKY, Enhancement.GLASS, Enhancement.WILD, Enhancement.GOLD, Enhancement.STEEL };
+                    var doSeal = Globals.MIRROR_ILLUSION_SEAL_GLITCH ? false : Globals.ChooseRandomInclusive(1, 10) <= 2;//20% if enabled.
+                    List<Seal> validSeals = new List<Seal>() { Seal.GOLD, Seal.RED, Seal.BLUE, Seal.PURPLE };
+                    if (doEdition)
+                    {
+                        cardDrawn.SetEditionOfficial(validEditions[Random.Shared.Next(validEditions.Count)]);
+                    }
+                    if (doEnhancement)
+                    {
+                        cardDrawn.SetEnhancementOfficial(validEnhancements[Random.Shared.Next(validEnhancements.Count)]);
+                    }
+                    if (doSeal)
+                    {
+                        cardDrawn.Seal = validSeals[Random.Shared.Next(validSeals.Count)];
+                    }
+                }
             }
         }
 

@@ -506,6 +506,163 @@ namespace ConsoleBalatro.Engine.Cards.Vouchers
                     return ret;
                 }
             },
+            {
+                "DIRECTOR'S CUT",
+                c =>
+                {
+                    var ret = VoucherDatablock("Director's Cut", nextVoucher: "RETCON");
+                    ret.DataDict.Add("INTAMOUNT", new JokerData() {IntData = 1, MyDataType = JokerDataType.INT});
+                    ret.DescriptionBuilder = _ => "Reroll Boss Blind " + ret.DataDict["INTDATA"].IntData + " time per Ante. $10 per roll.";
+                    //NOTE: Lying description, blah blah blah, look above.
+                    ret.OnJokerGainEffs.Add(() =>
+                    {
+                       Globals.BaseBossBlindRerollsAllowed = ret.DataDict["INTAMOUNT"].IntData;
+                       Globals.CurBossBlindRerollsAllowed = ret.DataDict["INTAMOUNT"].IntData;
+                    });
+                    ret.OnJokerRemovalEffs.Add(() =>
+                    {
+                       Globals.BaseBossBlindRerollsAllowed = 0;
+                       Globals.CurBossBlindRerollsAllowed = 0;
+                    });
+
+                    return ret;
+                }
+            },
+            {
+                "RETCON",
+                c =>
+                {
+                    var ret = VoucherDatablock("Retcon", prevVoucher: "DIRECTOR'S CUT");
+                    ret.DescriptionBuilder = _ => "Reroll Boss Blind unlimited times, $10 per roll.";
+                    //NOTE: Lying description, blah blah blah, look above.
+                    ret.OnJokerGainEffs.Add(() =>
+                    {
+                       Globals.BaseBossBlindRerollsAllowed = -1;
+                       Globals.CurBossBlindRerollsAllowed = -1;
+                    });
+                    ret.OnJokerRemovalEffs.Add(() =>
+                    {
+                       Globals.BaseBossBlindRerollsAllowed = 1;
+                       Globals.CurBossBlindRerollsAllowed = 1;
+                    });
+
+                    return ret;
+                }
+            },
+            {
+                "TAROT MERCHANT",
+                c =>
+                {
+                    var ret = VoucherDatablock("Tarot Merchant", nextVoucher: "TAROT TYCOON");
+                    ret.DescriptionBuilder = _ => "Tarot cards appear 2X more frequently in the shop.";
+                    //NOTE: Lying description, blah blah blah, look above.
+                    ret.OnJokerGainEffs.Add(() =>
+                    {
+                        MarketOptionsManager.MainMarketWeights[BuyItemType.TAROT_CARD] *= 2;
+                    });
+                    ret.OnJokerRemovalEffs.Add(() =>
+                    {
+                        MarketOptionsManager.MainMarketWeights[BuyItemType.TAROT_CARD] /= 2;
+                    });
+
+                    return ret;
+                }
+            },
+            {
+                "TAROT TYCOON",
+                c =>
+                {
+                    var ret = VoucherDatablock("Tarot Tycoon", prevVoucher: "TAROT MERCHANT");
+                    ret.DescriptionBuilder = _ => "Tarot cards appear 4X more frequently in the shop.";
+                    //NOTE: Lying description, blah blah blah, look above.
+                    ret.OnJokerGainEffs.Add(() =>
+                    {
+                        MarketOptionsManager.MainMarketWeights[BuyItemType.TAROT_CARD] *= 2;
+                    });
+                    ret.OnJokerRemovalEffs.Add(() =>
+                    {
+                        MarketOptionsManager.MainMarketWeights[BuyItemType.TAROT_CARD] /= 2;
+                    });
+
+                    return ret;
+                }
+            },
+            {
+                "PLANET MERCHANT",
+                c =>
+                {
+                    var ret = VoucherDatablock("Planet Merchant", nextVoucher: "PLANET TYCOON");
+                    ret.DescriptionBuilder = _ => "Planet cards appear 2X more frequently in the shop.";
+                    //NOTE: Lying description, blah blah blah, look above.
+                    ret.OnJokerGainEffs.Add(() =>
+                    {
+                        MarketOptionsManager.MainMarketWeights[BuyItemType.PLANET_CARD] *= 2;
+                    });
+                    ret.OnJokerRemovalEffs.Add(() =>
+                    {
+                        MarketOptionsManager.MainMarketWeights[BuyItemType.PLANET_CARD] /= 2;
+                    });
+
+                    return ret;
+                }
+            },
+            {
+                "PLANET TYCOON",
+                c =>
+                {
+                    var ret = VoucherDatablock("Planet Tycoon", prevVoucher: "PLANET MERCHANT");
+                    ret.DescriptionBuilder = _ => "Planet cards appear 4X more frequently in the shop.";
+                    //NOTE: Lying description, blah blah blah, look above.
+                    ret.OnJokerGainEffs.Add(() =>
+                    {
+                        MarketOptionsManager.MainMarketWeights[BuyItemType.PLANET_CARD] *= 2;
+                    });
+                    ret.OnJokerRemovalEffs.Add(() =>
+                    {
+                        MarketOptionsManager.MainMarketWeights[BuyItemType.PLANET_CARD] /= 2;
+                    });
+
+                    return ret;
+                }
+            },
+            {
+                "MAGIC TRICK",
+                c =>
+                {
+                    var ret = VoucherDatablock("Magic Trick", nextVoucher: "ILLUSION");
+                    ret.DescriptionBuilder = _ => "Playing cards can be purchased from the shop.";
+                    //NOTE: Lying description, blah blah blah, look above.
+                    ret.OnJokerGainEffs.Add(() =>
+                    {
+                        MarketOptionsManager.MainMarketWeights.Add(BuyItemType.PLAYING_CARD, 5);
+                    });
+                    ret.OnJokerRemovalEffs.Add(() =>
+                    {
+                        MarketOptionsManager.MainMarketWeights.Remove(BuyItemType.PLAYING_CARD);
+                    });
+
+                    return ret;
+                }
+            },
+            {
+                "ILLUSION",
+                c =>
+                {
+                    var ret = VoucherDatablock("Illusion", prevVoucher: "MAGIC TRICK");
+                    ret.DescriptionBuilder = _ => "Playing cards in shop may have an enhancement, edition, and/or seal.";
+                    //NOTE: Lying description, blah blah blah, look above.
+                    ret.OnJokerGainEffs.Add(() =>
+                    {
+                        Globals.ShopPlayingCardsGetModifiers = true;
+                    });
+                    ret.OnJokerRemovalEffs.Add(() =>
+                    {
+                        Globals.ShopPlayingCardsGetModifiers = false;
+                    });
+
+                    return ret;
+                }
+            },
         };
 
         public static List<string> VoucherDBNames => VoucherData.Keys.ToList();

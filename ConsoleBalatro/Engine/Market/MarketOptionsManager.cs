@@ -63,11 +63,18 @@ namespace ConsoleBalatro.Engine.Market
 
         public static CardZone SpecialPool_HiddenPlanets;
 
+        public static CardZone SpecialPool_Soul;
+        public static CardZone SpecialPool_BlackHole;
+        public static CardZone SpecialPool_SpecialSpectral;
+
         public static void InitializeMarketPools()
         {
             //Initialize special pools
             SpecialPool_LegendaryJokers = ZoneManager.MakeZone("LegendaryJokersPool");
             SpecialPool_HiddenPlanets = ZoneManager.MakeZone("HiddenPlanetsPool");
+            SpecialPool_Soul = ZoneManager.MakeZone("SoulPool");
+            SpecialPool_BlackHole = ZoneManager.MakeZone("BlackHolePool");
+            SpecialPool_SpecialSpectral = ZoneManager.MakeZone("SpecialSpectralPool");
 
             foreach (var k in MarketPoolsToDrawFrom.Keys)
             {
@@ -290,13 +297,19 @@ namespace ConsoleBalatro.Engine.Market
         public static void DrawItemsByMainMarketOdds(int numItems, CardZone zoneToDrawTo, bool applyMarketModifiers = false)
         {
             //Simply draws based on market odds. Other tweaks (edition mainly) happen elsewhere (in DrawMarketItem).
-            for(int i = 0; i < numItems; i++)
+            DrawItemsByOdds(numItems, zoneToDrawTo, MainMarketWeights, applyMarketModifiers);
+        }
+
+        public static void DrawItemsByOdds(int numItems, CardZone zoneToDrawTo, Dictionary<BuyItemType, int> odds, bool applyMarketModifiers = false)
+        {
+            var total = odds.Values.Sum();
+            for (int i = 0; i < numItems; i++)
             {
-                var roll = Random.Shared.Next(MainMarketWeightsTotal);
+                var roll = Random.Shared.Next(total);
                 BuyItemType chosenType = BuyItemType.NONE;
-                foreach(var typeOpt in MainMarketWeights)
+                foreach (var typeOpt in odds)
                 {
-                    if(roll < typeOpt.Value)
+                    if (roll < typeOpt.Value)
                     {
                         chosenType = typeOpt.Key;
                         break;
@@ -306,7 +319,7 @@ namespace ConsoleBalatro.Engine.Market
                         roll -= typeOpt.Value;
                     }
                 }
-                if(chosenType == BuyItemType.NONE)
+                if (chosenType == BuyItemType.NONE)
                 {
                     //TEMPORARILY: default to Joker
                     chosenType = BuyItemType.JOKER;

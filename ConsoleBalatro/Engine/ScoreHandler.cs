@@ -31,6 +31,8 @@ namespace ConsoleBalatro.Engine
 
         public static Dictionary<PlayedHandType, int> HandNumTimesPlayed = new();
 
+        public static PlayedHandType MostPlayedHand => HandNumTimesPlayed.OrderByDescending(kvp => kvp.Value).First().Key;
+
         public static Dictionary<PlayedHandType, (int, int)> HandBuffAmounts = new()
         {
             { PlayedHandType.HIGHCARD, (10, 1) },

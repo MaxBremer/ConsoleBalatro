@@ -1,6 +1,8 @@
 ﻿using ConsoleBalatro.Engine.Cards;
 using ConsoleBalatro.Engine.Cards.Consumables;
 using ConsoleBalatro.Engine.Cards.Enums;
+using ConsoleBalatro.Engine.Events;
+using ConsoleBalatro.Engine.Events.Args;
 using ConsoleBalatro.Engine.Market;
 using System;
 using System.Collections.Generic;
@@ -85,7 +87,15 @@ namespace ConsoleBalatro.Engine
 
             //Draw relevant items to pack option zone.
             var packInfo = ConsumableManager.PackBasicNums[Globals.CurrentGameStateObj.TargetPack.MyPackType];
-            MarketOptionsManager.DrawNumMarketItems(packInfo.RelevantBuyItemType, packInfo.NumOptionsPresented, ZoneManager.PackOptionZone);
+            var odds = new Dictionary<BuyItemType, int>() { { packInfo.RelevantBuyItemType, 1} };
+            var args = new EngineOddsEstablishedForPackArgs() { Odds = odds, PackBeingOpened = Globals.CurrentGameStateObj.TargetPack.MyPackType, PackDataBeingOpened = packInfo };
+            args.MyContext = new EventContext()
+            {
+                Context = EventContextType.PackOddsEstablished
+            };
+            EngineEventHandler.TriggerEvent(args);
+            //MarketOptionsManager.DrawNumMarketItems(packInfo.RelevantBuyItemType, packInfo.NumOptionsPresented, ZoneManager.PackOptionZone);
+            MarketOptionsManager.DrawItemsByOdds(packInfo.NumOptionsPresented, ZoneManager.PackOptionZone, args.Odds);
 
             //OPTIONS:
             //JOKER: choose to add to jokerzone

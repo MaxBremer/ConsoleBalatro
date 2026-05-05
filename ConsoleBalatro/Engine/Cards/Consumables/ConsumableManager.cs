@@ -217,6 +217,7 @@ namespace ConsoleBalatro.Engine.Cards.Consumables
 
         public static int PackTotalOdds => PackBasicNums.Values.Select(x => x.ChanceToAppear).Sum();
 
+        public static List<string> SpecialSpectralNames = new() { "BLACK HOLE", "SOUL" };
         public static List<string> SpectralNames => SpectralConsumablesDb.Keys.ToList();
         public static Dictionary<string, Func<Card, ConsumableCardDataBlock>> SpectralConsumablesDb = new()
         {

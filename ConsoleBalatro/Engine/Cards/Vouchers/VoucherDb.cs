@@ -1,4 +1,8 @@
-﻿using ConsoleBalatro.Engine.Cards.Jokers;
+﻿using ConsoleBalatro.Engine.Cards.Consumables;
+using ConsoleBalatro.Engine.Cards.Enums;
+using ConsoleBalatro.Engine.Cards.Jokers;
+using ConsoleBalatro.Engine.Events;
+using ConsoleBalatro.Engine.Events.Args;
 using ConsoleBalatro.Engine.Market;
 using System;
 using System.Collections.Generic;
@@ -355,6 +359,148 @@ namespace ConsoleBalatro.Engine.Cards.Vouchers
                     ret.OnJokerRemovalEffs.Add(() =>
                     {
                         Globals.DiscountMultiplier += 0.25;
+                    });
+
+                    return ret;
+                }
+            },
+            {
+                "CRYSTAL BALL",
+                c =>
+                {
+                    var ret = VoucherDatablock("Crystal Ball", nextVoucher: "OMEN GLOBE");
+                    ret.DescriptionBuilder = _ => "+" + ret.DataDict["INTAMOUNT"].IntData + " consumable slot.";
+                    ret.DataDict.Add("INTAMOUNT", new JokerData() {IntData = 1, MyDataType = JokerDataType.INT});
+                    ret.OnJokerGainEffs.Add(() =>
+                    {
+                       ZoneManager.ConsumableZone.MaxCapacity += 1;
+                    });
+                    ret.OnJokerRemovalEffs.Add(() =>
+                    {
+                       ZoneManager.ConsumableZone.MaxCapacity -= 1;
+                    });
+
+                    return ret;
+                }
+            },
+            {
+                "OMEN GLOBE",
+                c =>
+                {
+                    var ret = VoucherDatablock("Omen Globe", prevVoucher: "CRYSTAL BALL");
+                    ret.DescriptionBuilder = _ => "Spectral cards may appear in any of the Arcana packs.";
+                    var list = new EngineEventListener()
+                    {
+                        MyContextType = EventContextType.PackOddsEstablished,
+                        MyAction = args =>
+                        {
+                            if(args is EngineOddsEstablishedForPackArgs packArgs && packArgs.PackDataBeingOpened.RelevantBuyItemType == BuyItemType.TAROT_CARD && packArgs.Odds.Count == 1 && packArgs.Odds.ContainsKey(BuyItemType.TAROT_CARD))
+                            {
+                                packArgs.Odds = new Dictionary<BuyItemType, int>()
+                                {
+                                    {BuyItemType.TAROT_CARD, 8 },
+                                    {BuyItemType.SPECTRAL_CARD, 2 },
+                                };
+                            }
+                        }
+                    };
+                    ret.Listeners.Add(list);
+
+                    return ret;
+                }
+            },
+            {
+                "TELESCOPE",
+                c =>
+                {
+                    var ret = VoucherDatablock("Telescope", nextVoucher: "OBSERVATORY");
+                    ret.DescriptionBuilder = _ => "Celestial Packs always contain the Planet card for your most played poker hand.";
+                    var list = new EngineEventListener()
+                    {
+                        MyContextType = EventContextType.PackOddsEstablished,
+                        MyAction = args =>
+                        {
+                            if(args is EngineOddsEstablishedForPackArgs packArgs && packArgs.PackDataBeingOpened.RelevantBuyItemType == BuyItemType.PLANET_CARD)
+                            {
+                                var targetHand = ScoreHandler.MostPlayedHand;
+                                var targetCard = MarketOptionsManager.MarketPoolsToDrawFrom[BuyItemType.PLANET_CARD].Cards.FirstOrDefault(x => x.ConsumableData.PlanetHandType == targetHand);
+                                if(targetCard != null)
+                                {
+                                    ZoneManager.PackOptionZone.DrawTargetFrom(MarketOptionsManager.MarketPoolsToDrawFrom[BuyItemType.PLANET_CARD], targetCard);
+                                }
+                            }
+                        }
+                    };
+
+                    return ret;
+                }
+            },
+            {
+                "OBSERVATORY",
+                c =>
+                {
+                    var ret = VoucherDatablock("Observatory", prevVoucher: "TELESCOPE");
+                    ret.DataDict.Add("DOUBLEAMOUNT", new JokerData() {MyDataType = JokerDataType.DOUBLE, DoubleData = 1.5});
+                    ret.DescriptionBuilder = _ => "Planet cards in your consumable area give x" + ret.DataDict["DOUBLEAMOUNT"].DoubleData + " Mult for their specified poker hand.";
+                    ret.Listeners.Add(new EngineEventListener()
+                    {
+                        MyContextType = EventContextType.CardTrigger,
+                        MyAction = args =>
+                        {
+                            if(args is EngineCardTriggerArgs triggerArgs && triggerArgs.CardThatIsTriggering == c && triggerArgs.isScoringTrigger)
+                            {
+                                foreach (var c in ZoneManager.ConsumableZone.Cards.Where(x => x.isConsumable && x.ConsumableData.Type == ConsumableType.PLANET && x.ConsumableData.PlanetHandType == triggerArgs.HandCurrentlyBeingPlayed))
+                                {
+                                    Globals.EmitMultMult(ret.DataDict["DOUBLEAMOUNT"].DoubleData, c);
+	                            }
+                            }
+                        },
+                    });
+
+                    return ret;
+                }
+            },
+            {
+                "HONE",
+                c =>
+                {
+                    var ret = VoucherDatablock("Hone", nextVoucher: "GLOW UP");
+                    ret.DescriptionBuilder = _ => "Foil, Holographic, and Polychrome cards appear 2x more often.";
+                    //NOTE: Lying description, blah blah blah, look above.
+                    ret.OnJokerGainEffs.Add(() =>
+                    {
+                       MarketOptionsManager.RandomEditionOdds[BuyItemType.JOKER][Edition.POLYCHROME] += 6;
+                       MarketOptionsManager.RandomEditionOdds[BuyItemType.JOKER][Edition.HOLOGRAPHIC] += 14;
+                       MarketOptionsManager.RandomEditionOdds[BuyItemType.JOKER][Edition.FOIL] += 20;
+                    });
+                    ret.OnJokerRemovalEffs.Add(() =>
+                    {
+                       MarketOptionsManager.RandomEditionOdds[BuyItemType.JOKER][Edition.POLYCHROME] -= 6;
+                       MarketOptionsManager.RandomEditionOdds[BuyItemType.JOKER][Edition.HOLOGRAPHIC] -= 14;
+                       MarketOptionsManager.RandomEditionOdds[BuyItemType.JOKER][Edition.FOIL] -= 20;
+                    });
+
+                    return ret;
+                }
+            },
+            {
+                "GLOW UP",
+                c =>
+                {
+                    var ret = VoucherDatablock("Glow Up", prevVoucher: "HONE");
+                    ret.DescriptionBuilder = _ => "Foil, Holographic, and Polychrome cards appear 4x more often.";
+                    //NOTE: Lying description, blah blah blah, look above.
+                    ret.OnJokerGainEffs.Add(() =>
+                    {
+                       MarketOptionsManager.RandomEditionOdds[BuyItemType.JOKER][Edition.POLYCHROME] += 12;
+                       MarketOptionsManager.RandomEditionOdds[BuyItemType.JOKER][Edition.HOLOGRAPHIC] += 28;
+                       MarketOptionsManager.RandomEditionOdds[BuyItemType.JOKER][Edition.FOIL] += 40;
+                    });
+                    ret.OnJokerRemovalEffs.Add(() =>
+                    {
+                       MarketOptionsManager.RandomEditionOdds[BuyItemType.JOKER][Edition.POLYCHROME] -= 12;
+                       MarketOptionsManager.RandomEditionOdds[BuyItemType.JOKER][Edition.HOLOGRAPHIC] -= 28;
+                       MarketOptionsManager.RandomEditionOdds[BuyItemType.JOKER][Edition.FOIL] -= 40;
                     });
 
                     return ret;

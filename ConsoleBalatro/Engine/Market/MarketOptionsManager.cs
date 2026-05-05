@@ -146,7 +146,7 @@ namespace ConsoleBalatro.Engine.Market
                             }
                             else
                             {
-                                VoucherDb.VoucherDependants.Add(card.JokerData.PredecessorBoucherDBName, card.JokerData.DBName);
+                                VoucherDb.VoucherDependants.Add(card.JokerData.PredecessorVoucherDBName, card.JokerData.DBName);
                             }
                         }
                         MarketPoolsToDrawFrom.Add(buyItem, voucherPool);

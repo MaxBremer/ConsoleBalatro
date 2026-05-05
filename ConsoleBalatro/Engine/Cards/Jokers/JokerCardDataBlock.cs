@@ -26,7 +26,7 @@ namespace ConsoleBalatro.Engine.Cards.Jokers
         public bool isVoucher = false;
         public bool voucherIsBase = true;
         public string SuccessorVoucherDBName = "";
-        public string PredecessorBoucherDBName = "";
+        public string PredecessorVoucherDBName = "";
 
         //Tag fields
         public bool isTag = false;

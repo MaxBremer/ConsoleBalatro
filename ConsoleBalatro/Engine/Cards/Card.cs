@@ -53,7 +53,7 @@ namespace ConsoleBalatro.Engine.Cards
 
         public int BaseCost = 1; //Default cost of playing card.
         public int? BuyCostOverride = null;
-        public int BuyCost => BuyCostOverride ?? (int)((BaseCost + EngineUtils.EditionCostIncreases[Edition]) * Globals.DiscountMultiplier);
+        public int BuyCost => BuyCostOverride ?? CalcBuyCost();
         public int SellCost => Math.Max((BuyCost / 2) + BonusSellValue, 1);
         public int BonusSellValue = 0;
 
@@ -396,6 +396,14 @@ namespace ConsoleBalatro.Engine.Cards
                 ConsumableData.DataDict.Clear();
                 ConsumableData = null;
             }
+        }
+
+        private int CalcBuyCost()
+        {
+            if(isVoucher)
+                return (int)(BaseCost + EngineUtils.EditionCostIncreases[Edition]);//NO GLOBAL DISCOUNT FOR VOUCHERS
+            else
+                return (int)((BaseCost + EngineUtils.EditionCostIncreases[Edition]) * Globals.DiscountMultiplier);
         }
 
         //TODO: BELOW ARE DISPLAY FUNCTIONS.

@@ -13,7 +13,7 @@ namespace ConsoleBalatro.Engine.Market
     {
         public static void FillFreshMarket()
         {
-            MarketOptionsManager.DrawItemsByMainMarketOddsUntilFull(ZoneManager.MainMarketZone, true);
+            FillMainMarket();
 
             Globals.CurrentRerollCost = Globals.BaseRerollCost;
 
@@ -27,6 +27,8 @@ namespace ConsoleBalatro.Engine.Market
                 MyContext = new EventContext() { Context = EventContextType.MarketSetupDone },
             });
         }
+
+        public static void FillMainMarket() => MarketOptionsManager.DrawItemsByMainMarketOddsUntilFull(ZoneManager.MainMarketZone, true);
 
         public static void MarketClosing()
         {

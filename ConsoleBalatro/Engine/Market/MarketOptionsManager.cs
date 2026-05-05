@@ -25,6 +25,16 @@ namespace ConsoleBalatro.Engine.Market
             PlayedHandType.STRAIGHT,
             PlayedHandType.STRAIGHTFLUSH,
         };
+
+        private static List<PlayedHandType> HiddenPlanets = new()
+        {
+            PlayedHandType.FIVEOFAKIND,
+            PlayedHandType.FLUSHHOUSE,
+            PlayedHandType.FLUSHFIVE,
+        };
+
+        public static bool IsHiddenPlanet(PlayedHandType handType) => HiddenPlanets.Contains(handType);
+
         public static Dictionary<BuyItemType, int> MainMarketWeights = new()
         {
             {BuyItemType.JOKER, 40 },
@@ -51,10 +61,13 @@ namespace ConsoleBalatro.Engine.Market
 
         public static CardZone SpecialPool_LegendaryJokers;
 
+        public static CardZone SpecialPool_HiddenPlanets;
+
         public static void InitializeMarketPools()
         {
             //Initialize special pools
-            SpecialPool_LegendaryJokers = ZoneManager.MakeZone("LegendaryJokers");
+            SpecialPool_LegendaryJokers = ZoneManager.MakeZone("LegendaryJokersPool");
+            SpecialPool_HiddenPlanets = ZoneManager.MakeZone("HiddenPlanetsPool");
 
             foreach (var k in MarketPoolsToDrawFrom.Keys)
             {
@@ -80,6 +93,12 @@ namespace ConsoleBalatro.Engine.Market
                             planetPool.AddCard(pc, invisibleAdd: true);
                         }
                         MarketPoolsToDrawFrom.Add(buyItem, planetPool);
+                        foreach (var planetType in HiddenPlanets)
+                        {
+                            var pc = new Card();
+                            ConsumableManager.MakeCardPlanetCard(planetType, pc);
+                            SpecialPool_HiddenPlanets.AddCard(pc, invisibleAdd: true);
+                        }
                         break;
                     case BuyItemType.TAROT_CARD:
                         var tarotPool = ZoneManager.MakeZone("TarotPool");

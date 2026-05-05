@@ -112,6 +112,9 @@ namespace ConsoleBalatro.Engine
             { "ACE", new() { Rank.ACE } },
         };
 
+        public static List<Rank> FaceRanks => RankGroups["FACE"];
+        public static bool isFace(Card c) => RankGroups["FACE"].Contains(c.Rank);
+
         public static Dictionary<Edition, string> EditionDescriptors = new Dictionary<Edition, string>()
         {
             { Edition.NEGATIVE, "(+1 joker slot)" },
@@ -120,7 +123,6 @@ namespace ConsoleBalatro.Engine
             { Edition.POLYCHROME, "(X1.5 Mult)" },
         };
 
-        public static bool isFace(Card c) => RankGroups["FACE"].Contains(c.Rank);
 
         public static void ResetUtilValues()
         {

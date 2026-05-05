@@ -691,6 +691,7 @@ namespace ConsoleBalatro.Engine.Cards.Vouchers
             var ret = new JokerCardDataBlock();
             ret.JokerName = name;
             ret.DBName = name.ToUpper();
+            ret.voucherIsBase = false;
             if(!string.IsNullOrEmpty(nextVoucher))
                 ret.SuccessorVoucherDBName = nextVoucher;
             if (!string.IsNullOrEmpty(prevVoucher))

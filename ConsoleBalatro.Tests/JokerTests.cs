@@ -10,7 +10,7 @@ using Xunit;
 
 namespace ConsoleBalatro.Tests
 {
-    public class SimpleJokerTests : TestClassBase
+    public class JokerTests : TestClassBase
     {
         [Fact]
         public void PlayHand_HasJimbo_CorrectlyAddsMult()

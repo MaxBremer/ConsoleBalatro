@@ -102,6 +102,74 @@ namespace ConsoleBalatro.Tests
             Assert.Equal(4, s.record.MultMultFromEmits);
         }
 
+
+        [Fact]
+        public void PlayHand_WithFourFingers_AllowsFourCardStraightAndFlush()
+        {
+            var s = JokerSetup("FOUR FINGERS");
+
+            PlayHand("KS,QS,JS,1S");
+            Assert.Single(s.record.PlayedHandTypes);
+            Assert.Equal(PlayedHandType.STRAIGHTFLUSH, s.record.PlayedHandTypes[0]);
+
+            ZoneManager.JokerZone.RemoveCard(s.jok);
+            Assert.Equal(5, EngineUtils.LenFlush);
+            Assert.Equal(5, EngineUtils.LenStraight);
+        }
+
+        [Fact]
+        public void PlayHand_WithMime_DoublesInHandCardTriggers()
+        {
+            JokerSetup("MIME");
+            var record = CaptureScoringContributions();
+
+            var cards = BuildKnownHand("AS,KH", selectAll: false);
+            cards[0].isSelected = true;
+            cards[1].Enhancement = Enhancement.STEEL;
+
+            Globals.PlayCurrentlySelectedHand();
+            Assert.Equal(2.25, record.MultMultFromEmits);
+            Assert.Equal(2, record.MultMultSources.Count);
+            Assert.All(record.MultMultSources, c => Assert.Equal(cards[1], c));
+        }
+
+        [Fact]
+        public void AddRemoveCreditCard_UpdatesMinimumMoneyAllowed()
+        {
+            ResetToFirstBlindPlayRound();
+            Assert.Equal(0, Globals.MinimumMoneyAllowed);
+
+            AddJoker("CREDIT CARD");
+            Assert.Equal(-20, Globals.MinimumMoneyAllowed);
+
+            ZoneManager.JokerZone.RemoveCard(ZoneManager.JokerZone.Cards[0]);
+            Assert.Equal(0, Globals.MinimumMoneyAllowed);
+        }
+
+        [Fact]
+        public void CloseRound_WithGoldenJoker_AddsPostRoundMoneySource()
+        {
+            ResetToFirstBlindPlayRound();
+            AddJoker("GOLDEN JOKER");
+
+            Globals.RequiredChipsForCurrentBlind = 1;
+            PlayHand("AS");
+
+            Assert.Equal(GameState.PostRoundRewardsMenu, Globals.CurrentGameState);
+            Assert.Contains(Globals.CurrentGameStateObj.PostRoundMoneySources, x => x.Item1 == "Golden Joker" && x.Item2 == 4);
+        }
+
+        [Theory]
+        [InlineData("TEMP UNCOMMON JOKER")]
+        [InlineData("TEMP RARE JOKER")]
+        [InlineData("TEMP LEGENDARY JOKER")]
+        public void AddJoker_WithTempJokers_LoadsWithoutErrors(string jokerName)
+        {
+            ResetToFirstBlindPlayRound();
+            AddJoker(jokerName);
+
+            Assert.Contains(ZoneManager.JokerZone.Cards, x => x.isJoker && x.JokerData.DBName == jokerName);
+        }
         private Card GetJoker(int ind) => ZoneManager.JokerZone.Cards[ind];
         private (Card jok, ContributionCapture record) JokerSetup(string jokerName)
         {

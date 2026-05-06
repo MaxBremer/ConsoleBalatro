@@ -44,16 +44,18 @@ namespace ConsoleBalatro.Tests
             ZoneManager.HiddenBlindAttributeZone.ClearCards(true);
         }
 
-        public void ResetToBlindSelection()
+        public void ResetToBlindSelection(bool returnVoucher = false)
         {
             ResetEngineForTest();
             FlowHandler.StartNewAnte();
             FlowHandler.InitializeBlindSelectionRound();
+            if(returnVoucher)
+                MarketOptionsManager.ReturnMarketItemFromZone(ZoneManager.VoucherMarketZone.Cards[0], ZoneManager.VoucherMarketZone);
         }
 
-        public void ResetToFirstBlindPlayRound()
+        public void ResetToFirstBlindPlayRound(bool resetVoucher = false)
         {
-            ResetToBlindSelection();
+            ResetToBlindSelection(resetVoucher);
             FlowHandler.StartSelectedBlind();
         }
 
@@ -113,6 +115,75 @@ namespace ConsoleBalatro.Tests
                 }
             };
             EngineEventHandler.StartListening(listener);
+        }
+
+        protected static ContributionCapture CaptureScoringContributions()
+        {
+            var capture = new ContributionCapture();
+
+            //Individual Mult/Chip gains
+            EngineEventHandler.StartListening(new EngineEventListener
+            {
+                MyContextType = EventContextType.GainEmit,
+                MyAction = args =>
+                {
+                    var gain = Assert.IsType<EngineChipsMultGainEmitArgs>(args);
+                    if (gain.ChipsGainEmitted >= 0)
+                    {
+                        capture.ChipsFromEmits += gain.ChipsGainEmitted;
+                        capture.ChipSources.Add(gain.SourceOfEmit);
+                    }
+
+                    if (gain.MultGainEmitted >= 0)
+                    {
+                        capture.MultFromEmits += gain.MultGainEmitted;
+                        capture.MultSources.Add(gain.SourceOfEmit);
+                    }
+
+                    if (gain.MultMultEmitted >= 0)
+                    {
+                        capture.MultMultFromEmits *= gain.MultMultEmitted;
+                        capture.MultMultSources.Add(gain.SourceOfEmit);
+                    }
+                }
+            });
+
+            //Final, total chip gain.
+            EngineEventHandler.StartListening(new EngineEventListener
+            {
+                MyContextType = EventContextType.TotalChipsGained,
+                MyAction = args =>
+                {
+                    var total = Assert.IsType<EngineTotalChipsGainArgs>(args);
+                    capture.FinalTotalGain = total.AmountBeingGained;
+                }
+            });
+
+            //Hand(s) played.
+            EngineEventHandler.StartListening(new EngineEventListener
+            {
+                MyContextType = EventContextType.HandPlayedCalculated,
+                MyAction = args =>
+                {
+                    var played = Assert.IsType<EngineHandPlayArgs>(args);
+                    capture.PlayedHandTypes.Add(played.HandBeingPlayed);
+                }
+            });
+
+            return capture;
+        }
+
+        protected class ContributionCapture
+        {
+            public int ChipsFromEmits { get; set; }
+            public double MultFromEmits { get; set; }
+            public double MultMultFromEmits { get; set; } = 1d;
+            public int FinalTotalGain { get; set; }
+            public List<Card> ChipSources { get; } = new();
+            public List<Card> MultSources { get; } = new();
+            public List<Card> MultMultSources { get; } = new();
+
+            public List<PlayedHandType> PlayedHandTypes { get; set; } = new();
         }
 
         public void AddTarot(string tarotName)

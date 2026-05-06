@@ -1,6 +1,7 @@
 ﻿using ConsoleBalatro.Engine.Cards;
 using ConsoleBalatro.Engine.Cards.Consumables;
 using ConsoleBalatro.Engine.Cards.Enums;
+using ConsoleBalatro.Engine.Cards.Vouchers;
 using ConsoleBalatro.Engine.Events;
 using ConsoleBalatro.Engine.Events.Args;
 using ConsoleBalatro.Engine.Market;
@@ -81,9 +82,9 @@ namespace ConsoleBalatro.Engine
 
         public static int BaseHandSize = 8;
 
-        public static int MainMarketCount = 2;
-        public static int PackMarketCount = 2;
-        public static int VoucherMarketCount = 1;
+        public const int BaseMainMarketCount = 2;
+        public const int BasePackMarketCount = 2;
+        public const int BaseVoucherMarketCount = 1;
 
         public static int MaxHandsPerRound = 4;
         public static int MaxDiscardsPerRound = 3;
@@ -139,6 +140,9 @@ namespace ConsoleBalatro.Engine
 
             GlobalEventListeners.SetupGlobalListeners();
 
+            //IMPORTANT TO DO THIS BEFORE INITIALIZING MARKET POOLS
+            VoucherDb.ResetDependants();
+
             MarketOptionsManager.InitializeMarketPools();
             MarketOptionsManager.ShufflePools();
 
@@ -159,10 +163,6 @@ namespace ConsoleBalatro.Engine
 
             SelectionMax = 5;
             BaseHandSize = 8;
-
-            MainMarketCount = 2;
-            PackMarketCount = 2;
-            VoucherMarketCount = 1;
 
             MaxHandsPerRound = 4;
             MaxDiscardsPerRound = 3;
@@ -258,9 +258,10 @@ namespace ConsoleBalatro.Engine
             ZoneManager.HiddenPlayZone.DrawUntilCapacityFrom(ZoneManager.CurrentlyBeingPlayedZone);
             CurHandsRemaining -= 1;
 
-            EngineEventHandler.TriggerEvent(new EngineEventArgs()
+            EngineEventHandler.TriggerEvent(new EngineHandPlayDoneArgs()
             {
                 MyContext = new EventContext() { Context = EventContextType.HandPlayDone },
+                HandTypeThatWasPlayed = handTypePlayed,
             });
 
             if(TotalCurrentChips >= RequiredChipsForCurrentBlind)

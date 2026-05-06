@@ -24,6 +24,7 @@ namespace ConsoleBalatro.Engine
 
             EngineEventHandler.StartListening(new EngineEventListener() { MyAction = AddSealEffectForScoringCards });
 
+            EngineEventHandler.StartListening(new EngineEventListener() { MyAction = RevealHiddenHand, MyContextType = EventContextType.HandPlayDone });
         }
 
         public static void ChangeZoneSizeForNegative(EngineEventArgs args)
@@ -132,6 +133,15 @@ namespace ConsoleBalatro.Engine
             if(args.MyContext.Context == EventContextType.SelectedCardBeingConsideredForCalc && args is EngineCardChosenForPlayedHandArgs chosenArgs && chosenArgs.CardBeingConsidered.Enhancement == Enhancement.STONE)
             {
                 chosenArgs.WillBeIncludedInCalc = true;
+            }
+        }
+
+        //After a hand is played, if it's an as-of-yet unplayed hidden hand, add its planet card to the pool.
+        private static void RevealHiddenHand(EngineEventArgs args)
+        {
+            if(args is EngineHandPlayDoneArgs playArgs && MarketOptionsManager.IsHiddenPlanet(playArgs.HandTypeThatWasPlayed) && !MarketOptionsManager.HiddenPlanetsRevealed[playArgs.HandTypeThatWasPlayed])
+            {
+                MarketOptionsManager.RevealHiddenPlanet(playArgs.HandTypeThatWasPlayed);
             }
         }
     }

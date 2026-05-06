@@ -431,6 +431,7 @@ namespace ConsoleBalatro.Engine.Cards.Vouchers
                             }
                         }
                     };
+                    ret.Listeners.Add(list);
 
                     return ret;
                 }
@@ -666,6 +667,11 @@ namespace ConsoleBalatro.Engine.Cards.Vouchers
         };
 
         public static List<string> VoucherDBNames => VoucherData.Keys.ToList();
+
+        public static void ResetDependants()
+        {
+            VoucherDependants.Clear();
+        }
 
         //Give the passed card the data necessary to make it the named Voucher (DB NAME)
         public static void MakeCardVoucher(Card c, string VoucherName)

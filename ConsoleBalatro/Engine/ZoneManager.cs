@@ -134,9 +134,9 @@ namespace ConsoleBalatro.Engine
 
         public static void InitializeMarketRoundZones()
         {
-            MainMarketZone = MakeZone("MainMarket", Globals.MainMarketCount);
-            PackMarketZone = MakeZone("PacksMarket", Globals.PackMarketCount);
-            VoucherMarketZone = MakeZone("VouchersMarket", Globals.VoucherMarketCount);
+            MainMarketZone = MakeZone("MainMarket", Globals.BaseMainMarketCount);
+            PackMarketZone = MakeZone("PacksMarket", Globals.BasePackMarketCount);
+            VoucherMarketZone = MakeZone("VouchersMarket", Globals.BaseVoucherMarketCount);
 
             PackOptionZone = MakeZone("PackOptions");
 

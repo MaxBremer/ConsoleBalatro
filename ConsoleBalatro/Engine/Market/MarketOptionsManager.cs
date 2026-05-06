@@ -26,11 +26,13 @@ namespace ConsoleBalatro.Engine.Market
             PlayedHandType.STRAIGHTFLUSH,
         };
 
-        private static List<PlayedHandType> HiddenPlanets = new()
+        public static List<PlayedHandType> HiddenPlanets => HiddenPlanetsRevealed.Keys.ToList();
+
+        public static Dictionary<PlayedHandType, bool> HiddenPlanetsRevealed = new()
         {
-            PlayedHandType.FIVEOFAKIND,
-            PlayedHandType.FLUSHHOUSE,
-            PlayedHandType.FLUSHFIVE,
+            {PlayedHandType.FIVEOFAKIND, false },
+            {PlayedHandType.FLUSHHOUSE, false },
+            {PlayedHandType.FLUSHFIVE, false },
         };
 
         public static bool IsHiddenPlanet(PlayedHandType handType) => HiddenPlanets.Contains(handType);
@@ -75,6 +77,32 @@ namespace ConsoleBalatro.Engine.Market
             SpecialPool_Soul = ZoneManager.MakeZone("SoulPool");
             SpecialPool_BlackHole = ZoneManager.MakeZone("BlackHolePool");
             SpecialPool_SpecialSpectral = ZoneManager.MakeZone("SpecialSpectralPool");
+
+            //Reset hidden planet trackers
+            foreach (var k in HiddenPlanets)
+            {
+                HiddenPlanetsRevealed[k] = false;
+            }
+
+            //Reset market odds
+            MainMarketWeights = new()
+            {
+                {BuyItemType.JOKER, 40 },
+                {BuyItemType.TAROT_CARD, 5 },
+                {BuyItemType.PLANET_CARD, 5 },
+            };
+
+            //Reset edition odds
+            RandomEditionOdds = new()
+            {
+                {BuyItemType.JOKER, new Dictionary<Edition, int>()
+                {
+                    { Edition.FOIL, 20 },
+                    { Edition.HOLOGRAPHIC, 14 },
+                    { Edition.POLYCHROME, 3 },
+                    { Edition.NEGATIVE, 3 },
+                } },
+            };
 
             foreach (var k in MarketPoolsToDrawFrom.Keys)
             {
@@ -171,6 +199,12 @@ namespace ConsoleBalatro.Engine.Market
             {
                 pool.Shuffle();
             }
+        }
+
+        public static void RevealHiddenPlanet(PlayedHandType handType)
+        {
+            MarketPoolsToDrawFrom[BuyItemType.PLANET_CARD].DrawTargetFrom(SpecialPool_HiddenPlanets, SpecialPool_HiddenPlanets.Cards.First(x => x.ConsumableData.PlanetHandType == handType), invisibleAdd: true);
+            HiddenPlanetsRevealed[handType] = true;
         }
 
         public static void AddToVoucherPool(string DBNameToAdd)

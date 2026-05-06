@@ -372,7 +372,7 @@ namespace ConsoleBalatro.Engine.Cards.Jokers
                 var ret = new JokerCardDataBlock();
                 ret.JokerName = "Stencil Joker";
                 ret.DBName = "STENCIL JOKER";
-                Func<double> getCurrentAmt = () => (ZoneManager.JokerZone.MaxCapacity - ZoneManager.JokerZone.Cards.Where(x => x.isJoker && x.JokerData.DBName != "STENCIL JOKER").Count()) * ret.DataDict["MULTMULTAMOUNT"].DoubleData;
+                Func<double> getCurrentAmt = () => (ZoneManager.JokerZone.MaxCapacity - ZoneManager.JokerZone.Cards.Count(x => x.isJoker && x.JokerData.DBName != "STENCIL JOKER")) * ret.DataDict["MULTMULTAMOUNT"].DoubleData;
                 ret.DescriptionBuilder = _ => "* " + ret.DataDict["MULTMULTAMOUNT"].DoubleData + " Mult for each empty Joker slot, Stencil Joker included. Currently * " + getCurrentAmt().ToString() + " Mult";
                 ret.DataDict.Add("MULTMULTAMOUNT", new JokerData() { DoubleData = 1, MyDataType = JokerDataType.DOUBLE});
                 ret.Listeners.Add(new EngineEventListener()

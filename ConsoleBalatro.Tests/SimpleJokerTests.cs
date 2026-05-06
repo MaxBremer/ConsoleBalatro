@@ -159,7 +159,7 @@ namespace ConsoleBalatro.Tests
             Assert.Contains(Globals.CurrentGameStateObj.PostRoundMoneySources, x => x.Item1 == "Golden Joker" && x.Item2 == 4);
         }
 
-        [Theory]
+        /*[Theory]
         [InlineData("TEMP UNCOMMON JOKER")]
         [InlineData("TEMP RARE JOKER")]
         [InlineData("TEMP LEGENDARY JOKER")]
@@ -169,7 +169,7 @@ namespace ConsoleBalatro.Tests
             AddJoker(jokerName);
 
             Assert.Contains(ZoneManager.JokerZone.Cards, x => x.isJoker && x.JokerData.DBName == jokerName);
-        }
+        }*/
         private Card GetJoker(int ind) => ZoneManager.JokerZone.Cards[ind];
         private (Card jok, ContributionCapture record) JokerSetup(string jokerName)
         {

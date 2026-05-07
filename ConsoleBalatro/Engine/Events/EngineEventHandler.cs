@@ -134,6 +134,8 @@ namespace ConsoleBalatro.Engine.Events
 
         private static void DoTrigger(EngineEventListener listener, EngineEventArgs args)
         {
+            if (ToBeRemoved.Contains(listener))
+                return;//Don't trigger listeners queued for removal.
             CallDepth++;
             listener.Trigger(args);
             CallDepth--;

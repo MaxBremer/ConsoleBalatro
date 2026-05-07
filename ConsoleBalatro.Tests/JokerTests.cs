@@ -159,6 +159,123 @@ namespace ConsoleBalatro.Tests
             Assert.Contains(Globals.CurrentGameStateObj.PostRoundMoneySources, x => x.Item1 == "Golden Joker" && x.Item2 == 4);
         }
 
+        [Fact]
+        public void CloseBlindSelection_WithCeremonialDagger_DestroysRightJokerAndAddsMult()
+        {
+            ResetToBlindSelection();
+            AddJoker("CEREMONIAL DAGGER");
+            AddJoker("JIMBO");
+
+            var dagger = GetJoker(0);
+            var sacrificed = GetJoker(1);
+            var expectedAddedMult = sacrificed.SellCost * 2;
+
+            FlowHandler.CloseBlindSelectionRound();
+
+            Assert.Single(ZoneManager.JokerZone.Cards);
+            Assert.Equal(dagger, ZoneManager.JokerZone.Cards[0]);
+            Assert.Equal(expectedAddedMult, dagger.JokerData.DataDict["MULTAMOUNT"].DoubleData);
+        }
+
+        [Fact]
+        public void PlayHand_WithMysticSummit_AddsMultOnlyWhenNoDiscardsRemain()
+        {
+            var s = JokerSetup("MYSTIC SUMMIT");
+
+            Globals.CurDiscardsRemaining = 1;
+            PlayHand("AS");
+            Assert.Empty(s.record.MultSources);
+
+            s.record.MultSources.Clear();
+            s.record.MultFromEmits = 0;
+
+            Globals.CurDiscardsRemaining = 0;
+            PlayHand("AS");
+            Assert.Single(s.record.MultSources);
+            Assert.Equal(s.jok, s.record.MultSources[0]);
+            Assert.Equal(15, s.record.MultFromEmits);
+        }
+
+        [Fact]
+        public void CloseBlindSelection_WithMarbleJoker_AddsStoneCardToDeck()
+        {
+            ResetToBlindSelection();
+            AddJoker("MARBLE JOKER");
+            var beforeCount = ZoneManager.DeckZone.Cards.Count;
+
+            FlowHandler.CloseBlindSelectionRound();
+
+            Assert.Equal(beforeCount + 1, ZoneManager.DeckZone.Cards.Count);
+            Assert.Contains(ZoneManager.DeckZone.Cards, c => c.Enhancement == Enhancement.STONE);
+        }
+
+        [Fact]
+        public void PlayHand_WithLoyaltyCard_TriggersEverySixthHand()
+        {
+            var s = JokerSetup("LOYALTY CARD");
+
+            for (var i = 0; i < 5; i++)
+                PlayHand("AS");
+
+            Assert.Empty(s.record.MultMultSources);
+            Assert.Equal(2, s.jok.JokerData.DataDict["REMAINING"].IntData);
+
+            PlayHand("AS");
+
+            Assert.Single(s.record.MultMultSources);
+            Assert.Equal(s.jok, s.record.MultMultSources[0]);
+            Assert.Equal(4, s.record.MultMultFromEmits);
+            Assert.Equal(6, s.jok.JokerData.DataDict["REMAINING"].IntData);
+        }
+
+        [Fact]
+        public void PlayHand_With8Ball_CreatesTarotWhenRollSucceeds()
+        {
+            ResetToFirstBlindPlayRound();
+            AddJoker("8 BALL");
+            RigNextRoll(true);
+            var beforeCount = ZoneManager.ConsumableZone.Cards.Count;
+
+            PlayHand("8S");
+
+            Assert.Equal(beforeCount + 1, ZoneManager.ConsumableZone.Cards.Count);
+            Assert.True(ZoneManager.ConsumableZone.Cards.Last().isConsumable);
+        }
+
+        [Fact]
+        public void PlayHand_WithMisprint_RollsMultInExpectedRange()
+        {
+            var s = JokerSetup("MISPRINT");
+
+            PlayHand("AS");
+
+            Assert.Single(s.record.MultSources);
+            Assert.Equal(s.jok, s.record.MultSources[0]);
+            Assert.InRange(s.record.MultFromEmits, 0, 23);
+            Assert.Equal(s.record.MultFromEmits, s.jok.JokerData.DataDict["MULTAMOUNT"].DoubleData);
+        }
+
+        [Fact]
+        public void PlayHand_WithDusk_RetriggersPlayedCardsOnlyOnFinalHand()
+        {
+            JokerSetup("DUSK");
+            var record = CaptureScoringContributions();
+            var card = BuildKnownHand("AS")[0];
+
+            Globals.CurHandsRemaining = 2;
+            Globals.PlayCurrentlySelectedHand();
+            Assert.Single(record.ChipSources.Where(x => x == card));
+
+            record.ChipSources.Clear();
+            record.ChipsFromEmits = 0;
+
+            card.isSelected = true;
+            ZoneManager.HandZone.Cards.Add(card);
+            Globals.CurHandsRemaining = 1;
+            Globals.PlayCurrentlySelectedHand();
+            Assert.Equal(2, record.ChipSources.Count(x => x == card));
+        }
+
         /*[Theory]
         [InlineData("TEMP UNCOMMON JOKER")]
         [InlineData("TEMP RARE JOKER")]

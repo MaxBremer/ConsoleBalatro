@@ -165,16 +165,22 @@ namespace ConsoleBalatro.Tests
             ResetToBlindSelection();
             AddJoker("CEREMONIAL DAGGER");
             AddJoker("JIMBO");
+            var record = CaptureScoringContributions();
 
             var dagger = GetJoker(0);
             var sacrificed = GetJoker(1);
             var expectedAddedMult = sacrificed.SellCost * 2;
 
-            FlowHandler.CloseBlindSelectionRound();
+            FlowHandler.StartSelectedBlind();
 
             Assert.Single(ZoneManager.JokerZone.Cards);
             Assert.Equal(dagger, ZoneManager.JokerZone.Cards[0]);
             Assert.Equal(expectedAddedMult, dagger.JokerData.DataDict["MULTAMOUNT"].DoubleData);
+            PlayHand("AS");
+            Assert.Single(record.MultSources);
+            Assert.Contains(dagger, record.MultSources);
+            Assert.Equal(expectedAddedMult, record.MultFromEmits);
+
         }
 
         [Fact]

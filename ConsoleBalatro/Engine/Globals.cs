@@ -72,6 +72,7 @@ namespace ConsoleBalatro.Engine
         public static int MinimumMoneyAllowed = 0;
         public static int BaseRerollCost = 5;
         public static int CurrentRerollCost = BaseRerollCost;
+        public static bool ChaosClownFreeRerollAvailable = false;
         public static Card RerollButtonCard;
 
         public static int HandSize { get => ZoneManager.HandSize; set => ZoneManager.HandSize = value; }
@@ -160,6 +161,7 @@ namespace ConsoleBalatro.Engine
             MinimumMoneyAllowed = 0;
             BaseRerollCost = 5;
             CurrentRerollCost = BaseRerollCost;
+            ChaosClownFreeRerollAvailable = false;
 
             SelectionMax = 5;
             BaseHandSize = 8;

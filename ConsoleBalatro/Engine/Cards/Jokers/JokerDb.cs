@@ -680,7 +680,23 @@ namespace ConsoleBalatro.Engine.Cards.Jokers
                 });
                 return ret;
             } },
-
+            { "CHAOS THE CLOWN", c =>
+            {
+                var ret = new JokerCardDataBlock();
+                ret.JokerName = "Chaos the Clown";
+                ret.DBName = "CHAOS THE CLOWN";
+                ret.DescriptionBuilder = _ => "1 free Reroll per shop";
+                ret.Listeners.Add(new EngineEventListener()
+                {
+                    MyContextType = EventContextType.MarketSetupDone,
+                    MyAction = args =>
+                    {
+                        Globals.ChaosClownFreeRerollAvailable = true;
+                        Globals.CurrentRerollCost = 0;
+                    },
+                });
+                return ret;
+            } },
             //TODO: REMOVE BELOW AFTER REAL UNCOMMON/RARE ADDED, THESE ONLY FOR UNIT TESTS.
             { "TEMP UNCOMMON JOKER", c =>
             {

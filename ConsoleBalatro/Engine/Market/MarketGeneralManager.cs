@@ -16,6 +16,7 @@ namespace ConsoleBalatro.Engine.Market
             FillMainMarket();
 
             Globals.CurrentRerollCost = Globals.BaseRerollCost;
+            Globals.ChaosClownFreeRerollAvailable = false;
 
             for (int i = 0; i < ZoneManager.PackMarketZone.MaxCapacity; i++)
             {
@@ -50,7 +51,16 @@ namespace ConsoleBalatro.Engine.Market
                 return;
             }
             Globals.EmitMoneyLoss(Globals.CurrentRerollCost, Globals.RerollButtonCard, false);
-            Globals.CurrentRerollCost += 1;
+            if (Globals.ChaosClownFreeRerollAvailable && Globals.CurrentRerollCost == 0)
+            {
+                Globals.ChaosClownFreeRerollAvailable = false;
+                Globals.CurrentRerollCost = Globals.BaseRerollCost;
+            }
+            else
+            {
+                Globals.CurrentRerollCost += 1;
+            }
+
             var toRem = new List<Card>();
             toRem.AddRange(ZoneManager.MainMarketZone.Cards);
             foreach (var c in toRem)

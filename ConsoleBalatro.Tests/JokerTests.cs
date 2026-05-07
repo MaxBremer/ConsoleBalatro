@@ -1,6 +1,7 @@
 ﻿using ConsoleBalatro.Engine;
 using ConsoleBalatro.Engine.Cards;
 using ConsoleBalatro.Engine.Cards.Enums;
+using ConsoleBalatro.Engine.Market;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -305,6 +306,22 @@ namespace ConsoleBalatro.Tests
             Assert.Equal(s.jok, s.record.MultSources[0]);
             Assert.Equal(10, s.record.MultFromEmits);
         }
+
+        [Fact]
+        public void StartMarket_WithChaosTheClown_MakesFirstRerollFree()
+        {
+            JokerSetup("CHAOS THE CLOWN");
+            PlayHand("AS,AS,AS,AS,AS");
+            Globals.CurrentRerollCost = 999;
+            FlowHandler.ClosePostRound();
+
+            Assert.Equal(GameState.ShopMenu, Globals.CurrentGameState);
+            Assert.Equal(0, Globals.CurrentRerollCost);
+
+            MarketGeneralManager.RerollMainMarket();
+            Assert.Equal(Globals.BaseRerollCost, Globals.CurrentRerollCost);
+        }
+
 
 
         /*[Theory]

@@ -46,6 +46,12 @@ namespace ConsoleBalatro.Engine.Cards.Jokers
             {"8 BALL", new JokerTypeData { DBName = "8 BALL", Price = 5 } },
             {"MISPRINT", new JokerTypeData { DBName = "MISPRINT", Price = 4 } },
             {"DUSK", new JokerTypeData { DBName = "DUSK", Price = 5, Rarity = JokerRarity.UNCOMMON } },
+            {"RAISED FIST", new JokerTypeData { DBName = "RAISED FIST", Price = 5 } },
+            {"CHAOS THE CLOWN", new JokerTypeData { DBName = "CHAOS THE CLOWN", Price = 4 } },
+            {"FIBONACCI", new JokerTypeData { DBName = "FIBONACCI", Price = 8, Rarity = JokerRarity.UNCOMMON } },
+            {"STEEL JOKER", new JokerTypeData { DBName = "STEEL JOKER", Price = 7, Rarity = JokerRarity.UNCOMMON } },
+            {"SCARY FACE", new JokerTypeData { DBName = "SCARY FACE", Price = 4 } },
+            {"ABSTRACT JOKER", new JokerTypeData { DBName = "ABSTRACT JOKER", Price = 4 } },
             {"TEMP UNCOMMON JOKER", new JokerTypeData { DBName = "TEMP UNCOMMON JOKER", Price = 5, Rarity = JokerRarity.UNCOMMON } },
             {"TEMP RARE JOKER", new JokerTypeData { DBName = "TEMP RARE JOKER", Price = 5, Rarity = JokerRarity.RARE } },
             {"TEMP LEGENDARY JOKER", new JokerTypeData { DBName = "TEMP LEGENDARY JOKER", Price = 6, Rarity = JokerRarity.LEGENDARY } },
@@ -650,7 +656,32 @@ namespace ConsoleBalatro.Engine.Cards.Jokers
                     },
                 });
                 return ret;
-            } },//TODO: REMOVE BELOW AFTER REAL UNCOMMON/RARE ADDED, THESE ONLY FOR UNIT TESTS.
+            } },
+            { "RAISED FIST", c =>
+            {
+                var ret = new JokerCardDataBlock();
+                ret.JokerName = "Raised Fist";
+                ret.DBName = "RAISED FIST";
+                ret.DescriptionBuilder = _ => "Adds double the rank of lowest ranked card held in hand to Mult";
+                ret.Listeners.Add(new EngineEventListener()
+                {
+                    MyContextType = EventContextType.CardTrigger,
+                    MyAction = args =>
+                    {
+                        if (args is EngineCardTriggerArgs triggerArgs && triggerArgs.CardThatIsTriggering == c && triggerArgs.isScoringTrigger)
+                        {
+                            var heldCards = ZoneManager.HandZone.Cards.Where(x => !x.isSelected).ToList();
+                            if (!heldCards.Any())
+                                return;
+                            var lowestHeld = heldCards.OrderBy(x => EngineUtils.RankBaseChipAmounts[x.Rank]).First();
+                            Globals.EmitMultAdd(EngineUtils.RankBaseChipAmounts[lowestHeld.Rank] * 2, c);
+                        }
+                    },
+                });
+                return ret;
+            } },
+
+            //TODO: REMOVE BELOW AFTER REAL UNCOMMON/RARE ADDED, THESE ONLY FOR UNIT TESTS.
             { "TEMP UNCOMMON JOKER", c =>
             {
                 var ret = new JokerCardDataBlock();

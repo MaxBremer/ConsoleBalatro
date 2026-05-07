@@ -283,6 +283,29 @@ namespace ConsoleBalatro.Tests
             Globals.PlayCurrentlySelectedHand();
             Assert.Equal(2, record.ChipSources.Count(x => x == card));
         }
+        [Fact]
+        public void PlayHand_WithRaisedFist_AddsDoubleLowestHeldInHandRankToMult()
+        {
+            var s = JokerSetup("RAISED FIST");
+            BuildKnownHand("KS,2H,5C", selectAll: false);
+            ZoneManager.HandZone.Cards[0].isSelected = true;
+            Globals.PlayCurrentlySelectedHand();
+
+            Assert.Single(s.record.MultSources);
+            Assert.Equal(s.jok, s.record.MultSources[0]);
+            Assert.Equal(4, s.record.MultFromEmits);
+            s.record.MultSources.Clear();
+            s.record.MultFromEmits = 0;
+
+            BuildKnownHand("KS,2H,5C", selectAll: false);
+            ZoneManager.HandZone.Cards[0].isSelected = true;
+            ZoneManager.HandZone.Cards[1].isSelected = true;
+            Globals.PlayCurrentlySelectedHand();
+            Assert.Single(s.record.MultSources);
+            Assert.Equal(s.jok, s.record.MultSources[0]);
+            Assert.Equal(10, s.record.MultFromEmits);
+        }
+
 
         /*[Theory]
         [InlineData("TEMP UNCOMMON JOKER")]

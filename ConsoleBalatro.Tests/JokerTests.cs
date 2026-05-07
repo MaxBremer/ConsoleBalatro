@@ -322,6 +322,67 @@ namespace ConsoleBalatro.Tests
             Assert.Equal(Globals.BaseRerollCost, Globals.CurrentRerollCost);
         }
 
+        [Fact]
+        public void PlayHand_WithFibonacci_AddsMultForEachPlayedFibonacciRank()
+        {
+            var s = JokerSetup("FIBONACCI");
+            PlayHand("AS,2S,3S,5S,8S");
+
+            Assert.Equal(5, s.record.MultSources.Count);
+            Assert.All(s.record.MultSources, x => Assert.Equal(s.jok, x));
+            Assert.Equal(40, s.record.MultFromEmits);
+        }
+
+        [Fact]
+        public void PlayHand_WithSteelJoker_AddsMultMultBasedOnSteelCardsInDeck()
+        {
+            var s = JokerSetup("STEEL JOKER");
+            var steelInDeck = ZoneManager.DeckZone.Cards[0];
+            steelInDeck.Enhancement = Enhancement.STEEL;
+
+            var steelInHand = ZoneManager.DeckZone.Cards[1];
+            steelInHand.Enhancement = Enhancement.STEEL;
+            ZoneManager.HandZone.DrawTargetFrom(ZoneManager.DeckZone, steelInHand, ignoreSpaceLimits: true);
+
+            var steelInDiscard = ZoneManager.DeckZone.Cards[1];
+            steelInDiscard.Enhancement = Enhancement.STEEL;
+            ZoneManager.DiscardZone.DrawTargetFrom(ZoneManager.DeckZone, steelInDiscard);
+
+            BuildKnownHand("AS", clearHand: false);
+            Globals.PlayCurrentlySelectedHand();
+
+            Assert.Equal(2, s.record.MultMultSources.Count);//1 from the steel card in hand, 1 from the steel joker.
+            Assert.Equal(s.jok, s.record.MultMultSources[1]);//Steel is a global listener, so it'll always go first.
+            Assert.Equal(1.6 * 1.5, s.record.MultMultFromEmits);//(expected steel joker) * (expected steel card in hand)
+        }
+
+        [Fact]
+        public void PlayHand_WithScaryFace_AddsChipsForPlayedFaceCards()
+        {
+            var s = JokerSetup("SCARY FACE");
+            PlayHand("JS,QS,KS,1S,1S");
+
+            Assert.Equal(3, s.record.ChipSources.Count(x => x == s.jok));
+            Assert.Equal(90, s.record.ChipsFromEmits - 50);
+        }
+
+        [Fact]
+        public void PlayHand_WithAbstractJoker_AddsMultBasedOnJokerCount()
+        {
+            var s = JokerSetup("ABSTRACT JOKER");
+            AddJoker("JIMBO");
+            PlayHand("AS");
+
+            Assert.Contains(s.jok, s.record.MultSources);
+            Assert.Equal(6 + 4, s.record.MultFromEmits);
+            s.record.MultSources.Clear();
+            s.record.MultFromEmits = 0;
+
+            AddJoker("JIMBO");
+            PlayHand("AS");
+            Assert.Contains(s.jok, s.record.MultSources);
+            Assert.Equal(9 + 4 + 4, s.record.MultFromEmits);
+        }
 
 
         /*[Theory]

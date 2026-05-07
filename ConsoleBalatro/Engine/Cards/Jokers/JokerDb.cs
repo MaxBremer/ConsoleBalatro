@@ -697,6 +697,85 @@ namespace ConsoleBalatro.Engine.Cards.Jokers
                 });
                 return ret;
             } },
+            { "FIBONACCI", c =>
+            {
+                var ret = new JokerCardDataBlock();
+                ret.JokerName = "Fibonacci";
+                ret.DBName = "FIBONACCI";
+                ret.DescriptionBuilder = _ => "Each played Ace, 2, 3, 5, or 8 gives +" + ret.DataDict["MULTAMOUNT"].DoubleData + " Mult when scored";
+                ret.DataDict.Add("MULTAMOUNT", new JokerData() { DoubleData = 8, MyDataType = JokerDataType.DOUBLE });
+                ret.Listeners.Add(new EngineEventListener()
+                {
+                    MyContextType = EventContextType.CardTrigger,
+                    MyAction = args =>
+                    {
+                        if (args is EngineCardTriggerArgs triggerArgs
+                            && triggerArgs.isScoringTrigger
+                            && new List<Rank> { Rank.ACE, Rank.TWO, Rank.THREE, Rank.FIVE, Rank.EIGHT }.Contains(triggerArgs.CardThatIsTriggering.Rank))
+                            Globals.EmitMultAdd(ret.DataDict["MULTAMOUNT"].DoubleData, c);
+                    },
+                });
+                return ret;
+            } },
+            { "STEEL JOKER", c =>
+            {
+                var ret = new JokerCardDataBlock();
+                ret.JokerName = "Steel Joker";
+                ret.DBName = "STEEL JOKER";
+                Func<double> GetSteelMult = () => 1 + (ZoneManager.GetFullDeckPlayingCards().Count(x => x.Enhancement == Enhancement.STEEL) * 0.2);
+                ret.DescriptionBuilder = _ => "Gives X0.2 Mult for each Steel Card in your full deck (Currently X" + GetSteelMult().ToString("0.0") + " Mult)";
+                ret.Listeners.Add(new EngineEventListener()
+                {
+                    MyContextType = EventContextType.CardTrigger,
+                    MyAction = args =>
+                    {
+                        if (args is EngineCardTriggerArgs triggerArgs && triggerArgs.CardThatIsTriggering == c && triggerArgs.isScoringTrigger)
+                        {
+                            var steelCount = ZoneManager.GetFullDeckPlayingCards().Count(x => x.Enhancement == Enhancement.STEEL);
+                            Globals.EmitMultMult(GetSteelMult(), c);
+                        }
+                    },
+                });
+                return ret;
+            } },
+            { "SCARY FACE", c =>
+            {
+                var ret = new JokerCardDataBlock();
+                ret.JokerName = "Scary Face";
+                ret.DBName = "SCARY FACE";
+                ret.DescriptionBuilder = _ => "Played face cards give +" + ret.DataDict["CHIPAMOUNT"].IntData + " Chips when scored";
+                ret.DataDict.Add("CHIPAMOUNT", new JokerData() { IntData = 30, MyDataType = JokerDataType.INT });
+                ret.Listeners.Add(new EngineEventListener()
+                {
+                    MyContextType = EventContextType.CardTrigger,
+                    MyAction = args =>
+                    {
+                        if (args is EngineCardTriggerArgs triggerArgs && triggerArgs.isScoringTrigger && EngineUtils.isFace(triggerArgs.CardThatIsTriggering))
+                            Globals.EmitChipsAdd(ret.DataDict["CHIPAMOUNT"].IntData, c);
+                    },
+                });
+                return ret;
+            } },
+            { "ABSTRACT JOKER", c =>
+            {
+                var ret = new JokerCardDataBlock();
+                ret.JokerName = "Abstract Joker";
+                ret.DBName = "ABSTRACT JOKER";
+                Func<double> getMult = () => ZoneManager.JokerZone.Cards.Count(x => x.isJoker) * ret.DataDict["MULTAMOUNT"].DoubleData;
+                ret.DescriptionBuilder = _ => "+" + ret.DataDict["MULTAMOUNT"].DoubleData + " Mult for each Joker card (Currently +" + getMult() + " Mult)";
+                ret.DataDict.Add("MULTAMOUNT", new JokerData() { DoubleData = 3, MyDataType = JokerDataType.DOUBLE });
+                ret.Listeners.Add(new EngineEventListener()
+                {
+                    MyContextType = EventContextType.CardTrigger,
+                    MyAction = args =>
+                    {
+                        if (args is EngineCardTriggerArgs triggerArgs && triggerArgs.CardThatIsTriggering == c && triggerArgs.isScoringTrigger)
+                            Globals.EmitMultAdd(getMult(), c);
+                    },
+                });
+                return ret;
+            } },
+
             //TODO: REMOVE BELOW AFTER REAL UNCOMMON/RARE ADDED, THESE ONLY FOR UNIT TESTS.
             { "TEMP UNCOMMON JOKER", c =>
             {

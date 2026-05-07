@@ -59,11 +59,12 @@ namespace ConsoleBalatro.Tests
             FlowHandler.StartSelectedBlind();
         }
 
-        public List<Card> BuildKnownHand(string handDef, bool selectAll = true)
+        public List<Card> BuildKnownHand(string handDef, bool selectAll = true, bool clearHand = true)
         {
-            ZoneManager.HandZone.Cards.Clear();
+            if(clearHand)
+                ZoneManager.HandZone.Cards.Clear();
             var cards = CardFactory.CardListFromDefString(handDef, ",");
-            ZoneManager.HandZone.AddCards(cards);
+            ZoneManager.HandZone.AddCards(cards, overrideSpace: !clearHand);//If we're not clearing the hand, we want to allow going over the normal hand limit, since we're likely just adding cards to an already existing hand.
             if (selectAll)
             {
                 foreach (var c in cards)

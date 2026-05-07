@@ -219,5 +219,20 @@ namespace ConsoleBalatro.Engine
         {
             DestroyCard(c, c.MyZone);
         }
+        public static List<Card> GetFullDeckCards()
+        {
+            var ret = new List<Card>();
+            ret.AddRange(DeckZone.Cards);
+            ret.AddRange(HandZone.Cards);
+            ret.AddRange(DiscardZone.Cards);
+            ret.AddRange(HiddenPlayZone.Cards);
+            ret.AddRange(CurrentlyBeingPlayedZone.Cards);
+            return ret.Distinct().ToList();
+        }
+        public static List<Card> GetFullDeckPlayingCards()
+        {
+            return GetFullDeckCards().Where(x => !x.isJoker && !x.isVoucher && !x.isConsumable && !x.isTag && !x.isPack).ToList();
+        }
+
     }
 }

@@ -566,10 +566,10 @@ namespace ConsoleBalatro.Engine.Cards.Jokers
                 var ret = new JokerCardDataBlock();
                 ret.JokerName = "Loyalty Card";
                 ret.DBName = "LOYALTY CARD";
-                ret.DescriptionBuilder = _ => "X" + ret.DataDict["MULTMULTAMOUNT"].DoubleData + " Mult every " + ret.DataDict["HANDCOUNT"].IntData + " hands played (" + ret.DataDict["REMAINING"].IntData + " remaining)";
+                ret.DescriptionBuilder = _ => "X" + ret.DataDict["MULTMULTAMOUNT"].DoubleData + " Mult every " + ret.DataDict["HANDCOUNT"].IntData + " hands played (" + (ret.DataDict["REMAINING"].IntData - 1).ToString() + " remaining)";
                 ret.DataDict.Add("MULTMULTAMOUNT", new JokerData() { DoubleData = 4, MyDataType = JokerDataType.DOUBLE });
                 ret.DataDict.Add("HANDCOUNT", new JokerData() { IntData = 6, MyDataType = JokerDataType.INT });
-                ret.DataDict.Add("REMAINING", new JokerData() { IntData = 5, MyDataType = JokerDataType.INT });
+                ret.DataDict.Add("REMAINING", new JokerData() { IntData = 6, MyDataType = JokerDataType.INT });
                 ret.Listeners.Add(new EngineEventListener()
                 {
                     MyContextType = EventContextType.HandPlayDone,

@@ -213,12 +213,14 @@ namespace ConsoleBalatro.Tests
         public void PlayHand_WithLoyaltyCard_TriggersEverySixthHand()
         {
             var s = JokerSetup("LOYALTY CARD");
+            Globals.CurHandsRemaining = 9;
 
             for (var i = 0; i < 5; i++)
                 PlayHand("AS");
 
+            //No mult applied, and 1 remaining before next trigger, as in next trigger will have mult.
             Assert.Empty(s.record.MultMultSources);
-            Assert.Equal(2, s.jok.JokerData.DataDict["REMAINING"].IntData);
+            Assert.Equal(1, s.jok.JokerData.DataDict["REMAINING"].IntData);
 
             PlayHand("AS");
 
@@ -264,7 +266,7 @@ namespace ConsoleBalatro.Tests
 
             Globals.CurHandsRemaining = 2;
             Globals.PlayCurrentlySelectedHand();
-            Assert.Single(record.ChipSources.Where(x => x == card));
+            Assert.Single(record.ChipSources, x => x == card);
 
             record.ChipSources.Clear();
             record.ChipsFromEmits = 0;

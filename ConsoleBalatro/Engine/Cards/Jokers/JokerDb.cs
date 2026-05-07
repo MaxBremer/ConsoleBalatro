@@ -1,4 +1,5 @@
-﻿using ConsoleBalatro.Engine.Cards.Enums;
+﻿using ConsoleBalatro.Engine.Cards.Consumables;
+using ConsoleBalatro.Engine.Cards.Enums;
 using ConsoleBalatro.Engine.Events;
 using ConsoleBalatro.Engine.Events.Args;
 using System;
@@ -33,9 +34,9 @@ namespace ConsoleBalatro.Engine.Cards.Jokers
             {"DEVIOUS JOKER", new JokerTypeData { DBName = "DEVIOUS JOKER", Price = 4 } },
             {"CRAFTY JOKER", new JokerTypeData { DBName = "CRAFTY JOKER", Price = 4 } },
             {"HALF JOKER", new JokerTypeData { DBName = "HALF JOKER", Price = 5 } },
-            {"STENCIL JOKER", new JokerTypeData { DBName = "STENCIL JOKER", Price = 8 } },
-            {"FOUR FINGERS", new JokerTypeData { DBName = "FOUR FINGERS", Price = 7 } },
-            {"MIME", new JokerTypeData { DBName = "MIME", Price = 5 } },
+            {"STENCIL JOKER", new JokerTypeData { DBName = "STENCIL JOKER", Price = 8, Rarity = JokerRarity.UNCOMMON } },
+            {"FOUR FINGERS", new JokerTypeData { DBName = "FOUR FINGERS", Price = 7, Rarity = JokerRarity.UNCOMMON } },
+            {"MIME", new JokerTypeData { DBName = "MIME", Price = 5, Rarity = JokerRarity.UNCOMMON } },
             {"CREDIT CARD", new JokerTypeData { DBName = "CREDIT CARD", Price = 1 } },
             {"GOLDEN JOKER", new JokerTypeData { DBName = "GOLDEN JOKER", Price = 5 } },
             {"CEREMONIAL DAGGER", new JokerTypeData { DBName = "CEREMONIAL DAGGER", Price = 6, Rarity = JokerRarity.UNCOMMON } },
@@ -507,7 +508,7 @@ namespace ConsoleBalatro.Engine.Cards.Jokers
                         if (myInd >= 0 && myInd < jokers.Count - 1)
                         {
                             var toDestroy = jokers[myInd + 1];
-                            ret.DataDict["MULTAMOUNT"].DoubleData += toDestroy.SellValue * 2;
+                            ret.DataDict["MULTAMOUNT"].DoubleData += toDestroy.SellCost * 2;
                             ZoneManager.DestroyCard(toDestroy, ZoneManager.JokerZone);
                         }
                     },
@@ -517,7 +518,7 @@ namespace ConsoleBalatro.Engine.Cards.Jokers
                     MyContextType = EventContextType.CardTrigger,
                     MyAction = args =>
                     {
-                        if (args is EngineCardTriggerArgs triggerArgs && triggerArgs.CardThatIsTriggering == c && triggerArgs.isScoringTrigger)
+                        if (args is EngineCardTriggerArgs triggerArgs && triggerArgs.CardThatIsTriggering == c && triggerArgs.isScoringTrigger && ret.DataDict["MULTAMOUNT"].DoubleData > 0)
                             Globals.EmitMultAdd(ret.DataDict["MULTAMOUNT"].DoubleData, c);
                     },
                 });
@@ -595,14 +596,15 @@ namespace ConsoleBalatro.Engine.Cards.Jokers
                 var ret = new JokerCardDataBlock();
                 ret.JokerName = "8 Ball";
                 ret.DBName = "8 BALL";
-                ret.DescriptionBuilder = _ => "1 in " + ret.DataDict["ODDS"].IntData + " chance for each played 8 to create a Tarot card when scored (Must have room)";
-                ret.DataDict.Add("ODDS", new JokerData() { IntData = 4, MyDataType = JokerDataType.INT });
+                ret.DescriptionBuilder = _ => ret.DataDict["NUMERATOR"].IntData + " in " + ret.DataDict["DENOMINATOR"].IntData + " chance for each played 8 to create a Tarot card when scored (Must have room)";
+                ret.DataDict.Add("NUMERATOR", new JokerData() { IntData = 1, MyDataType = JokerDataType.INT });
+                ret.DataDict.Add("DENOMINATOR", new JokerData() { IntData = 4, MyDataType = JokerDataType.INT });
                 ret.Listeners.Add(new EngineEventListener()
                 {
                     MyContextType = EventContextType.CardTrigger,
                     MyAction = args =>
                     {
-                        if (args is EngineCardTriggerArgs triggerArgs && triggerArgs.isScoringTrigger && triggerArgs.CardThatIsTriggering.Rank == Rank.EIGHT && ZoneManager.ConsumableZone.HasRoom && Random.Shared.Next(ret.DataDict["ODDS"].IntData) == 0)
+                        if (args is EngineCardTriggerArgs triggerArgs && triggerArgs.isScoringTrigger && triggerArgs.CardThatIsTriggering.Rank == Rank.EIGHT && ZoneManager.ConsumableZone.HasRoom && Globals.RollRandom(ret.DataDict["NUMERATOR"].IntData, ret.DataDict["DENOMINATOR"].IntData, c))
                         {
                             var tarotType = ConsumableManager.TarotNames[Random.Shared.Next(ConsumableManager.TarotNames.Count)];
                             ZoneManager.ConsumableZone.AddCard(ConsumableManager.MakeTarotCard(tarotType));

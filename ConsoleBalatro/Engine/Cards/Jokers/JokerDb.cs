@@ -58,6 +58,7 @@ namespace ConsoleBalatro.Engine.Cards.Jokers
             {"GROS MICHEL", new JokerTypeData { DBName = "GROS MICHEL", Price = 5 } },
             {"EVEN STEVEN", new JokerTypeData { DBName = "EVEN STEVEN", Price = 4 } },
             {"ODD TODD", new JokerTypeData { DBName = "ODD TODD", Price = 4 } },
+            {"SCHOLAR", new JokerTypeData { DBName = "SCHOLAR", Price = 4 } },
             {"TEMP UNCOMMON JOKER", new JokerTypeData { DBName = "TEMP UNCOMMON JOKER", Price = 5, Rarity = JokerRarity.UNCOMMON } },
             {"TEMP RARE JOKER", new JokerTypeData { DBName = "TEMP RARE JOKER", Price = 5, Rarity = JokerRarity.RARE } },
             {"TEMP LEGENDARY JOKER", new JokerTypeData { DBName = "TEMP LEGENDARY JOKER", Price = 6, Rarity = JokerRarity.LEGENDARY } },
@@ -830,6 +831,26 @@ namespace ConsoleBalatro.Engine.Cards.Jokers
                     {
                         if (args is EngineCardTriggerArgs triggerArgs && triggerArgs.isScoringTrigger && new List<Rank> { Rank.ACE, Rank.NINE, Rank.SEVEN, Rank.FIVE, Rank.THREE }.Contains(triggerArgs.CardThatIsTriggering.Rank))
                             Globals.EmitChipsAdd(ret.DataDict["CHIPAMOUNT"].IntData, c);
+                    },
+                });
+                return ret;
+            } },
+            { "SCHOLAR", c =>
+            {
+                var ret = BasicDataBlock("Scholar");
+                ret.DescriptionBuilder = _ => "Played Aces give +" + ret.DataDict["CHIPAMOUNT"].IntData + " Chips and +" + ret.DataDict["MULTAMOUNT"].DoubleData + " Mult when scored.";
+                ret.DataDict.Add("CHIPAMOUNT", new JokerData() { IntData = 20, MyDataType = JokerDataType.INT });
+                ret.DataDict.Add("MULTAMOUNT", new JokerData() { DoubleData = 4, MyDataType = JokerDataType.DOUBLE });
+                ret.Listeners.Add(new EngineEventListener()
+                {
+                    MyContextType = EventContextType.CardTrigger,
+                    MyAction = args =>
+                    {
+                        if (args is EngineCardTriggerArgs triggerArgs && triggerArgs.isScoringTrigger && triggerArgs.CardThatIsTriggering.Rank == Rank.ACE)
+                        {
+                            Globals.EmitChipsAdd(ret.DataDict["CHIPAMOUNT"].IntData, c);
+                            Globals.EmitMultAdd(ret.DataDict["MULTAMOUNT"].DoubleData, c);
+                        }
                     },
                 });
                 return ret;

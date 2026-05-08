@@ -493,6 +493,18 @@ namespace ConsoleBalatro.Tests
             Assert.Equal(155, s.record.ChipsFromEmits - 35);
         }
 
+        [Fact]
+        public void PlayHand_WithScholar_AddsChipsAndMultForAces()
+        {
+            var s = JokerSetup("SCHOLAR");
+            PlayHand("AS,9S,7S,5S,3S");
+
+            Assert.Equal(1, s.record.ChipSources.Count(x => x == s.jok));
+            Assert.Single(s.record.MultSources);
+            Assert.Equal(20, s.record.ChipsFromEmits - 35);
+            Assert.Equal(4, s.record.MultFromEmits);
+        }
+
 
         /*[Theory]
         [InlineData("TEMP UNCOMMON JOKER")]

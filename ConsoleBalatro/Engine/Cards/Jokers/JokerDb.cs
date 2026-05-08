@@ -59,6 +59,11 @@ namespace ConsoleBalatro.Engine.Cards.Jokers
             {"EVEN STEVEN", new JokerTypeData { DBName = "EVEN STEVEN", Price = 4 } },
             {"ODD TODD", new JokerTypeData { DBName = "ODD TODD", Price = 4 } },
             {"SCHOLAR", new JokerTypeData { DBName = "SCHOLAR", Price = 4 } },
+            {"BUSINESS CARD", new JokerTypeData { DBName = "BUSINESS CARD", Price = 4 } },
+            {"SUPERNOVA", new JokerTypeData { DBName = "SUPERNOVA", Price = 5 } },
+            {"RIDE THE BUS", new JokerTypeData { DBName = "RIDE THE BUS", Price = 6 } },
+            {"SPACE JOKER", new JokerTypeData { DBName = "SPACE JOKER", Price = 5, Rarity = JokerRarity.UNCOMMON } },
+            {"EGG", new JokerTypeData { DBName = "EGG", Price = 4 } },
             {"TEMP UNCOMMON JOKER", new JokerTypeData { DBName = "TEMP UNCOMMON JOKER", Price = 5, Rarity = JokerRarity.UNCOMMON } },
             {"TEMP RARE JOKER", new JokerTypeData { DBName = "TEMP RARE JOKER", Price = 5, Rarity = JokerRarity.RARE } },
             {"TEMP LEGENDARY JOKER", new JokerTypeData { DBName = "TEMP LEGENDARY JOKER", Price = 6, Rarity = JokerRarity.LEGENDARY } },
@@ -852,6 +857,101 @@ namespace ConsoleBalatro.Engine.Cards.Jokers
                             Globals.EmitMultAdd(ret.DataDict["MULTAMOUNT"].DoubleData, c);
                         }
                     },
+                });
+                return ret;
+            } },
+            { "BUSINESS CARD", c =>
+            {
+                var ret = BasicDataBlock("Business Card");
+                ret.DescriptionBuilder = _ => "Played face cards have a " + ret.DataDict["NUMERATOR"].IntData + " in " + ret.DataDict["DENOMINATOR"].IntData + " chance to give $" + ret.DataDict["MONEYAMOUNT"].IntData + " when scored";
+                ret.DataDict.Add("NUMERATOR", new JokerData() { IntData = 1, MyDataType = JokerDataType.INT });
+                ret.DataDict.Add("DENOMINATOR", new JokerData() { IntData = 2, MyDataType = JokerDataType.INT });
+                ret.DataDict.Add("MONEYAMOUNT", new JokerData() { IntData = 2, MyDataType = JokerDataType.INT });
+                ret.Listeners.Add(new EngineEventListener()
+                {
+                    MyContextType = EventContextType.CardTrigger,
+                    MyAction = args =>
+                    {
+                        if (args is EngineCardTriggerArgs triggerArgs && triggerArgs.isScoringTrigger && EngineUtils.isFace(triggerArgs.CardThatIsTriggering) && Globals.RollRandom(ret.DataDict["NUMERATOR"].IntData, ret.DataDict["DENOMINATOR"].IntData, c))
+                            Globals.EmitMoneyGain(ret.DataDict["MONEYAMOUNT"].IntData, c);
+                    },
+                });
+                return ret;
+            } },
+            { "SUPERNOVA", c =>
+            {
+                var ret = BasicDataBlock("Supernova", "Adds the number of times poker hand has been played this run to Mult");
+                ret.Listeners.Add(new EngineEventListener()
+                {
+                    MyContextType = EventContextType.CardTrigger,
+                    MyAction = args =>
+                    {
+                        if (args is EngineCardTriggerArgs triggerArgs && triggerArgs.isScoringTrigger && triggerArgs.CardThatIsTriggering == c)
+                            Globals.EmitMultAdd(ScoreHandler.HandNumTimesPlayed[triggerArgs.HandCurrentlyBeingPlayed], c);
+                    },
+                });
+                return ret;
+            } },
+            { "RIDE THE BUS", c =>
+            {
+                var ret = BasicDataBlock("Ride the Bus");
+                ret.DescriptionBuilder = _ => "This Joker gains +1 Mult per consecutive hand played without a scoring face card (Currently +" + ret.DataDict["MULTAMOUNT"].DoubleData + " Mult)";
+                ret.DataDict.Add("MULTAMOUNT", new JokerData() { DoubleData = 0, MyDataType = JokerDataType.DOUBLE });
+                ret.DataDict.Add("HITFACE", new JokerData() { IntData = 0, MyDataType = JokerDataType.INT });
+                ret.Listeners.Add(new EngineEventListener()
+                {
+                    MyContextType = EventContextType.CardTrigger,
+                    MyAction = args =>
+                    {
+                        if (args is EngineCardTriggerArgs triggerArgs && triggerArgs.isScoringTrigger)
+                        {
+                            if (triggerArgs.CardThatIsTriggering == c && ret.DataDict["MULTAMOUNT"].DoubleData > 0)
+                                Globals.EmitMultAdd(ret.DataDict["MULTAMOUNT"].DoubleData, c);
+                            else if (EngineUtils.isFace(triggerArgs.CardThatIsTriggering))
+                                ret.DataDict["HITFACE"].IntData = 1;
+                        }
+                    },
+                });
+                ret.Listeners.Add(new EngineEventListener()
+                {
+                    MyContextType = EventContextType.HandPlayDone,
+                    MyAction = _ =>
+                    {
+                        if (ret.DataDict["HITFACE"].IntData == 1)
+                            ret.DataDict["MULTAMOUNT"].DoubleData = 0;
+                        else
+                            ret.DataDict["MULTAMOUNT"].DoubleData += 1;
+                        ret.DataDict["HITFACE"].IntData = 0;
+                    },
+                });
+                return ret;
+            } },
+            { "SPACE JOKER", c =>
+            {
+                var ret = BasicDataBlock("Space Joker");
+                ret.DescriptionBuilder = _ => ret.DataDict["NUMERATOR"].IntData + " in " + ret.DataDict["DENOMINATOR"].IntData + " chance to upgrade level of played poker hand";
+                ret.DataDict.Add("NUMERATOR", new JokerData() { IntData = 1, MyDataType = JokerDataType.INT });
+                ret.DataDict.Add("DENOMINATOR", new JokerData() { IntData = 4, MyDataType = JokerDataType.INT });
+                ret.Listeners.Add(new EngineEventListener()
+                {
+                    MyContextType = EventContextType.HandPlayDone,
+                    MyAction = args =>
+                    {
+                        if (args is EngineHandPlayDoneArgs handArgs && Globals.RollRandom(ret.DataDict["NUMERATOR"].IntData, ret.DataDict["DENOMINATOR"].IntData, c))
+                            ScoreHandler.LevelUpHand(handArgs.HandTypeThatWasPlayed);
+                    },
+                });
+                return ret;
+            } },
+            { "EGG", c =>
+            {
+                var ret = BasicDataBlock("Egg");
+                ret.DescriptionBuilder = _ => "Gains $" + ret.DataDict["SELLAMOUNT"].IntData + " of sell value at end of round (Currently $" + c.BonusSellValue + ")";
+                ret.DataDict.Add("SELLAMOUNT", new JokerData() { IntData = 3, MyDataType = JokerDataType.INT });
+                ret.Listeners.Add(new EngineEventListener()
+                {
+                    MyContextType = EventContextType.EndPlayRound,
+                    MyAction = _ => c.BonusSellValue += ret.DataDict["SELLAMOUNT"].IntData,
                 });
                 return ret;
             } },

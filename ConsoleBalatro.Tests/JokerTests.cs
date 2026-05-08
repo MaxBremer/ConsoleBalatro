@@ -505,6 +505,80 @@ namespace ConsoleBalatro.Tests
             Assert.Equal(4, s.record.MultFromEmits);
         }
 
+        [Fact]
+        public void PlayHand_WithBusinessCard_GivesMoneyOnFaceCardWhenRollSucceeds()
+        {
+            ResetToFirstBlindPlayRound();
+            AddJoker("BUSINESS CARD");
+            RigNextRoll(true);
+            var beforeMoney = Globals.Money;
+
+            PlayHand("JS");
+
+            Assert.Equal(beforeMoney + 2, Globals.Money);
+        }
+
+        [Fact]
+        public void PlayHand_WithSupernova_AddsPlayedHandCountToMult()
+        {
+            var s = JokerSetup("SUPERNOVA");
+
+            PlayHand("AS,AS");
+            Assert.Single(s.record.MultSources);
+            Assert.Equal(s.jok, s.record.MultSources[0]);
+            Assert.Equal(1, s.record.MultFromEmits);
+        }
+
+        [Fact]
+        public void PlayHand_WithRideTheBus_ResetsOnScoringFaceCard()
+        {
+            var s = JokerSetup("RIDE THE BUS");
+
+            PlayHand("2S");
+            Assert.Equal(1, s.jok.JokerData.DataDict["MULTAMOUNT"].DoubleData);
+
+            s.record.MultSources.Clear();
+            s.record.MultFromEmits = 0;
+            PlayHand("3S");
+            Assert.Single(s.record.MultSources);
+            Assert.Equal(1, s.record.MultFromEmits);
+            Assert.Equal(2, s.jok.JokerData.DataDict["MULTAMOUNT"].DoubleData);
+
+            s.record.MultSources.Clear();
+            s.record.MultFromEmits = 0;
+            PlayHand("KS");
+            Assert.Single(s.record.MultSources);
+            Assert.Equal(2, s.record.MultFromEmits);
+            Assert.Equal(0, s.jok.JokerData.DataDict["MULTAMOUNT"].DoubleData);
+        }
+
+        [Fact]
+        public void PlayHand_WithSpaceJoker_UpgradesPlayedHandLevelWhenRollSucceeds()
+        {
+            ResetToFirstBlindPlayRound();
+            AddJoker("SPACE JOKER");
+            RigNextRoll(true);
+            var beforeLevel = ScoreHandler.HandLevels[PlayedHandType.HIGHCARD];
+
+            PlayHand("AS");
+
+            Assert.Equal(beforeLevel + 1, ScoreHandler.HandLevels[PlayedHandType.HIGHCARD]);
+        }
+
+        [Fact]
+        public void CloseRound_WithEgg_IncreasesBonusSellValue()
+        {
+            ResetToFirstBlindPlayRound();
+            AddJoker("EGG");
+            var egg = ZoneManager.JokerZone.Cards.Single();
+
+            Globals.RequiredChipsForCurrentBlind = 1;
+            PlayHand("AS");
+
+            Assert.Equal(3, egg.BonusSellValue);
+            Assert.Equal(5, egg.SellCost);
+        }
+
 
         /*[Theory]
         [InlineData("TEMP UNCOMMON JOKER")]

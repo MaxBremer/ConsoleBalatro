@@ -384,6 +384,115 @@ namespace ConsoleBalatro.Tests
             Assert.Equal(9 + 4 + 4, s.record.MultFromEmits);
         }
 
+        [Fact]
+        public void CloseRound_WithDelayedGratification_GivesMoneyOnlyIfNoDiscardsUsed()
+        {
+            ResetToBlindSelection();
+            AddJoker("DELAYED GRATIFICATION");//TODO: Delayed Grat sets its Max_Discards at start of play round, so if added during play round Max_Discards will be its default of 0. May want to change this in the future, but for now just add during blind selection.
+            FlowHandler.StartSelectedBlind();
+            Globals.RequiredChipsForCurrentBlind = 1;
+            PlayHand("AS");
+
+            Assert.Contains(Globals.CurrentGameStateObj.PostRoundMoneySources, x => x.Item1 == "Delayed Gratification" && x.Item2 == 6);
+
+            ResetToBlindSelection();
+            AddJoker("DELAYED GRATIFICATION");
+            FlowHandler.StartSelectedBlind();
+            DiscardHand("AS");
+            Globals.RequiredChipsForCurrentBlind = 1;
+            PlayHand("KS");
+            Assert.DoesNotContain(Globals.CurrentGameStateObj.PostRoundMoneySources, x => x.Item1 == "Delayed Gratification");
+        }
+
+        [Fact]
+        public void PlayHand_WithHack_RetriggersPlayedCardsTwoThroughFive()
+        {
+            JokerSetup("HACK");
+            var record = CaptureScoringContributions();
+            
+            BuildKnownHand("2S,3S,4S,5S,AS");
+            var played = ZoneManager.CardsSelectedInHand.ToList();
+            Globals.PlayCurrentlySelectedHand();
+
+            Assert.Equal(2, record.ChipSources.Count(x => x == played[0]));
+            Assert.Equal(2, record.ChipSources.Count(x => x == played[1]));
+            Assert.Equal(2, record.ChipSources.Count(x => x == played[2]));
+            Assert.Equal(2, record.ChipSources.Count(x => x == played[3]));
+            Assert.Equal(1, record.ChipSources.Count(x => x == played[4]));
+            Assert.Equal(Rank.ACE, played[4].Rank);//just making sure the correct card didn't retrigger.
+        }
+
+        [Fact]
+        public void PlayHand_WithPareidolia_MakesAllScoredCardsCountAsFaceCards()
+        {
+            var s = JokerSetup("SCARY FACE");
+            AddJoker("PAREIDOLIA");
+            PlayHand("2S,4S,6S,8S,1S");
+
+            Assert.Equal(5, s.record.ChipSources.Count(x => x == s.jok));
+            Assert.Equal(150, s.record.ChipsFromEmits - 30);
+
+            FlowHandler.ClosePostRound();
+            FlowHandler.CloseMarketRound();
+            FlowHandler.StartSelectedBlind();
+            s.record.ChipSources.Clear();
+            s.record.ChipsFromEmits = 0;
+            ZoneManager.DestroyCard(ZoneManager.JokerZone.Cards[1]);//remove Pareidolia
+            PlayHand("KS,4S,6S,8S,1S");
+            Assert.Single(s.record.ChipSources, x => x == s.jok);
+            Assert.Equal(30, s.record.ChipsFromEmits - 38);
+        }
+
+        [Fact]
+        public void AddRemovePareidolia_UpdatesFaceRankGroup()
+        {
+            ResetToFirstBlindPlayRound();
+            Assert.False(EngineUtils.isFace(CardFactory.PlayingCardFromRankSuit(Rank.TWO, Suit.SPADES)));
+
+            AddJoker("PAREIDOLIA");
+            Assert.True(EngineUtils.isFace(CardFactory.PlayingCardFromRankSuit(Rank.TWO, Suit.SPADES)));
+
+            ZoneManager.JokerZone.RemoveCard(ZoneManager.JokerZone.Cards[0]);
+            Assert.False(EngineUtils.isFace(CardFactory.PlayingCardFromRankSuit(Rank.TWO, Suit.SPADES)));
+        }
+
+        [Fact]
+        public void CloseRound_WithGrosMichel_AddsMultAndCanDestroyAtRoundEnd()
+        {
+            var s = JokerSetup("GROS MICHEL");
+            RigNextRoll(false);
+            PlayHand("AS,AS,AS,AS,AS");
+            Assert.Single(s.record.MultSources);
+            Assert.Equal(15, s.record.MultFromEmits);
+            Assert.Contains(s.jok, ZoneManager.JokerZone.Cards);
+
+            ResetToFirstBlindPlayRound();
+            AddJoker("GROS MICHEL");
+            RigNextRoll(true);
+            PlayHand("AS,AS,AS,AS,AS");
+            Assert.DoesNotContain(ZoneManager.JokerZone.Cards, x => x.JokerData.DBName == "GROS MICHEL");
+        }
+
+        [Fact]
+        public void PlayHand_WithEvenSteven_AddsMultForEvenRanks()
+        {
+            var s = JokerSetup("EVEN STEVEN");
+            PlayHand("2S,4S,6S,8S,1S");
+
+            Assert.Equal(5, s.record.MultSources.Count(x => x == s.jok));
+            Assert.Equal(20, s.record.MultFromEmits);
+        }
+
+        [Fact]
+        public void PlayHand_WithOddTodd_AddsChipsForOddRanks()
+        {
+            var s = JokerSetup("ODD TODD");
+            PlayHand("AS,9S,7S,5S,3S");
+
+            Assert.Equal(5, s.record.ChipSources.Count(x => x == s.jok));
+            Assert.Equal(155, s.record.ChipsFromEmits - 35);
+        }
+
 
         /*[Theory]
         [InlineData("TEMP UNCOMMON JOKER")]

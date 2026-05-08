@@ -70,9 +70,7 @@ namespace ConsoleBalatro.Engine.Cards.Jokers
         {
             { "JIMBO", c =>
             {
-                var ret = new JokerCardDataBlock();
-                ret.JokerName = "Basic Joker";
-                ret.DBName = "JIMBO";
+                var ret = BasicDataBlock("Jimbo");
                 ret.DescriptionBuilder = _ => "+ " + ret.DataDict["MULTAMOUNT"].DoubleData + " Mult";
                 ret.DataDict.Add("MULTAMOUNT", new JokerData() { DoubleData = 4, MyDataType = JokerDataType.DOUBLE});
                 ret.Listeners.Add(new EngineEventListener()
@@ -89,9 +87,7 @@ namespace ConsoleBalatro.Engine.Cards.Jokers
             } },
             { "GREEDY JOKER", c =>
             {
-                var ret = new JokerCardDataBlock();
-                ret.JokerName = "Greedy Joker";
-                ret.DBName = "GREEDY JOKER";
+                var ret = BasicDataBlock("Greedy Joker");
                 ret.DescriptionBuilder = _ => "Played cards with " + ret.DataDict["SUIT"].SpecificCardSuit + " Suit give +" + ret.DataDict["MULTAMOUNT"].DoubleData + " Mult when scored";
                 ret.DataDict.Add("MULTAMOUNT", new JokerData() { DoubleData = 3, MyDataType = JokerDataType.DOUBLE});
                 ret.DataDict.Add("SUIT", new JokerData() { SpecificCardSuit = Suit.DIAMONDS, MyDataType = JokerDataType.SUIT});
@@ -109,9 +105,7 @@ namespace ConsoleBalatro.Engine.Cards.Jokers
             } },
             { "LUSTY JOKER", c =>
             {
-                var ret = new JokerCardDataBlock();
-                ret.JokerName = "Lusty Joker";
-                ret.DBName = "LUSTY JOKER";
+                var ret = BasicDataBlock("Lusty Joker");
                 ret.DescriptionBuilder = _ => "Played cards with " + ret.DataDict["SUIT"].SpecificCardSuit + " Suit give +" + ret.DataDict["MULTAMOUNT"].DoubleData + " Mult when scored";
                 ret.DataDict.Add("MULTAMOUNT", new JokerData() { DoubleData = 3, MyDataType = JokerDataType.DOUBLE});
                 ret.DataDict.Add("SUIT", new JokerData() { SpecificCardSuit = Suit.HEARTS, MyDataType = JokerDataType.SUIT});
@@ -129,9 +123,7 @@ namespace ConsoleBalatro.Engine.Cards.Jokers
             } },
             { "WRATHFUL JOKER", c =>
             {
-                var ret = new JokerCardDataBlock();
-                ret.JokerName = "Wrathful Joker";
-                ret.DBName = "WRATHFUL JOKER";
+                var ret = BasicDataBlock("Wrathful Joker");
                 ret.DescriptionBuilder = _ => "Played cards with " + ret.DataDict["SUIT"].SpecificCardSuit + " Suit give +" + ret.DataDict["MULTAMOUNT"].DoubleData + " Mult when scored";
                 ret.DataDict.Add("MULTAMOUNT", new JokerData() { DoubleData = 3, MyDataType = JokerDataType.DOUBLE});
                 ret.DataDict.Add("SUIT", new JokerData() { SpecificCardSuit = Suit.SPADES, MyDataType = JokerDataType.SUIT});
@@ -149,9 +141,7 @@ namespace ConsoleBalatro.Engine.Cards.Jokers
             } },
             { "GLUTTONOUS JOKER", c =>
             {
-                var ret = new JokerCardDataBlock();
-                ret.JokerName = "Gluttonous Joker";
-                ret.DBName = "GLUTTONOUS JOKER";
+                var ret = BasicDataBlock("Gluttonous Joker");
                 ret.DescriptionBuilder = _ => "Played cards with " + ret.DataDict["SUIT"].SpecificCardSuit + " Suit give +" + ret.DataDict["MULTAMOUNT"].DoubleData + " Mult when scored";
                 ret.DataDict.Add("MULTAMOUNT", new JokerData() { DoubleData = 3, MyDataType = JokerDataType.DOUBLE});
                 ret.DataDict.Add("SUIT", new JokerData() { SpecificCardSuit = Suit.CLUBS, MyDataType = JokerDataType.SUIT});
@@ -169,9 +159,7 @@ namespace ConsoleBalatro.Engine.Cards.Jokers
             } },
             { "JOLLY JOKER", c =>
             {
-                var ret = new JokerCardDataBlock();
-                ret.JokerName = "Jolly Joker";
-                ret.DBName = "JOLLY JOKER";
+                var ret = BasicDataBlock("Jolly Joker");
                 ret.DescriptionBuilder = _ => "+ " + ret.DataDict["MULTAMOUNT"].DoubleData + " Mult if Played Hand contains a " + ret.DataDict["PLAYEDHAND"].HandTypeData.ToString();
                 ret.DataDict.Add("MULTAMOUNT", new JokerData() { DoubleData = 8, MyDataType = JokerDataType.DOUBLE});
                 ret.DataDict.Add("PLAYEDHAND", new JokerData() { HandTypeData = PlayedHandType.PAIR, MyDataType = JokerDataType.HANDTYPE});
@@ -189,9 +177,7 @@ namespace ConsoleBalatro.Engine.Cards.Jokers
             } },
             { "ZANY JOKER", c =>
             {
-                var ret = new JokerCardDataBlock();
-                ret.JokerName = "Zany Joker";
-                ret.DBName = "ZANY JOKER";
+                var ret = BasicDataBlock("Zany Joker");
                 ret.DescriptionBuilder = _ => "+ " + ret.DataDict["MULTAMOUNT"].DoubleData + " Mult if Played Hand contains a " + ret.DataDict["PLAYEDHAND"].HandTypeData.ToString();
                 ret.DataDict.Add("MULTAMOUNT", new JokerData() { DoubleData = 12, MyDataType = JokerDataType.DOUBLE});
                 ret.DataDict.Add("PLAYEDHAND", new JokerData() { HandTypeData = PlayedHandType.THREEOFAKIND, MyDataType = JokerDataType.HANDTYPE});
@@ -209,9 +195,7 @@ namespace ConsoleBalatro.Engine.Cards.Jokers
             } },
             { "MAD JOKER", c =>
             {
-                var ret = new JokerCardDataBlock();
-                ret.JokerName = "Mad Joker";
-                ret.DBName = "MAD JOKER";
+                var ret = BasicDataBlock("Mad Joker");
                 ret.DescriptionBuilder = _ => "+ " + ret.DataDict["MULTAMOUNT"].DoubleData + " Mult if Played Hand contains a " + ret.DataDict["PLAYEDHAND"].HandTypeData.ToString();
                 ret.DataDict.Add("MULTAMOUNT", new JokerData() { DoubleData = 10, MyDataType = JokerDataType.DOUBLE});
                 ret.DataDict.Add("PLAYEDHAND", new JokerData() { HandTypeData = PlayedHandType.TWOPAIR, MyDataType = JokerDataType.HANDTYPE});
@@ -229,9 +213,7 @@ namespace ConsoleBalatro.Engine.Cards.Jokers
             } },
             { "CRAZY JOKER", c =>
             {
-                var ret = new JokerCardDataBlock();
-                ret.JokerName = "Crazy Joker";
-                ret.DBName = "CRAZY JOKER";
+                var ret = BasicDataBlock("Crazy Joker");
                 ret.DescriptionBuilder = _ => "+ " + ret.DataDict["MULTAMOUNT"].DoubleData + " Mult if Played Hand contains a " + ret.DataDict["PLAYEDHAND"].HandTypeData.ToString();
                 ret.DataDict.Add("MULTAMOUNT", new JokerData() { DoubleData = 12, MyDataType = JokerDataType.DOUBLE});
                 ret.DataDict.Add("PLAYEDHAND", new JokerData() { HandTypeData = PlayedHandType.STRAIGHT, MyDataType = JokerDataType.HANDTYPE});
@@ -249,9 +231,7 @@ namespace ConsoleBalatro.Engine.Cards.Jokers
             } },
             { "DROLL JOKER", c =>
             {
-                var ret = new JokerCardDataBlock();
-                ret.JokerName = "Droll Joker";
-                ret.DBName = "DROLL JOKER";
+                var ret = BasicDataBlock("Droll Joker");
                 ret.DescriptionBuilder = _ => "+ " + ret.DataDict["MULTAMOUNT"].DoubleData + " Mult if Played Hand contains a " + ret.DataDict["PLAYEDHAND"].HandTypeData.ToString();
                 ret.DataDict.Add("MULTAMOUNT", new JokerData() { DoubleData = 10, MyDataType = JokerDataType.DOUBLE});
                 ret.DataDict.Add("PLAYEDHAND", new JokerData() { HandTypeData = PlayedHandType.FLUSH, MyDataType = JokerDataType.HANDTYPE});
@@ -269,9 +249,7 @@ namespace ConsoleBalatro.Engine.Cards.Jokers
             } },
             { "SLY JOKER", c =>
             {
-                var ret = new JokerCardDataBlock();
-                ret.JokerName = "Sly Joker";
-                ret.DBName = "SLY JOKER";
+                var ret = BasicDataBlock("Sly Joker");
                 ret.DescriptionBuilder = _ => "+ " + ret.DataDict["CHIPAMOUNT"].IntData + " Chips if Played Hand contains a " + ret.DataDict["PLAYEDHAND"].HandTypeData.ToString();
                 ret.DataDict.Add("CHIPAMOUNT", new JokerData() { IntData = 50, MyDataType = JokerDataType.INT});
                 ret.DataDict.Add("PLAYEDHAND", new JokerData() { HandTypeData = PlayedHandType.PAIR, MyDataType = JokerDataType.HANDTYPE});
@@ -289,9 +267,7 @@ namespace ConsoleBalatro.Engine.Cards.Jokers
             } },
             { "WILY JOKER", c =>
             {
-                var ret = new JokerCardDataBlock();
-                ret.JokerName = "Wily Joker";
-                ret.DBName = "WILY JOKER";
+                var ret = BasicDataBlock("Wily Joker");
                 ret.DescriptionBuilder = _ => "+ " + ret.DataDict["CHIPAMOUNT"].IntData + " Chips if Played Hand contains a " + ret.DataDict["PLAYEDHAND"].HandTypeData.ToString();
                 ret.DataDict.Add("CHIPAMOUNT", new JokerData() { IntData = 100, MyDataType = JokerDataType.INT});
                 ret.DataDict.Add("PLAYEDHAND", new JokerData() { HandTypeData = PlayedHandType.THREEOFAKIND, MyDataType = JokerDataType.HANDTYPE});
@@ -309,9 +285,7 @@ namespace ConsoleBalatro.Engine.Cards.Jokers
             } },
             { "CLEVER JOKER", c =>
             {
-                var ret = new JokerCardDataBlock();
-                ret.JokerName = "Clever Joker";
-                ret.DBName = "CLEVER JOKER";
+                var ret = BasicDataBlock("Clever Joker");
                 ret.DescriptionBuilder = _ => "+ " + ret.DataDict["CHIPAMOUNT"].IntData + " Chips if Played Hand contains a " + ret.DataDict["PLAYEDHAND"].HandTypeData.ToString();
                 ret.DataDict.Add("CHIPAMOUNT", new JokerData() { IntData = 80, MyDataType = JokerDataType.INT});
                 ret.DataDict.Add("PLAYEDHAND", new JokerData() { HandTypeData = PlayedHandType.TWOPAIR, MyDataType = JokerDataType.HANDTYPE});
@@ -329,9 +303,7 @@ namespace ConsoleBalatro.Engine.Cards.Jokers
             } },
             { "DEVIOUS JOKER", c =>
             {
-                var ret = new JokerCardDataBlock();
-                ret.JokerName = "Devious Joker";
-                ret.DBName = "DEVIOUS JOKER";
+                var ret = BasicDataBlock("Devious Joker");
                 ret.DescriptionBuilder = _ => "+ " + ret.DataDict["CHIPAMOUNT"].IntData + " Chips if Played Hand contains a " + ret.DataDict["PLAYEDHAND"].HandTypeData.ToString();
                 ret.DataDict.Add("CHIPAMOUNT", new JokerData() { IntData = 100, MyDataType = JokerDataType.INT});
                 ret.DataDict.Add("PLAYEDHAND", new JokerData() { HandTypeData = PlayedHandType.STRAIGHT, MyDataType = JokerDataType.HANDTYPE});
@@ -349,9 +321,7 @@ namespace ConsoleBalatro.Engine.Cards.Jokers
             } },
             { "CRAFTY JOKER", c =>
             {
-                var ret = new JokerCardDataBlock();
-                ret.JokerName = "Crafty Joker";
-                ret.DBName = "CRAFTY JOKER";
+                var ret = BasicDataBlock("Crafty Joker");
                 ret.DescriptionBuilder = _ => "+ " + ret.DataDict["CHIPAMOUNT"].IntData + " Chips if Played Hand contains a " + ret.DataDict["PLAYEDHAND"].HandTypeData.ToString();
                 ret.DataDict.Add("CHIPAMOUNT", new JokerData() { IntData = 80, MyDataType = JokerDataType.INT});
                 ret.DataDict.Add("PLAYEDHAND", new JokerData() { HandTypeData = PlayedHandType.FLUSH, MyDataType = JokerDataType.HANDTYPE});
@@ -369,9 +339,7 @@ namespace ConsoleBalatro.Engine.Cards.Jokers
             } },
             { "HALF JOKER", c =>
             {
-                var ret = new JokerCardDataBlock();
-                ret.JokerName = "Half Joker";
-                ret.DBName = "HALF JOKER";
+                var ret = BasicDataBlock("Half Joker");
                 ret.DescriptionBuilder = _ => "+ " + ret.DataDict["MULTAMOUNT"].DoubleData + " Mult if Played Hand contains " + ret.DataDict["INTAMOUNT"].HandTypeData.ToString() + " or fewer cards.";
                 ret.DataDict.Add("MULTAMOUNT", new JokerData() { DoubleData = 20, MyDataType = JokerDataType.DOUBLE});
                 ret.DataDict.Add("INTAMOUNT", new JokerData() { IntData = 3, MyDataType = JokerDataType.INT});
@@ -389,9 +357,7 @@ namespace ConsoleBalatro.Engine.Cards.Jokers
             } },
             { "STENCIL JOKER", c =>
             {
-                var ret = new JokerCardDataBlock();
-                ret.JokerName = "Stencil Joker";
-                ret.DBName = "STENCIL JOKER";
+                var ret = BasicDataBlock("Stencil Joker");
                 Func<double> getCurrentAmt = () => (ZoneManager.JokerZone.MaxCapacity - ZoneManager.JokerZone.Cards.Count(x => x.isJoker && x.JokerData.DBName != "STENCIL JOKER")) * ret.DataDict["MULTMULTAMOUNT"].DoubleData;
                 ret.DescriptionBuilder = _ => "* " + ret.DataDict["MULTMULTAMOUNT"].DoubleData + " Mult for each empty Joker slot, Stencil Joker included. Currently * " + getCurrentAmt().ToString() + " Mult";
                 ret.DataDict.Add("MULTMULTAMOUNT", new JokerData() { DoubleData = 1, MyDataType = JokerDataType.DOUBLE});
@@ -409,9 +375,7 @@ namespace ConsoleBalatro.Engine.Cards.Jokers
             } },
             { "FOUR FINGERS", c =>
             {
-                var ret = new JokerCardDataBlock();
-                ret.JokerName = "Four Fingers";
-                ret.DBName = "FOUR FINGERS";
+                var ret = BasicDataBlock("Four Fingers");
                 ret.DescriptionBuilder = _ => "All Flushes and Straights can be made with only " + ret.DataDict["INTAMOUNT"].IntData + " cards.";
                 ret.DataDict.Add("INTAMOUNT", new JokerData() { IntData = 4, MyDataType = JokerDataType.INT});
                 ret.DataDict.Add("OLDFLUSH", new JokerData() { IntData = 5, MyDataType = JokerDataType.INT});
@@ -443,9 +407,7 @@ namespace ConsoleBalatro.Engine.Cards.Jokers
             } },
             { "MIME", c =>
             {
-                var ret = new JokerCardDataBlock();
-                ret.JokerName = "Mime";
-                ret.DBName = "MIME";
+                var ret = BasicDataBlock("Mime");
                 ret.DescriptionBuilder = _ => "Your card in hand effects trigger " + ret.DataDict["INTAMOUNT"].IntData + " times.";
                 ret.DataDict.Add("INTAMOUNT", new JokerData() { IntData = 2, MyDataType = JokerDataType.INT});
                 ret.Listeners.Add(new EngineEventListener()
@@ -462,9 +424,7 @@ namespace ConsoleBalatro.Engine.Cards.Jokers
             } },
             { "CREDIT CARD", c =>
             {
-                var ret = new JokerCardDataBlock();
-                ret.JokerName = "Credit Card";
-                ret.DBName = "CREDIT CARD";
+                var ret = BasicDataBlock("Credit Card");
                 ret.DescriptionBuilder = _ => "Can go into up to " + ret.DataDict["INTAMOUNT"].IntData + " in debt.";
                 ret.DataDict.Add("INTAMOUNT", new JokerData() { IntData = -20, MyDataType = JokerDataType.INT});
                 ret.DataDict.Add("OLDMONEYAMOUNT", new JokerData() { IntData = 0, MyDataType = JokerDataType.INT});
@@ -486,9 +446,7 @@ namespace ConsoleBalatro.Engine.Cards.Jokers
             } },
             { "GOLDEN JOKER", c =>
             {
-                var ret = new JokerCardDataBlock();
-                ret.JokerName = "Golden Joker";
-                ret.DBName = "GOLDEN JOKER";
+                var ret = BasicDataBlock("Golden Joker");
                 ret.DescriptionBuilder = _ => "Gain " + ret.DataDict["INTAMOUNT"].IntData + "$ at end of round.";
                 ret.DataDict.Add("INTAMOUNT", new JokerData() { IntData = 4, MyDataType = JokerDataType.INT});
                 ret.Listeners.Add(new EngineEventListener()
@@ -505,9 +463,7 @@ namespace ConsoleBalatro.Engine.Cards.Jokers
             } },
             { "CEREMONIAL DAGGER", c =>
             {
-                var ret = new JokerCardDataBlock();
-                ret.JokerName = "Ceremonial Dagger";
-                ret.DBName = "CEREMONIAL DAGGER";
+                var ret = BasicDataBlock("Ceremonial Dagger");
                 ret.DescriptionBuilder = _ => "When Blind is selected, destroy Joker to the right and permanently add double its sell value to this Mult (Currently +" + ret.DataDict["MULTAMOUNT"].DoubleData + " Mult)";
                 ret.DataDict.Add("MULTAMOUNT", new JokerData() { DoubleData = 0, MyDataType = JokerDataType.DOUBLE });
                 ret.Listeners.Add(new EngineEventListener()
@@ -539,9 +495,7 @@ namespace ConsoleBalatro.Engine.Cards.Jokers
             } },
             { "MYSTIC SUMMIT", c =>
             {
-                var ret = new JokerCardDataBlock();
-                ret.JokerName = "Mystic Summit";
-                ret.DBName = "MYSTIC SUMMIT";
+                var ret = BasicDataBlock("Mystic Summit");
                 ret.DescriptionBuilder = _ => "+" + ret.DataDict["MULTAMOUNT"].DoubleData + " Mult when 0 discards remaining";
                 ret.DataDict.Add("MULTAMOUNT", new JokerData() { DoubleData = 15, MyDataType = JokerDataType.DOUBLE });
                 ret.Listeners.Add(new EngineEventListener()
@@ -557,10 +511,7 @@ namespace ConsoleBalatro.Engine.Cards.Jokers
             } },
             { "MARBLE JOKER", c =>
             {
-                var ret = new JokerCardDataBlock();
-                ret.JokerName = "Marble Joker";
-                ret.DBName = "MARBLE JOKER";
-                ret.DescriptionBuilder = _ => "Adds one Stone card to deck when Blind is selected";
+                var ret = BasicDataBlock("Marble Joker", "Adds one Stone card to deck when Blind is selected");
                 ret.Listeners.Add(new EngineEventListener()
                 {
                     MyContextType = EventContextType.EndBlindSelection,
@@ -575,9 +526,7 @@ namespace ConsoleBalatro.Engine.Cards.Jokers
             } },
             { "LOYALTY CARD", c =>
             {
-                var ret = new JokerCardDataBlock();
-                ret.JokerName = "Loyalty Card";
-                ret.DBName = "LOYALTY CARD";
+                var ret = BasicDataBlock("Loyalty Card");
                 ret.DescriptionBuilder = _ => "X" + ret.DataDict["MULTMULTAMOUNT"].DoubleData + " Mult every " + ret.DataDict["HANDCOUNT"].IntData + " hands played (" + (ret.DataDict["REMAINING"].IntData - 1).ToString() + " remaining)";
                 ret.DataDict.Add("MULTMULTAMOUNT", new JokerData() { DoubleData = 4, MyDataType = JokerDataType.DOUBLE });
                 ret.DataDict.Add("HANDCOUNT", new JokerData() { IntData = 6, MyDataType = JokerDataType.INT });
@@ -605,9 +554,7 @@ namespace ConsoleBalatro.Engine.Cards.Jokers
             } },
             { "8 BALL", c =>
             {
-                var ret = new JokerCardDataBlock();
-                ret.JokerName = "8 Ball";
-                ret.DBName = "8 BALL";
+                var ret = BasicDataBlock("8 Ball");
                 ret.DescriptionBuilder = _ => ret.DataDict["NUMERATOR"].IntData + " in " + ret.DataDict["DENOMINATOR"].IntData + " chance for each played 8 to create a Tarot card when scored (Must have room)";
                 ret.DataDict.Add("NUMERATOR", new JokerData() { IntData = 1, MyDataType = JokerDataType.INT });
                 ret.DataDict.Add("DENOMINATOR", new JokerData() { IntData = 4, MyDataType = JokerDataType.INT });
@@ -627,9 +574,7 @@ namespace ConsoleBalatro.Engine.Cards.Jokers
             } },
             { "MISPRINT", c =>
             {
-                var ret = new JokerCardDataBlock();
-                ret.JokerName = "Misprint";
-                ret.DBName = "MISPRINT";
+                var ret = BasicDataBlock("Misprint");
                 ret.DescriptionBuilder = _ => "+" + ret.DataDict["MULTAMOUNT"].DoubleData + " Mult";
                 ret.DataDict.Add("MULTAMOUNT", new JokerData() { DoubleData = 0, MyDataType = JokerDataType.DOUBLE });
                 ret.Listeners.Add(new EngineEventListener()
@@ -648,10 +593,7 @@ namespace ConsoleBalatro.Engine.Cards.Jokers
             } },
             { "DUSK", c =>
             {
-                var ret = new JokerCardDataBlock();
-                ret.JokerName = "Dusk";
-                ret.DBName = "DUSK";
-                ret.DescriptionBuilder = _ => "Retrigger all played cards in final hand of round";
+                var ret = BasicDataBlock("Dusk", "Retrigger all played cards in final hand of round");
                 ret.Listeners.Add(new EngineEventListener()
                 {
                     MyContextType = EventContextType.CardPreTrigger,
@@ -665,10 +607,7 @@ namespace ConsoleBalatro.Engine.Cards.Jokers
             } },
             { "RAISED FIST", c =>
             {
-                var ret = new JokerCardDataBlock();
-                ret.JokerName = "Raised Fist";
-                ret.DBName = "RAISED FIST";
-                ret.DescriptionBuilder = _ => "Adds double the rank of lowest ranked card held in hand to Mult";
+                var ret = BasicDataBlock("Raised Fist", "Adds double the rank of lowest ranked card held in hand to Mult");
                 ret.Listeners.Add(new EngineEventListener()
                 {
                     MyContextType = EventContextType.CardTrigger,
@@ -688,10 +627,7 @@ namespace ConsoleBalatro.Engine.Cards.Jokers
             } },
             { "CHAOS THE CLOWN", c =>
             {
-                var ret = new JokerCardDataBlock();
-                ret.JokerName = "Chaos the Clown";
-                ret.DBName = "CHAOS THE CLOWN";
-                ret.DescriptionBuilder = _ => "1 free Reroll per shop";
+                var ret = BasicDataBlock("Chaos the Clown", "1 free Reroll per shop");
                 ret.Listeners.Add(new EngineEventListener()
                 {
                     MyContextType = EventContextType.MarketSetupDone,
@@ -705,9 +641,7 @@ namespace ConsoleBalatro.Engine.Cards.Jokers
             } },
             { "FIBONACCI", c =>
             {
-                var ret = new JokerCardDataBlock();
-                ret.JokerName = "Fibonacci";
-                ret.DBName = "FIBONACCI";
+                var ret = BasicDataBlock("Fibonacci");
                 ret.DescriptionBuilder = _ => "Each played Ace, 2, 3, 5, or 8 gives +" + ret.DataDict["MULTAMOUNT"].DoubleData + " Mult when scored";
                 ret.DataDict.Add("MULTAMOUNT", new JokerData() { DoubleData = 8, MyDataType = JokerDataType.DOUBLE });
                 ret.Listeners.Add(new EngineEventListener()
@@ -725,11 +659,8 @@ namespace ConsoleBalatro.Engine.Cards.Jokers
             } },
             { "STEEL JOKER", c =>
             {
-                var ret = new JokerCardDataBlock();
-                ret.JokerName = "Steel Joker";
-                ret.DBName = "STEEL JOKER";
                 Func<double> GetSteelMult = () => 1 + (ZoneManager.GetFullDeckPlayingCards().Count(x => x.Enhancement == Enhancement.STEEL) * 0.2);
-                ret.DescriptionBuilder = _ => "Gives X0.2 Mult for each Steel Card in your full deck (Currently X" + GetSteelMult().ToString("0.0") + " Mult)";
+                var ret = BasicDataBlock("Steel Joker", _ => "Gives X0.2 Mult for each Steel Card in your full deck (Currently X" + GetSteelMult().ToString("0.0") + " Mult)");
                 ret.Listeners.Add(new EngineEventListener()
                 {
                     MyContextType = EventContextType.CardTrigger,
@@ -746,9 +677,7 @@ namespace ConsoleBalatro.Engine.Cards.Jokers
             } },
             { "SCARY FACE", c =>
             {
-                var ret = new JokerCardDataBlock();
-                ret.JokerName = "Scary Face";
-                ret.DBName = "SCARY FACE";
+                var ret = BasicDataBlock("Scary Face");
                 ret.DescriptionBuilder = _ => "Played face cards give +" + ret.DataDict["CHIPAMOUNT"].IntData + " Chips when scored";
                 ret.DataDict.Add("CHIPAMOUNT", new JokerData() { IntData = 30, MyDataType = JokerDataType.INT });
                 ret.Listeners.Add(new EngineEventListener()
@@ -764,9 +693,7 @@ namespace ConsoleBalatro.Engine.Cards.Jokers
             } },
             { "ABSTRACT JOKER", c =>
             {
-                var ret = new JokerCardDataBlock();
-                ret.JokerName = "Abstract Joker";
-                ret.DBName = "ABSTRACT JOKER";
+                var ret = BasicDataBlock("Abstract Joker");
                 Func<double> getMult = () => ZoneManager.JokerZone.Cards.Count(x => x.isJoker) * ret.DataDict["MULTAMOUNT"].DoubleData;
                 ret.DescriptionBuilder = _ => "+" + ret.DataDict["MULTAMOUNT"].DoubleData + " Mult for each Joker card (Currently +" + getMult() + " Mult)";
                 ret.DataDict.Add("MULTAMOUNT", new JokerData() { DoubleData = 3, MyDataType = JokerDataType.DOUBLE });
@@ -783,9 +710,7 @@ namespace ConsoleBalatro.Engine.Cards.Jokers
             } },
             { "DELAYED GRATIFICATION", c =>
             {
-                var ret = new JokerCardDataBlock();
-                ret.JokerName = "Delayed Gratification";
-                ret.DBName = "DELAYED GRATIFICATION";
+                var ret = BasicDataBlock("Delayed Gratification");
                 ret.DescriptionBuilder = _ => "Earn $" + ret.DataDict["MONEYAMOUNT"].IntData + " per discard if no discards are used by end of round";
                 ret.DataDict.Add("MONEYAMOUNT", new JokerData() { IntData = 2, MyDataType = JokerDataType.INT });
                 ret.DataDict.Add("DISCARDS_USED", new JokerData() { IntData = 0, MyDataType = JokerDataType.INT });
@@ -821,10 +746,7 @@ namespace ConsoleBalatro.Engine.Cards.Jokers
             } },
             { "HACK", c =>
             {
-                var ret = new JokerCardDataBlock();
-                ret.JokerName = "Hack";
-                ret.DBName = "HACK";
-                ret.DescriptionBuilder = _ => "Retrigger each played 2, 3, 4, or 5";
+                var ret = BasicDataBlock("Hack", "Retrigger each played 2, 3, 4, or 5");
                 ret.Listeners.Add(new EngineEventListener()
                 {
                     MyContextType = EventContextType.CardPreTrigger,
@@ -841,10 +763,7 @@ namespace ConsoleBalatro.Engine.Cards.Jokers
             } },
             { "PAREIDOLIA", c =>
             {
-                var ret = new JokerCardDataBlock();
-                ret.JokerName = "Pareidolia";
-                ret.DBName = "PAREIDOLIA";
-                ret.DescriptionBuilder = _ => "All cards are considered face cards";
+                var ret = BasicDataBlock("Pareidolia", "All cards are considered face cards.");
                 ret.OnJokerGainEffs.Add(() =>
                 {
                     EngineUtils.RankGroups["FACE"] = Enum.GetValues<Rank>().Where(x => x != Rank.NONE).ToList();
@@ -858,9 +777,7 @@ namespace ConsoleBalatro.Engine.Cards.Jokers
             } },
             { "GROS MICHEL", c =>
             {
-                var ret = new JokerCardDataBlock();
-                ret.JokerName = "Gros Michel";
-                ret.DBName = "GROS MICHEL";
+                var ret = BasicDataBlock("Gros Michel");
                 ret.DescriptionBuilder = _ => "+" + ret.DataDict["MULTAMOUNT"].DoubleData + " Mult, 1 in " + ret.DataDict["DENOMINATOR"].IntData + " chance this is destroyed at end of round";
                 ret.DataDict.Add("MULTAMOUNT", new JokerData() { DoubleData = 15, MyDataType = JokerDataType.DOUBLE });
                 ret.DataDict.Add("NUMERATOR", new JokerData() { IntData = 1, MyDataType = JokerDataType.INT });
@@ -887,9 +804,7 @@ namespace ConsoleBalatro.Engine.Cards.Jokers
             } },
             { "EVEN STEVEN", c =>
             {
-                var ret = new JokerCardDataBlock();
-                ret.JokerName = "Even Steven";
-                ret.DBName = "EVEN STEVEN";
+                var ret = BasicDataBlock("Even Steven");
                 ret.DescriptionBuilder = _ => "Played cards with even rank give +" + ret.DataDict["MULTAMOUNT"].DoubleData + " Mult when scored (10, 8, 6, 4, 2)";
                 ret.DataDict.Add("MULTAMOUNT", new JokerData() { DoubleData = 4, MyDataType = JokerDataType.DOUBLE });
                 ret.Listeners.Add(new EngineEventListener()
@@ -905,9 +820,7 @@ namespace ConsoleBalatro.Engine.Cards.Jokers
             } },
             { "ODD TODD", c =>
             {
-                var ret = new JokerCardDataBlock();
-                ret.JokerName = "Odd Todd";
-                ret.DBName = "ODD TODD";
+                var ret = BasicDataBlock("Odd Todd");
                 ret.DescriptionBuilder = _ => "Played cards with odd rank give +" + ret.DataDict["CHIPAMOUNT"].IntData + " Chips when scored (A, 9, 7, 5, 3)";
                 ret.DataDict.Add("CHIPAMOUNT", new JokerData() { IntData = 31, MyDataType = JokerDataType.INT });
                 ret.Listeners.Add(new EngineEventListener()
@@ -983,5 +896,27 @@ namespace ConsoleBalatro.Engine.Cards.Jokers
         }
 
         public static Card GenerateDefaultJokerCard() => GenerateJokerCard(DEFAULT_JOKER_NAME);
+
+        private static JokerCardDataBlock BasicDataBlock(string name)
+        {
+            var ret = new JokerCardDataBlock();
+            ret.JokerName = name;
+            ret.DBName = name.ToUpper();
+            return ret;
+        }
+
+        private static JokerCardDataBlock BasicDataBlock(string name, string desc)
+        {
+            var ret = BasicDataBlock(name);
+            ret.DescriptionBuilder = _ => desc;
+            return ret;
+        }
+
+        private static JokerCardDataBlock BasicDataBlock(string name, Func<EventContext, string> descBuilder)
+        {
+            var ret = BasicDataBlock(name);
+            ret.DescriptionBuilder = descBuilder;
+            return ret;
+        }
     }
 }

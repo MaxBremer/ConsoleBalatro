@@ -1,5 +1,6 @@
 ﻿using ConsoleBalatro.Engine;
 using ConsoleBalatro.Engine.Cards;
+using ConsoleBalatro.Engine.Cards.Consumables;
 using ConsoleBalatro.Engine.Cards.Enums;
 using ConsoleBalatro.Engine.Market;
 using System;
@@ -578,6 +579,118 @@ namespace ConsoleBalatro.Tests
             Assert.Equal(3, egg.BonusSellValue);
             Assert.Equal(5, egg.SellCost);
         }
+
+        [Fact]
+        public void CloseBlindSelection_WithBurglar_AddsHandsAndRemovesDiscards()
+        {
+            ResetToBlindSelection();
+            AddJoker("BURGLAR");
+
+            FlowHandler.StartSelectedBlind();
+
+            Assert.Equal(Globals.MaxHandsPerRound + 3, Globals.CurHandsRemaining);
+            Assert.Equal(0, Globals.CurDiscardsRemaining);
+        }
+
+        [Fact]
+        public void PlayHand_WithBlackboard_GivesMultMultOnlyForBlackHeldCards()
+        {
+            var s = JokerSetup("BLACKBOARD");
+            BuildKnownHand("AS,2S,3C", selectAll: false);
+            ZoneManager.HandZone.Cards[0].isSelected = true;
+            Globals.PlayCurrentlySelectedHand();
+            Assert.Single(s.record.MultMultSources);
+            Assert.Equal(3, s.record.MultMultFromEmits);
+
+            s.record.MultMultSources.Clear();
+            s.record.MultMultFromEmits = 1;
+            BuildKnownHand("AS,2H", selectAll: false);
+            ZoneManager.HandZone.Cards[0].isSelected = true;
+            Globals.PlayCurrentlySelectedHand();
+            Assert.Empty(s.record.MultMultSources);
+        }
+
+        [Fact]
+        public void PlayHand_WithRunner_GainsAndAppliesChipsBeforeScoringOnStraights()
+        {
+            var s = JokerSetup("RUNNER");
+            PlayHand("2S,3D,4H,5C,6S");
+            Assert.Equal(15, s.jok.JokerData.DataDict["CHIPAMOUNT"].IntData);
+            Assert.Contains(s.jok, s.record.ChipSources);
+            Assert.Equal(20 + 15, s.record.ChipsFromEmits);//base from cards in hand + runner chips
+        }
+
+        [Fact]
+        public void PlayHands_WithIceCream_LosesChipsAndDestroysAtZero()
+        {
+            var s = JokerSetup("ICE CREAM");
+            PlayHand("AS");
+            Assert.Contains(s.jok, s.record.ChipSources);
+            Assert.Equal(95, s.jok.JokerData.DataDict["CHIPAMOUNT"].IntData);
+
+            s.jok.JokerData.DataDict["CHIPAMOUNT"].IntData = 5;
+            PlayHand("AS");
+            Assert.DoesNotContain(s.jok, ZoneManager.JokerZone.Cards);
+        }
+
+        [Fact]
+        public void PlayHand_WithDNA_FirstSingleCardHandCopiesCardToDeckAndHand()
+        {
+            var s = JokerSetup("DNA");
+            var beforeDeck = ZoneManager.DeckZone.Cards.Count;
+            PlayHand("AS");
+
+            Assert.Equal(beforeDeck - 8 + 1, ZoneManager.DeckZone.Cards.Count);
+            Assert.Contains(ZoneManager.HandZone.Cards, x => x.Rank == Rank.ACE && x.Suit == Suit.SPADES);
+        }
+
+        [Fact]
+        public void PlayHand_WithSplash_AllSelectedCardsTrigger()
+        {
+            JokerSetup("SPLASH");
+            var record = CaptureScoringContributions();
+            BuildKnownHand("3S,3D,3C,6C,8C");
+            var played = ZoneManager.CardsSelectedInHand.ToList();
+            Globals.PlayCurrentlySelectedHand();
+
+            Assert.All(played, c => Assert.Contains(c, record.ChipSources));
+        }
+
+        [Fact]
+        public void PlayHand_WithBlueJoker_AddsChipsBasedOnRemainingDeck()
+        {
+            var s = JokerSetup("BLUE JOKER");
+            var expectedAmt = (ZoneManager.DeckZone.Cards.Count * 2) + 11;//Set this before the play because redraw happens, changing amt of cards in deck.
+            PlayHand("AS");
+            Assert.Contains(s.jok, s.record.ChipSources);
+            Assert.Equal(expectedAmt, s.record.ChipsFromEmits);
+        }
+
+        [Fact]
+        public void PlayHand_WithSixthSense_FirstSingleSixCreatesSpectralAndDestroysCard()
+        {
+            var s = JokerSetup("SIXTH SENSE");
+            var beforeCons = ZoneManager.ConsumableZone.Cards.Count;
+            PlayHand("6S");
+
+            Assert.Equal(beforeCons + 1, ZoneManager.ConsumableZone.Cards.Count);
+            Assert.DoesNotContain(ZoneManager.HiddenPlayZone.Cards, x => x.Rank == Rank.SIX && x.Suit == Suit.SPADES);
+        }
+
+        [Fact]
+        public void UsePlanet_WithConstellation_IncreasesAndAppliesMultMult()
+        {
+            var s = JokerSetup("CONSTELLATION");
+            var planet = ConsumableManager.MakePlanetCard(PlayedHandType.HIGHCARD);
+            ZoneManager.ConsumableZone.AddCard(planet);
+            ConsumableManager.UseConsumable(planet);
+
+            Assert.Equal(1.1, s.jok.JokerData.DataDict["MULTMULTAMOUNT"].DoubleData, 6);
+            PlayHand("AS");
+            Assert.Contains(s.jok, s.record.MultMultSources);
+            Assert.Equal(1.1, s.record.MultMultFromEmits, 6);
+        }
+
 
 
         /*[Theory]

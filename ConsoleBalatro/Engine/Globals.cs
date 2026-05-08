@@ -257,6 +257,10 @@ namespace ConsoleBalatro.Engine
             }
 
             ScoreHandler.FinalPlayChipsCalc();
+            EngineEventHandler.TriggerEvent(new EngineEventArgs()
+            {
+                MyContext = new EventContext() { Context = EventContextType.HandPlayScoringDone },
+            });
             ZoneManager.HiddenPlayZone.DrawUntilCapacityFrom(ZoneManager.CurrentlyBeingPlayedZone);
             CurHandsRemaining -= 1;
 

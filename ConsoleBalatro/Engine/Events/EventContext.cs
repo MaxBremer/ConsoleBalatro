@@ -37,6 +37,7 @@ namespace ConsoleBalatro.Engine.Events
         HandPlayedCalculated,
 
         HandDiscardDone,
+        HandPlayScoringDone,
         HandPlayDone,
 
         SelectedCardBeingConsideredForCalc,

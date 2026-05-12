@@ -39,6 +39,7 @@ namespace ConsoleBalatro.Engine.Cards
         public CardZone MyZone = null;
         public bool Flipped = false;
         public bool Debuffed = false;
+        public bool IsDestructible = true;//TODO: Later things can prevent destruction, for now does nothing.
         public bool isJoker => JokerData != null && JokerData.isJoker;
         public bool isVoucher => JokerData != null && JokerData.isVoucher;
         public bool isTag => JokerData != null && JokerData.isTag;
@@ -50,6 +51,8 @@ namespace ConsoleBalatro.Engine.Cards
 
         public bool isConsumable => ConsumableData != null;
         public ConsumableCardDataBlock ConsumableData = null;
+
+        public bool isPlayingCard => !isJoker && !isVoucher && !isTag && !isConsumable && !isPack;
 
         public int BaseCost = 1; //Default cost of playing card.
         public int? BuyCostOverride = null;

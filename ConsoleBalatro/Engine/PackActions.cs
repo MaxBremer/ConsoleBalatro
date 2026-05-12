@@ -112,7 +112,7 @@ namespace ConsoleBalatro.Engine
 
         public static void SkipCurrentPack()
         {
-            //TODO: Emit a custom event for things that care about skipping packs, like that one joker.
+            EngineEventHandler.TriggerEvent(new EngineEventArgs() { MyContext = new() { Context = EventContextType.PackSkip } });
             EndCurrentPack();
         }
 

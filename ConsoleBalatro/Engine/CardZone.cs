@@ -23,7 +23,7 @@ namespace ConsoleBalatro.Engine
             Cards = Cards.OrderBy(x => Random.Shared.Next()).ToList();
         }
         //TODO: invisible add/remove causes so many fucking problems better to just remove... not even that useful.
-        public virtual bool AddCard(Card card, bool invisibleAdd = false, bool overrideSpace = false)
+        public virtual bool AddCard(Card card, bool invisibleAdd = false, bool overrideSpace = false, CardZone zoneDrawnFrom = null)
         {
             if (!HasRoom && !overrideSpace)
                 return false;
@@ -33,7 +33,7 @@ namespace ConsoleBalatro.Engine
             if (!invisibleAdd)
             {
                 var context = new EventContext() { Context = EventContextType.CardDrawnToZone };
-                var evArgs = new EngineCardDrawnToZoneArgs() { CardBeingDrawn = card, ZoneDrawnTo = this, MyContext = context };
+                var evArgs = new EngineCardDrawnToZoneArgs() { CardBeingDrawn = card, ZoneDrawnTo = this, ZoneDrawnFrom = zoneDrawnFrom, MyContext = context };
                 EngineEventHandler.TriggerEvent(evArgs);
 
             }
@@ -89,7 +89,7 @@ namespace ConsoleBalatro.Engine
             if ((!ignoreSpaceLimits && !HasRoom) || !zone.Cards.Contains(target))
                 return;
             zone.RemoveCard(target);
-            AddCard(target, invisibleAdd: invisibleAdd, overrideSpace: ignoreSpaceLimits);
+            AddCard(target, invisibleAdd: invisibleAdd, overrideSpace: ignoreSpaceLimits, zoneDrawnFrom: zone);
         }
 
         public void DrawTargetsFrom(CardZone zone, List<Card> targets, bool invisibleAdd = false, bool ignoreSpaceLimits = false)

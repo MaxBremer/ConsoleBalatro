@@ -31,6 +31,8 @@ namespace ConsoleBalatro.Engine
 
         public static Dictionary<PlayedHandType, int> HandNumTimesPlayed = new();
 
+        public static Dictionary<PlayedHandType, int> NumHandTypePlayedThisRound = new();
+
         public static PlayedHandType MostPlayedHand => HandNumTimesPlayed.OrderByDescending(kvp => kvp.Value).First().Key;
 
         public static Dictionary<PlayedHandType, (int, int)> HandBuffAmounts = new()
@@ -63,6 +65,8 @@ namespace ConsoleBalatro.Engine
                 HandNumTimesPlayed.Add(k, 0);
             }
 
+            ResetNumPlayedPerRoundTracker();
+
             StartHandCountListeners();
         }
 
@@ -80,6 +84,30 @@ namespace ConsoleBalatro.Engine
                     }
                 }
             });
+
+            EngineEventHandler.StartListening(new EngineEventListener()
+            {
+                MyContextType = EventContextType.StartPlayRoundSetupOver,
+                MyAction = _ => ResetNumPlayedPerRoundTracker(),
+            });
+
+            EngineEventHandler.StartListening(new EngineEventListener()
+            {
+                MyContextType = EventContextType.HandPlayDone,
+                MyAction = args => {
+                    if(args is EngineHandPlayDoneArgs playArgs)
+                        NumHandTypePlayedThisRound[playArgs.HandTypeThatWasPlayed] += 1;
+                }
+            });
+        }
+
+        public static void ResetNumPlayedPerRoundTracker()
+        {
+            NumHandTypePlayedThisRound.Clear();
+            foreach (var k in BaseHandScores.Keys)
+            {
+                NumHandTypePlayedThisRound.Add(k, 0);
+            }
         }
 
         public static void LevelUpHand(PlayedHandType handType)

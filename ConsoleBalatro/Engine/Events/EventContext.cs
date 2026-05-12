@@ -20,6 +20,7 @@ namespace ConsoleBalatro.Engine.Events
         CardDestroyed,
         Reroll,
         PackOpen,
+        PackSkip,
         PackOddsEstablished,
         CardDrawnToZone,
 

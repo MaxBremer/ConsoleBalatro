@@ -185,6 +185,18 @@ namespace ConsoleBalatro.Tests
             public List<Card> MultMultSources { get; } = new();
 
             public List<PlayedHandType> PlayedHandTypes { get; set; } = new();
+
+            public void Reset()
+            {
+                ChipsFromEmits = 0;
+                MultFromEmits = 0;
+                MultMultFromEmits = 1;
+                FinalTotalGain = 0;
+                ChipSources.Clear();
+                MultSources.Clear();
+                MultMultSources.Clear();
+                PlayedHandTypes.Clear();
+            }
         }
 
         public void AddTarot(string tarotName)

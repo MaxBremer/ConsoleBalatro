@@ -215,7 +215,8 @@ namespace ConsoleBalatro.Engine
 
         public static void DestroyCard(Card c, CardZone fromZone)
         {
-            DestructionZone.DrawTargetFrom(fromZone, c);
+            if(c.IsDestructible)
+                DestructionZone.DrawTargetFrom(fromZone, c);
         }
 
         public static void DestroyCard(Card c)

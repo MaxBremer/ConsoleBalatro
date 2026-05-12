@@ -14,9 +14,9 @@ namespace ConsoleBalatro.Engine
             Name = "Destroy";
             MaxCapacity = -1;
         }
-        public override bool AddCard(Card card, bool invisibleAdd = false, bool overrideSpace = false)
+        public override bool AddCard(Card card, bool invisibleAdd = false, bool overrideSpace = false, CardZone zoneFrom = null)
         {
-            var result = base.AddCard(card, invisibleAdd, overrideSpace);
+            var result = base.AddCard(card, invisibleAdd, overrideSpace, zoneFrom);
             if (result)
             {
                 card.DestroyCard();

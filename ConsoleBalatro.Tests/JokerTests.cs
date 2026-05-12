@@ -2,6 +2,7 @@
 using ConsoleBalatro.Engine.Cards;
 using ConsoleBalatro.Engine.Cards.Consumables;
 using ConsoleBalatro.Engine.Cards.Enums;
+using ConsoleBalatro.Engine.Cards.Jokers;
 using ConsoleBalatro.Engine.Market;
 using System;
 using System.Collections.Generic;
@@ -39,6 +40,7 @@ namespace ConsoleBalatro.Tests
             var handStr = "A" + suitString + ",A" + suitString;
             PlayHand(handStr);
             Assert.Equal(targetSuit, ZoneManager.HiddenPlayZone.Cards[0].Suit);
+            Assert.Equal(targetSuit, ZoneManager.HiddenPlayZone.Cards[1].Suit);
             Assert.Equal(2, record.MultSources.Count);
             Assert.Equal(jok, record.MultSources[0]);
             Assert.Equal(jok, record.MultSources[1]);
@@ -94,8 +96,7 @@ namespace ConsoleBalatro.Tests
             Assert.Equal(s.jok, s.record.MultMultSources[0]);
             Assert.Equal(5, s.record.MultMultFromEmits);
             //record reset
-            s.record.MultMultSources.Clear();
-            s.record.MultMultFromEmits = 1;
+            s.record.Reset();
             AddJoker("JIMBO");
             //now the mult should go down to 4
             PlayHand("AS");
@@ -194,8 +195,7 @@ namespace ConsoleBalatro.Tests
             PlayHand("AS");
             Assert.Empty(s.record.MultSources);
 
-            s.record.MultSources.Clear();
-            s.record.MultFromEmits = 0;
+            s.record.Reset();
 
             Globals.CurDiscardsRemaining = 0;
             PlayHand("AS");
@@ -276,8 +276,7 @@ namespace ConsoleBalatro.Tests
             Globals.PlayCurrentlySelectedHand();
             Assert.Single(record.ChipSources, x => x == card);
 
-            record.ChipSources.Clear();
-            record.ChipsFromEmits = 0;
+            record.Reset();
 
             card.isSelected = true;
             ZoneManager.HandZone.Cards.Add(card);
@@ -296,8 +295,7 @@ namespace ConsoleBalatro.Tests
             Assert.Single(s.record.MultSources);
             Assert.Equal(s.jok, s.record.MultSources[0]);
             Assert.Equal(4, s.record.MultFromEmits);
-            s.record.MultSources.Clear();
-            s.record.MultFromEmits = 0;
+            s.record.Reset();
 
             BuildKnownHand("KS,2H,5C", selectAll: false);
             ZoneManager.HandZone.Cards[0].isSelected = true;
@@ -376,8 +374,7 @@ namespace ConsoleBalatro.Tests
 
             Assert.Contains(s.jok, s.record.MultSources);
             Assert.Equal(6 + 4, s.record.MultFromEmits);
-            s.record.MultSources.Clear();
-            s.record.MultFromEmits = 0;
+            s.record.Reset();
 
             AddJoker("JIMBO");
             PlayHand("AS");
@@ -436,8 +433,7 @@ namespace ConsoleBalatro.Tests
             FlowHandler.ClosePostRound();
             FlowHandler.CloseMarketRound();
             FlowHandler.StartSelectedBlind();
-            s.record.ChipSources.Clear();
-            s.record.ChipsFromEmits = 0;
+            s.record.Reset();
             ZoneManager.DestroyCard(ZoneManager.JokerZone.Cards[1]);//remove Pareidolia
             PlayHand("KS,4S,6S,8S,1S");
             Assert.Single(s.record.ChipSources, x => x == s.jok);
@@ -538,15 +534,13 @@ namespace ConsoleBalatro.Tests
             PlayHand("2S");
             Assert.Equal(1, s.jok.JokerData.DataDict["MULTAMOUNT"].DoubleData);
 
-            s.record.MultSources.Clear();
-            s.record.MultFromEmits = 0;
+            s.record.Reset();
             PlayHand("3S");
             Assert.Single(s.record.MultSources);
             Assert.Equal(1, s.record.MultFromEmits);
             Assert.Equal(2, s.jok.JokerData.DataDict["MULTAMOUNT"].DoubleData);
 
-            s.record.MultSources.Clear();
-            s.record.MultFromEmits = 0;
+            s.record.Reset();
             PlayHand("KS");
             Assert.Single(s.record.MultSources);
             Assert.Equal(2, s.record.MultFromEmits);
@@ -602,8 +596,7 @@ namespace ConsoleBalatro.Tests
             Assert.Single(s.record.MultMultSources);
             Assert.Equal(3, s.record.MultMultFromEmits);
 
-            s.record.MultMultSources.Clear();
-            s.record.MultMultFromEmits = 1;
+            s.record.Reset();
             BuildKnownHand("AS,2H", selectAll: false);
             ZoneManager.HandZone.Cards[0].isSelected = true;
             Globals.PlayCurrentlySelectedHand();
@@ -720,14 +713,12 @@ namespace ConsoleBalatro.Tests
             PlayHand("AS");
             Assert.Single(s.record.MultSources);
             Assert.Equal(1, s.record.MultFromEmits);
-            s.record.MultSources.Clear();
-            s.record.MultFromEmits = 0;
+            s.record.Reset();
             PlayHand("AS");
             Assert.Single(s.record.MultSources);
             Assert.Equal(2, s.record.MultFromEmits);
             DiscardHand("AS");
-            s.record.MultSources.Clear();
-            s.record.MultFromEmits = 0;
+            s.record.Reset();
             PlayHand("AS");
             Assert.Single(s.record.MultSources);
             Assert.Equal(2, s.record.MultFromEmits);
@@ -772,6 +763,130 @@ namespace ConsoleBalatro.Tests
             Assert.Equal(3, s.record.MultMultFromEmits);
             Assert.Empty(ZoneManager.JokerZone.Cards);
         }
+
+        [Fact]
+        public void PlayHand_WithCardSharp_GivesMultMultOnRepeatedHandType()
+        {
+            var s = JokerSetup("CARD SHARP");
+            PlayHand("AS");
+            Assert.Empty(s.record.MultMultSources);
+            PlayHand("KS");
+            Assert.Contains(s.jok, s.record.MultMultSources);
+        }
+
+        [Fact]
+        public void SkipPack_WithRedCard_GainsMult()
+        {
+            var s = JokerSetup("RED CARD");
+            Assert.Equal(0, s.jok.JokerData.DataDict["MULTAMOUNT"].DoubleData);
+            PackActions.SkipCurrentPack();
+            Assert.Equal(3, s.jok.JokerData.DataDict["MULTAMOUNT"].DoubleData);
+            PlayHand("AS");
+            Assert.Contains(s.jok, s.record.MultSources);
+            Assert.Equal(3, s.record.MultFromEmits);
+        }
+
+        [Fact]
+        public void StartBlind_WithMadness_GainsMultMultAndDestroysAnotherJoker()
+        {
+            ResetToBlindSelection();
+            AddJoker("MADNESS");
+            AddJoker("JIMBO");
+            FlowHandler.StartSelectedBlind();
+            Assert.Single(ZoneManager.JokerZone.Cards);
+            Assert.Equal("MADNESS", ZoneManager.JokerZone.Cards[0].JokerData.DBName);
+            Assert.Equal(1.5, ZoneManager.JokerZone.Cards[0].JokerData.DataDict["MULTMULTAMOUNT"].DoubleData, 6);
+        }
+
+        [Fact]
+        public void PlayHand_WithSquareJoker_GainsAndAppliesChipsOnFourCardHand()
+        {
+            var s = JokerSetup("SQUARE JOKER");
+            Globals.RequiredChipsForCurrentBlind = 99999;
+            PlayHand("AS,2S,3S");
+            Assert.Equal(0, s.jok.JokerData.DataDict["CHIPAMOUNT"].IntData);
+            Assert.DoesNotContain(s.jok, s.record.ChipSources);
+
+            PlayHand("AS,2S,3S,4S");
+            Assert.Equal(4, s.jok.JokerData.DataDict["CHIPAMOUNT"].IntData);
+            Assert.Contains(s.jok, s.record.ChipSources);
+            PlayHand("AS,2S,3S");
+            Assert.Equal(4, s.jok.JokerData.DataDict["CHIPAMOUNT"].IntData);
+        }
+
+        [Fact]
+        public void PlayHand_WithSeance_CreatesSpectralOnStraightFlush()
+        {
+            JokerSetup("SEANCE");
+            var before = ZoneManager.ConsumableZone.Cards.Count;
+            PlayHand("AS,2S,3S,4S,5S");
+            Assert.Equal(before + 1, ZoneManager.ConsumableZone.Cards.Count);
+        }
+
+        [Fact]
+        public void StartBlind_WithRiffRaff_CreatesTwoCommonJokers()
+        {
+            ResetToBlindSelection();
+            AddJoker("RIFF-RAFF");
+            FlowHandler.StartSelectedBlind();
+            Assert.Equal(3, ZoneManager.JokerZone.Cards.Count);
+            Assert.All(ZoneManager.JokerZone.Cards.Where(x => x.JokerData.DBName != "RIFF-RAFF"), x => Assert.Equal(JokerRarity.COMMON, x.JokerData.Rarity));
+        }
+
+        [Fact]
+        public void PlayHand_WithVampire_ConsumesEnhancementAndGainsMultMult()
+        {
+            var s = JokerSetup("VAMPIRE");
+            var card = BuildKnownHand("AS")[0];
+            card.SetEnhancementOfficial(Enhancement.MULT);
+            Globals.PlayCurrentlySelectedHand();
+            Assert.Equal(Enhancement.NONE, card.Enhancement);
+            Assert.Empty(s.record.MultSources);
+            Assert.Single(s.record.MultMultSources);
+            Assert.Equal(s.jok, s.record.MultMultSources[0]);
+            Assert.Equal(1.1, s.jok.JokerData.DataDict["MULTMULTAMOUNT"].DoubleData, 6);
+        }
+
+        [Fact]
+        public void PlayHand_WithShortcut_UpdatesSkipStrengthAccordingly()
+        {
+            var s = JokerSetup("SHORTCUT");
+            Globals.RequiredChipsForCurrentBlind = 999999;
+            Assert.Equal(1, EngineUtils.SkipStrength);
+            PlayHand("AS,2S,4S,6S,7S");
+            Assert.Single(s.record.PlayedHandTypes);
+            Assert.Equal(PlayedHandType.STRAIGHTFLUSH, s.record.PlayedHandTypes[0]);
+            PlayHand("8S,1D,JS,QS,KS");
+            Assert.Equal(PlayedHandType.STRAIGHT, s.record.PlayedHandTypes[1]);
+            ZoneManager.JokerZone.RemoveCard(ZoneManager.JokerZone.Cards[0]);
+            Assert.Equal(0, EngineUtils.SkipStrength);
+            s.record.Reset();
+            PlayHand("8S,1D,JS,QS,KS");
+            Assert.Equal(PlayedHandType.HIGHCARD, s.record.PlayedHandTypes[0]);
+        }
+
+        [Fact]
+        public void AddCardsToDeck_WithHologram_OnlyCountsPermanentAdds()
+        {
+            var s = JokerSetup("HOLOGRAM");
+            var starting = s.jok.JokerData.DataDict["MULTMULTAMOUNT"].DoubleData;
+            var created = CardFactory.PlayingCardFromRankSuit(Rank.TWO, Suit.CLUBS);
+            ZoneManager.DeckZone.AddCard(created);
+            Assert.Equal(starting + 0.25, s.jok.JokerData.DataDict["MULTMULTAMOUNT"].DoubleData, 6);
+            ZoneManager.DeckZone.DrawUntilCapacityFrom(ZoneManager.HandZone);
+            Assert.Equal(starting + 0.25, s.jok.JokerData.DataDict["MULTMULTAMOUNT"].DoubleData, 6);
+            ZoneManager.DrawHandful();
+            Assert.Equal(starting + 0.25, s.jok.JokerData.DataDict["MULTMULTAMOUNT"].DoubleData, 6);
+            AddSpectral("Grim");
+            UseCon();
+            Assert.Equal(starting + 0.75, s.jok.JokerData.DataDict["MULTMULTAMOUNT"].DoubleData, 6);
+            ZoneManager.HandZone.Cards[0].ToggleSelect();
+            Globals.PlayCurrentlySelectedHand();//This instead of PlayHand() function cause that actually CREATES new cards, triggering/increasing Holograms mult.
+            Assert.Single(s.record.MultMultSources);
+            Assert.Equal(s.jok, s.record.MultMultSources[0]);
+            Assert.Equal(starting + 0.75, s.record.MultMultFromEmits);
+        }
+
 
 
         /*[Theory]

@@ -164,8 +164,11 @@ namespace ConsoleBalatro.Engine
             foreach (var c in selList)
             {
                 //Trigger event
-                var args = new EngineCardDiscardedFromHandArgs() { CardBeingDiscarded = c };
-                args.MyContext = new Events.EventContext() { Context = Events.EventContextType.CardDiscardedFromHand };
+                var args = new EngineCardDiscardedFromHandArgs
+                {
+                    CardBeingDiscarded = c,
+                    MyContext = new EventContext() { Context = EventContextType.CardDiscardedFromHand }
+                };
                 EngineEventHandler.TriggerEvent(args);
 
                 DiscardZone.DrawTargetFrom(HandZone, c);

@@ -268,6 +268,7 @@ namespace ConsoleBalatro.Engine
             {
                 MyContext = new EventContext() { Context = EventContextType.HandPlayDone },
                 HandTypeThatWasPlayed = handTypePlayed,
+                CardsInPlayedHand = cardsForScoringCalc.ToList(),
             });
 
             if(TotalCurrentChips >= RequiredChipsForCurrentBlind)
@@ -287,11 +288,13 @@ namespace ConsoleBalatro.Engine
         {
             if (CurDiscardsRemaining == 0)
                 return;
+            var selList = ZoneManager.CardsSelectedInHand.ToList();
             ZoneManager.DiscardSelectedFromHand();
             if (doRedraw)
                 ZoneManager.DrawHandful();
-            EngineEventHandler.TriggerEvent(new EngineEventArgs()
+            EngineEventHandler.TriggerEvent(new EngineDiscardDoneArgs()
             {
+                BeingDiscarded = selList,
                 MyContext = new EventContext() { Context = EventContextType.HandDiscardDone }
             });
             CurDiscardsRemaining -= 1;

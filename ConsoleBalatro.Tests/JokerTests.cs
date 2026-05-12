@@ -691,6 +691,87 @@ namespace ConsoleBalatro.Tests
             Assert.Equal(1.1, s.record.MultMultFromEmits, 6);
         }
 
+        [Fact]
+        public void PlayHand_WithHiker_CardsIncreaseBonusChips()
+        {
+            var s = JokerSetup("HIKER");
+            PlayHand("AS,2S,3S,4S,5S");
+            Assert.Equal(5, s.record.ChipSources.Count());
+            Assert.Equal(25 + 25, s.record.ChipsFromEmits);
+            Assert.Equal(16, s.record.ChipSources[0].ChipsBase); //base 11 + 5 from hiker.
+        }
+
+        [Fact]
+        public void DiscardHand_WithFaceless_GivesMoneyCorrectly()
+        {
+            var s = JokerSetup("FACELESS JOKER");
+            var oldMoney = Globals.Money;
+            DiscardHand("AS,JS,JD,KC,2S");
+            Assert.Equal(oldMoney + 5, Globals.Money);
+            DiscardHand("AS,3S,JD,KC,2S");
+            Assert.Equal(oldMoney + 5, Globals.Money);
+        }
+
+        [Fact]
+        public void PlayAndDiscard_WithGreenJoker_ChangesMultCorrectly()
+        {
+            var s = JokerSetup("GREEN JOKER");
+            Globals.RequiredChipsForCurrentBlind = 99999;
+            PlayHand("AS");
+            Assert.Single(s.record.MultSources);
+            Assert.Equal(1, s.record.MultFromEmits);
+            s.record.MultSources.Clear();
+            s.record.MultFromEmits = 0;
+            PlayHand("AS");
+            Assert.Single(s.record.MultSources);
+            Assert.Equal(2, s.record.MultFromEmits);
+            DiscardHand("AS");
+            s.record.MultSources.Clear();
+            s.record.MultFromEmits = 0;
+            PlayHand("AS");
+            Assert.Single(s.record.MultSources);
+            Assert.Equal(2, s.record.MultFromEmits);
+        }
+
+        [Fact]
+        public void PlayHand_WithSuperposition_CorrectlyGeneratesTarot()
+        {
+            var s = JokerSetup("SUPERPOSITION");
+            Globals.RequiredChipsForCurrentBlind = 999999;
+            PlayHand("AS,2S,3S,4S,5S");
+            Assert.Single(ZoneManager.ConsumableZone.Cards);
+            Assert.True(ZoneManager.ConsumableZone.Cards.Last().isConsumable);
+            PlayHand("2s,3S,4S,5S,6S");
+            Assert.Single(ZoneManager.ConsumableZone.Cards);
+        }
+
+        [Fact]
+        public void PlayHand_WithToDoList_CorrectlyMakesMoney()
+        {
+            var s = JokerSetup("TO DO LIST");
+            s.jok.JokerData.DataDict["HANDTYPE"].HandTypeData = PlayedHandType.PAIR;
+            
+            var beforeMoney = Globals.Money;
+            PlayHand("AS");
+            Assert.Equal(beforeMoney, Globals.Money);
+            PlayHand("AS,AS");
+            Assert.Equal(beforeMoney + 4, Globals.Money);
+            PlayHand("AS,AS,AS,AS,AS");
+            Assert.Equal(beforeMoney + 4, Globals.Money);
+            Assert.NotEqual(PlayedHandType.PAIR, s.jok.JokerData.DataDict["HANDTYPE"].HandTypeData);
+        }
+
+        [Fact]
+        public void PlayHand_WithCavendish_CorrectlyAddsMult()
+        {
+            var s = JokerSetup("CAVENDISH");
+            RigNextRoll(true);
+            PlayHand("AS,2S,3S,4S,5S");
+            Assert.Single(s.record.MultMultSources);
+            Assert.Equal(s.jok, s.record.MultMultSources[0]);
+            Assert.Equal(3, s.record.MultMultFromEmits);
+            Assert.Empty(ZoneManager.JokerZone.Cards);
+        }
 
 
         /*[Theory]

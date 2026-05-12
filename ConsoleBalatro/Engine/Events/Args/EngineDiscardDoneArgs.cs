@@ -7,9 +7,8 @@ using System.Threading.Tasks;
 
 namespace ConsoleBalatro.Engine.Events.Args
 {
-    public class EngineHandPlayDoneArgs : EngineEventArgs
+    public class EngineDiscardDoneArgs : EngineEventArgs
     {
-        public PlayedHandType HandTypeThatWasPlayed { get; set; }
-        public List<Card> CardsInPlayedHand { get; set; }
+        public List<Card> BeingDiscarded { get; set; }
     }
 }

@@ -3,6 +3,8 @@ using ConsoleBalatro.Engine.Cards;
 using ConsoleBalatro.Engine.Cards.Consumables;
 using ConsoleBalatro.Engine.Cards.Enums;
 using ConsoleBalatro.Engine.Cards.Jokers;
+using ConsoleBalatro.Engine.Events;
+using ConsoleBalatro.Engine.Events.Args;
 using ConsoleBalatro.Engine.Market;
 using System;
 using System.Collections.Generic;
@@ -880,12 +882,154 @@ namespace ConsoleBalatro.Tests
             AddSpectral("Grim");
             UseCon();
             Assert.Equal(starting + 0.75, s.jok.JokerData.DataDict["MULTMULTAMOUNT"].DoubleData, 6);
+            ZoneManager.HandZone.ClearCards();//we clear cards because Grim could generate Steel cards, which would add MultMult sources.
+            ZoneManager.DrawHandful();
             ZoneManager.HandZone.Cards[0].ToggleSelect();
             Globals.PlayCurrentlySelectedHand();//This instead of PlayHand() function cause that actually CREATES new cards, triggering/increasing Holograms mult.
             Assert.Single(s.record.MultMultSources);
             Assert.Equal(s.jok, s.record.MultMultSources[0]);
             Assert.Equal(starting + 0.75, s.record.MultMultFromEmits);
         }
+
+        [Fact]
+        public void PlayHand_WithVagabond_CreatesTarotAtFourOrLessMoney()
+        {
+            ResetToFirstBlindPlayRound();
+            AddJoker("VAGABOND");
+            Globals.Money = 4;
+            var before = ZoneManager.ConsumableZone.Cards.Count;
+            PlayHand("AS");
+            Assert.Equal(before + 1, ZoneManager.ConsumableZone.Cards.Count);
+            Assert.Equal(ConsumableType.TAROT, ZoneManager.ConsumableZone.Cards.First().ConsumableData.Type);
+            Globals.Money = 5;
+            PlayHand("AS");
+            Assert.Equal(before + 1, ZoneManager.ConsumableZone.Cards.Count);
+        }
+
+        [Fact]
+        public void PlayHand_WithBaron_GivesMultMultPerHeldKing()
+        {
+            var s = JokerSetup("BARON");
+            BuildKnownHand("AS,KS,KH", selectAll: false);
+            ZoneManager.HandZone.Cards[0].isSelected = true;
+            Globals.PlayCurrentlySelectedHand();
+            Assert.Equal(2, s.record.MultMultSources.Count(x => x.Rank == Rank.KING));
+            Assert.Equal(1.5 * 1.5, s.record.MultMultFromEmits, 6);
+        }
+
+        [Fact]
+        public void CloseRound_WithCloud9_GivesMoneyPerNineInDeck()
+        {
+            ResetToFirstBlindPlayRound();
+            AddJoker("CLOUD 9");
+            ZoneManager.DeckZone.Cards[0].Rank = Rank.NINE;
+            ZoneManager.HandZone.Cards[0].Rank = Rank.NINE;
+            var beforeMoney = Globals.Money;
+            Globals.RequiredChipsForCurrentBlind = 1;
+            PlayHand("AS");
+            var x = Globals.CurrentGameStateObj.PostRoundMoneySources;
+            FlowHandler.ClosePostRound();
+            Assert.Equal(beforeMoney + ZoneManager.GetFullDeckCards().Count(x => x.Rank == Rank.NINE) + FlowHandler.PostRoundFreeMoney[BlindType.SMALL] + 3, Globals.Money);
+        }
+
+        [Fact]
+        public void BlindChange_WithRocket_IncreasesPayoutAfterBoss()
+        {
+            ResetToFirstBlindPlayRound();
+            AddJoker("ROCKET");
+            var rocket = ZoneManager.JokerZone.Cards.Single();
+            FlowHandler.CurrentSelectedBlind = BlindType.BOSS;
+            FlowHandler.StartSelectedBlind();
+            Assert.Equal(1, rocket.JokerData.DataDict["MONEYAMOUNT"].IntData);
+            PlayHand("AS,AS,AS,AS,AS");
+            Assert.Equal(3, rocket.JokerData.DataDict["MONEYAMOUNT"].IntData);
+            Assert.Equal("Rocket", Globals.CurrentGameStateObj.PostRoundMoneySources.Last().Item1);
+            FlowHandler.ClosePostRound();
+        }
+
+        [Fact]
+        public void PlayHand_WithObelisk_ResetsOnMostPlayedHand()
+        {
+            var s = JokerSetup("OBELISK");
+            PlayHand("AS,AS");
+            s.record.Reset();
+            PlayHand("AS");
+            Assert.Single(s.record.MultMultSources);
+            Assert.Equal(1.2, s.record.MultMultFromEmits, 6);
+            s.record.Reset();
+            PlayHand("KS");
+            Assert.Empty(s.record.MultMultSources);
+            Assert.Equal(1, s.jok.JokerData.DataDict["MULTMULTAMOUNT"].DoubleData, 6);
+        }
+
+        [Fact]
+        public void PlayHand_WithMidasMask_MakesPlayedFaceCardsGold()
+        {
+            JokerSetup("MIDAS MASK");
+            PlayHand("KS,QS,AS");
+            Assert.All(ZoneManager.HiddenPlayZone.Cards.Where(EngineUtils.isFace), x => Assert.Equal(Enhancement.GOLD, x.Enhancement));
+        }
+
+        [Fact]
+        public void SellLuchador_DuringBossPlay_DisablesBossBlind()
+        {
+            ResetToFirstBlindPlayRound();
+            FlowHandler.CurrentSelectedBlind = BlindType.BOSS;
+            FlowHandler.StartSelectedBlind();
+            Assert.NotEmpty(ZoneManager.HiddenBlindAttributeZone.Cards);
+            AddJoker("LUCHADOR");
+            var luchador = ZoneManager.JokerZone.Cards.Single();
+            Globals.PerformSell(luchador, ZoneManager.JokerZone);
+            Assert.Empty(ZoneManager.HiddenBlindAttributeZone.Cards);
+        }
+
+        [Fact]
+        public void PlayHand_WithPhotograph_TriggersOnFirstPlayedFaceCardOnly()
+        {
+            var s = JokerSetup("PHOTOGRAPH");
+            Globals.RequiredChipsForCurrentBlind = 999999;
+            PlayHand("KS,QS,AS,1S,5S");
+            Assert.Single(s.record.MultMultSources);
+            Assert.Equal(Rank.KING, s.record.MultMultSources[0].Rank);
+            Assert.Equal(2, s.record.MultMultFromEmits, 6);
+            s.record.Reset();
+            PlayHand("JS,KS,KD");
+            Assert.Equal(Rank.KING, s.record.MultMultSources[0].Rank);
+            Assert.Equal(2, s.record.MultMultFromEmits, 6);
+        }
+
+        [Fact]
+        public void CloseRound_WithGiftCard_IncreasesSellValueOfJokersAndConsumables()
+        {
+            ResetToFirstBlindPlayRound();
+            AddJoker("GIFT CARD");
+            AddJoker("JIMBO");
+            var tarot = ConsumableManager.MakeTarotCard("FOOL");
+            ZoneManager.ConsumableZone.AddCard(tarot);
+            var jimbo = ZoneManager.JokerZone.Cards.Single(x => x.JokerData.DBName == "JIMBO");
+            var oldJimbo = jimbo.SellCost;
+            var oldTarot = tarot.SellCost;
+            Globals.RequiredChipsForCurrentBlind = 1;
+            PlayHand("AS");
+            Assert.Equal(1, jimbo.BonusSellValue);
+            Assert.Equal(1, tarot.BonusSellValue);
+            Assert.Equal(1 + oldJimbo, jimbo.SellCost);
+            Assert.Equal(1 + oldTarot, tarot.SellCost);
+        }
+
+        [Fact]
+        public void TurtleBean_AddsAndThenLosesHandSize_AndSelfDestructsAtZero()
+        {
+            ResetToFirstBlindPlayRound();
+            var baseSize = Globals.HandSize;
+            AddJoker("TURTLE BEAN");
+            var bean = ZoneManager.JokerZone.Cards.Single();
+            Assert.Equal(baseSize + 5, Globals.HandSize);
+            bean.JokerData.DataDict["HANDSIZEAMOUNT"].IntData = 1;
+            EngineEventHandler.TriggerEvent(new EngineEventArgs() { MyContext = new() { Context = EventContextType.EndPlayRound } });
+            Assert.DoesNotContain(bean, ZoneManager.JokerZone.Cards);
+        }
+
 
 
 

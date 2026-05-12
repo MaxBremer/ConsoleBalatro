@@ -19,6 +19,9 @@ namespace ConsoleBalatro.Engine.Cards.Blinds
 
         public static List<string> AvailableBossBlinds => BossBlindNames.Where(x => !BossBlindsAlreadyUsed.Contains(x)).ToList();
 
+        //NOTE!!!!!
+        //ALL BOSS BLINDS need an OnJokerRemove that undoes their effect, such as adding hands to play if blind sets to one at start of round, etc.
+        //This is for jokers Luchador and that one legendary that disable bosses.
         public static Dictionary<string, Func<Card, JokerCardDataBlock>> BossBlindData = new()
         {
             {

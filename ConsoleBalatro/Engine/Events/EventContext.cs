@@ -43,6 +43,7 @@ namespace ConsoleBalatro.Engine.Events
 
         SelectedCardBeingConsideredForCalc,
         CardInHandAfterScoring,
+        AllScoringCardsDecided,
 
         TotalChipsGained,
         RequiredChipsSet,

@@ -74,12 +74,12 @@ namespace ConsoleBalatro.Engine
         {
             EngineEventHandler.StartListening(new EngineEventListener()
             {
-                MyContextType = EventContextType.HandPlayedCalculated,
+                MyContextType = EventContextType.HandPlayDone,
                 MyAction = args =>
                 {
-                    if(args is EngineHandPlayArgs handArgs)
+                    if(args is EngineHandPlayDoneArgs handArgs)
                     {
-                        var hType = handArgs.HandBeingPlayed;
+                        var hType = handArgs.HandTypeThatWasPlayed;
                         HandNumTimesPlayed[hType] += 1;
                     }
                 }

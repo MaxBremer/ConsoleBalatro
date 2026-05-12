@@ -233,6 +233,12 @@ namespace ConsoleBalatro.Engine
             }
 
             var sContext = new ScoringContext() { HandBeingPlayed = handTypePlayed, };
+            EngineEventHandler.TriggerEvent(new EngineHandPlayArgs()
+            {
+                MyContext = new EventContext() { Context = EventContextType.AllScoringCardsDecided },
+                CardsInScoringHand = cardsForScoringCalc,
+                HandBeingPlayed = handTypePlayed,
+            });
             sContext.PlayingCardsBeingScored.AddRange(cardsInActualHandPlayed);//Uhhh shouldn't this be cardsForScoringCalc? TODO
             //like honestly wtf did I write here?
             sContext.AllPlayingCardsSubmittedForHand.AddRange(selCards);//See this one makes sense

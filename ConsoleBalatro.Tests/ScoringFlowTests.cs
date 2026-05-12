@@ -201,6 +201,22 @@ namespace ConsoleBalatro.Tests
             Assert.Equal(GameState.BlindsMenu, Globals.CurrentGameState);
         }
 
+        [Fact]
+        public void PlayHands_MultipleHands_PlayedHandTypesTrackedCorrectly()
+        {
+            ResetToFirstBlindPlayRound();
+            PlayHand("AS,2D,3C,4H,6S");
+            PlayHand("AS,AD,3C,4H,6S");
+            PlayHand("9C,9D,2S,3H,4C");
+            Assert.Equal(1, ScoreHandler.NumHandTypePlayedThisRound[PlayedHandType.HIGHCARD]);
+            Assert.Equal(2, ScoreHandler.NumHandTypePlayedThisRound[PlayedHandType.PAIR]);
+            PlayHand("AS,AS,AS,AS,AS");
+            FlowHandler.ClosePostRound();
+            FlowHandler.CloseMarketRound();
+            FlowHandler.StartSelectedBlind();
+            Assert.DoesNotContain(ScoreHandler.NumHandTypePlayedThisRound.Values, x => x != 0);//All should be reset after start of next round.
+        }
+
         #region Helpers
 
         private static void TestWithExpectations(ContributionCapture contributions, PlayedHandType playedHandType, Rank firstChipSourceRank, Suit firstChipSourceSuit, int numChipContributors, int chipsFromEmits, int totalChipsAtEnd, int numMultContributors = 0, double multFromEmits = 0d, int numMultMultContributors = 0, double multMultFromEmits = 1d)

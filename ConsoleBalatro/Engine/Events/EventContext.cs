@@ -83,6 +83,8 @@ namespace ConsoleBalatro.Engine.Events
         TagActivatedInstantly,
 
         RandomRollHappening,
+
+        LuckyCardSuccessfulTrigger,
     }
     public class EventContext
     {

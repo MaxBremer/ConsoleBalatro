@@ -85,11 +85,13 @@ namespace ConsoleBalatro.Engine
                     if(Globals.RollRandom(1, 5, c))
                     {
                         Globals.EmitMultAdd(20, c);
+                        EngineEventHandler.TriggerEvent(new EngineEventArgs() { MyContext = new EventContext() { Context = EventContextType.LuckyCardSuccessfulTrigger } });
                     }
 
                     if(Globals.RollRandom(1, 15, c))
                     {
                         Globals.EmitMoneyGain(20, c);
+                        EngineEventHandler.TriggerEvent(new EngineEventArgs() { MyContext = new EventContext() { Context = EventContextType.LuckyCardSuccessfulTrigger } });
                     }
                 }
             }

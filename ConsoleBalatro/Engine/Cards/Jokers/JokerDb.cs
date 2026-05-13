@@ -1,5 +1,6 @@
 ﻿using ConsoleBalatro.Engine.Cards.Consumables;
 using ConsoleBalatro.Engine.Cards.Enums;
+using ConsoleBalatro.Engine.Cards.Tags;
 using ConsoleBalatro.Engine.Events;
 using ConsoleBalatro.Engine.Events.Args;
 using ConsoleBalatro.Engine.Market;
@@ -108,6 +109,16 @@ namespace ConsoleBalatro.Engine.Cards.Jokers
             {"FORTUNE TELLER", new JokerTypeData { DBName = "FORTUNE TELLER", Price = 6 } },
             {"JUGGLER", new JokerTypeData { DBName = "JUGGLER", Price = 4 } },
             {"DRUNKARD", new JokerTypeData { DBName = "DRUNKARD", Price = 4 } },
+            {"LUCKY CAT", new JokerTypeData { DBName = "LUCKY CAT", Price = 6, Rarity = JokerRarity.UNCOMMON } },
+            {"BASEBALL CARD", new JokerTypeData { DBName = "BASEBALL CARD", Price = 8, Rarity = JokerRarity.RARE } },
+            {"BULL", new JokerTypeData { DBName = "BULL", Price = 6, Rarity = JokerRarity.UNCOMMON } },
+            {"DIET COLA", new JokerTypeData { DBName = "DIET COLA", Price = 6, Rarity = JokerRarity.UNCOMMON } },
+            {"TRADING CARD", new JokerTypeData { DBName = "TRADING CARD", Price = 6, Rarity = JokerRarity.UNCOMMON } },
+            {"FLASH CARD", new JokerTypeData { DBName = "FLASH CARD", Price = 5, Rarity = JokerRarity.UNCOMMON } },
+            {"POPCORN", new JokerTypeData { DBName = "POPCORN", Price = 5 } },
+            {"SPARE TROUSERS", new JokerTypeData { DBName = "SPARE TROUSERS", Price = 6, Rarity = JokerRarity.UNCOMMON } },
+            {"ANCIENT JOKER", new JokerTypeData { DBName = "ANCIENT JOKER", Price = 8, Rarity = JokerRarity.RARE } },
+            {"RAMEN", new JokerTypeData { DBName = "RAMEN", Price = 6, Rarity = JokerRarity.UNCOMMON } },
             {"TEMP UNCOMMON JOKER", new JokerTypeData { DBName = "TEMP UNCOMMON JOKER", Price = 5, Rarity = JokerRarity.UNCOMMON } },
             {"TEMP RARE JOKER", new JokerTypeData { DBName = "TEMP RARE JOKER", Price = 5, Rarity = JokerRarity.RARE } },
             {"TEMP LEGENDARY JOKER", new JokerTypeData { DBName = "TEMP LEGENDARY JOKER", Price = 6, Rarity = JokerRarity.LEGENDARY } },
@@ -1823,6 +1834,216 @@ namespace ConsoleBalatro.Engine.Cards.Jokers
 
                 return ret;
             } },
+            { "LUCKY CAT", c =>
+            {
+                var ret = BasicDataBlock("Lucky Cat");
+                ret.DataDict.Add("MULTMULTAMOUNT", new JokerData() { DoubleData = 1, MyDataType = JokerDataType.DOUBLE });
+                ret.DataDict.Add("MULTMULTGAIN", new JokerData() { DoubleData = 0.25, MyDataType = JokerDataType.DOUBLE });
+                ret.DescriptionBuilder = _ => "This Joker gains X" + ret.DataDict["MULTMULTGAIN"].DoubleData + " Mult every time a Lucky card successfully triggers (Currently X" + ret.DataDict["MULTMULTAMOUNT"].DoubleData.ToString("0.00") + " Mult)";
+                ret.Listeners.Add(new EngineEventListener()
+                {
+                    MyContextType = EventContextType.LuckyCardSuccessfulTrigger,
+                    MyAction = args =>
+                    {
+                        ret.DataDict["MULTMULTAMOUNT"].DoubleData += ret.DataDict["MULTMULTGAIN"].DoubleData;
+                    }
+                });
+                ret.Listeners.Add(new EngineEventListener()
+                {
+                    MyContextType = EventContextType.CardTrigger,
+                    MyAction = args =>
+                    {
+                        if (args is EngineCardTriggerArgs triggerArgs && triggerArgs.CardThatIsTriggering == c && triggerArgs.isScoringTrigger && ret.DataDict["MULTMULTAMOUNT"].DoubleData > 1)
+                            Globals.EmitMultMult(ret.DataDict["MULTMULTAMOUNT"].DoubleData, c);
+                    }
+                });
+                return ret;
+            } },
+            { "BASEBALL CARD", c =>
+            {
+                var ret = BasicDataBlock("Baseball Card");
+                ret.DescriptionBuilder = _ => "Uncommon Jokers each give X"+ ret.DataDict["MULTMULTAMOUNT"].DoubleData + " Mult";
+                ret.DataDict.Add("MULTMULTAMOUNT", new JokerData() { DoubleData = 1.5, MyDataType = JokerDataType.DOUBLE });
+                ret.Listeners.Add(new EngineEventListener()
+                {
+                    MyContextType = EventContextType.CardTrigger,
+                    MyAction = args =>
+                    {
+                        if (args is EngineCardTriggerArgs triggerArgs && triggerArgs.isScoringTrigger && triggerArgs.CardThatIsTriggering.isJoker &&
+                            triggerArgs.CardThatIsTriggering != c && triggerArgs.CardThatIsTriggering.JokerData?.Rarity == JokerRarity.UNCOMMON)
+                            Globals.EmitMultMult(ret.DataDict["MULTMULTAMOUNT"].DoubleData, c);
+                    }
+                });
+                return ret;
+            } },
+            { "BULL", c =>
+            {
+                var ret = BasicDataBlock("Bull");
+                ret.DataDict.Add("CHIPSAMT", new JokerData() { IntData = 2, MyDataType = JokerDataType.INT });
+                ret.DescriptionBuilder = _ => "+" + ret.DataDict["CHIPSAMT"].IntData + " Chips per $1 you have (Currently +" + (Globals.Money * ret.DataDict["CHIPSAMT"].IntData) + " Chips)";
+                ret.Listeners.Add(new EngineEventListener()
+                {
+                    MyContextType = EventContextType.CardTrigger,
+                    MyAction = args =>
+                    {
+                        if (args is EngineCardTriggerArgs triggerArgs && triggerArgs.CardThatIsTriggering == c && triggerArgs.isScoringTrigger && Globals.Money > 0)
+                            Globals.EmitChipsAdd(Globals.Money * ret.DataDict["CHIPSAMT"].IntData, c);
+                    }
+                });
+                return ret;
+            } },
+            { "DIET COLA", c =>
+            {
+                var ret = BasicDataBlock("Diet Cola", "Sell this card to create a free Double Tag");
+                ret.Listeners.Add(new EngineEventListener()
+                {
+                    MyContextType = EventContextType.CardSell,
+                    MyAction = args =>
+                    {
+                        if (args is EngineCardSoldArgs soldArgs && soldArgs.CardBeingSold == c)
+                            TagDb.AddTagOfType(TagType.DOUBLE_TAG);
+                    }
+                });
+                return ret;
+            } },
+            { "TRADING CARD", c =>
+            {
+                var ret = BasicDataBlock("Trading Card", "If first discard of round has only 1 card, destroy it and gain $3");
+                ret.DataDict.Add("MONEYAMOUNT", new JokerData() { IntData = 3, MyDataType = JokerDataType.INT });
+                ret.Listeners.Add(new EngineEventListener()
+                {
+                    MyContextType = EventContextType.HandDiscardDone,
+                    MyAction = args =>
+                    {
+                        if (args is EngineDiscardDoneArgs discardArgs && Globals.CurDiscardsRemaining == Globals.MaxDiscardsPerRound - 1 && discardArgs.BeingDiscarded.Count == 1)
+                        {
+                            ZoneManager.DestroyCard(discardArgs.BeingDiscarded[0]);
+                            Globals.EmitMoneyGain(ret.DataDict["MONEYAMOUNT"].IntData, c);
+                        }
+                    }
+                });
+                return ret;
+            } },
+            { "FLASH CARD", c =>
+            {
+                var ret = BasicDataBlock("Flash Card");
+                ret.DataDict.Add("MULTAMOUNT", new JokerData() { DoubleData = 0, MyDataType = JokerDataType.DOUBLE });
+                ret.DataDict.Add("MULTGAIN", new JokerData() { DoubleData = 2, MyDataType = JokerDataType.DOUBLE });
+                ret.DescriptionBuilder = _ => "This Joker gains +" + ret.DataDict["MULTGAIN"].DoubleData + " Mult per reroll in the shop (Currently +" + ret.DataDict["MULTAMOUNT"].DoubleData + " Mult)";
+                ret.Listeners.Add(new EngineEventListener()
+                {
+                    MyContextType = EventContextType.MoneyGainEmit,
+                    MyAction = args =>
+                    {
+                        if (args is EngineGoldGainEmitArgs moneyArgs && moneyArgs.SourceOfEmit == Globals.RerollButtonCard)
+                            ret.DataDict["MULTAMOUNT"].DoubleData += ret.DataDict["MULTGAIN"].DoubleData;
+                    }
+                });
+                ret.Listeners.Add(BuildMultAddListener(c, ret));
+                return ret;
+            } },
+            { "POPCORN", c =>
+            {
+                var ret = BasicDataBlock("Popcorn");
+                ret.DataDict.Add("MULTAMOUNT", new JokerData() { DoubleData = 20, MyDataType = JokerDataType.DOUBLE });
+                ret.DataDict.Add("MULTLOSS", new JokerData() { DoubleData = 4, MyDataType = JokerDataType.DOUBLE });
+                ret.DescriptionBuilder = _ => "+" + ret.DataDict["MULTAMOUNT"].DoubleData + " Mult, -" + ret.DataDict["MULTLOSS"].DoubleData + " Mult per round played";
+                ret.Listeners.Add(BuildMultAddListener(c, ret));
+                ret.Listeners.Add(new EngineEventListener()
+                {
+                    MyContextType = EventContextType.EndPlayRound,
+                    MyAction = _ =>
+                    {
+                        ret.DataDict["MULTAMOUNT"].DoubleData -= ret.DataDict["MULTLOSS"].DoubleData;
+                        if (ret.DataDict["MULTAMOUNT"].DoubleData <= 0)
+                            ZoneManager.DestroyCard(c, c.MyZone);
+                    }
+                });
+                return ret;
+            } },
+            { "SPARE TROUSERS", c => //TODO: CHECK WHETHER THIS SHOULD INCREASE BEFORE SCORING FOR THIS HAND OR AFTER. i.e. if you play two pair with this joker, do you get the new +2 bonus for this hand or do you have to wait until next hand?
+            //
+            {
+                var ret = BasicDataBlock("Spare Trousers");
+                ret.DataDict.Add("MULTAMOUNT", new JokerData() { DoubleData = 0, MyDataType = JokerDataType.DOUBLE });
+                ret.DataDict.Add("MULTGAIN", new JokerData() { DoubleData = 2, MyDataType = JokerDataType.DOUBLE });
+                ret.DescriptionBuilder = _ => "This Joker gains +" + ret.DataDict["MULTGAIN"].DoubleData + " Mult if played hand contains a Two Pair (Currently +" + ret.DataDict["MULTAMOUNT"].DoubleData + " Mult)";
+                ret.Listeners.Add(new EngineEventListener()
+                {
+                    MyContextType = EventContextType.HandPlayedCalculated,
+                    MyAction = args =>
+                    {
+                        if (args is EngineHandPlayArgs handArgs && EngineUtils.HandContainsOtherHand(handArgs.HandBeingPlayed, PlayedHandType.TWOPAIR))
+                            ret.DataDict["MULTAMOUNT"].DoubleData += ret.DataDict["MULTGAIN"].DoubleData;
+                    }
+                });
+                ret.Listeners.Add(BuildMultAddListener(c, ret));
+                return ret;
+            } },
+            { "ANCIENT JOKER", c =>
+            {
+                var ret = BasicDataBlock("Ancient Joker");
+                var getRandomSuit = new Func<Suit>(() =>
+                {
+                    var vals = Enum.GetValues<Suit>().Where(x => x != Suit.NONE && x != ret.DataDict["SUIT"].SpecificCardSuit).ToList();
+                    return vals[Random.Shared.Next(vals.Count)];
+                });
+                ret.DataDict.Add("SUIT", new JokerData() { SpecificCardSuit = Suit.NONE, MyDataType = JokerDataType.SUIT });
+                ret.DataDict["SUIT"].SpecificCardSuit = getRandomSuit();
+                ret.DataDict.Add("MULTMULTAMOUNT", new JokerData() { DoubleData = 1.5, MyDataType = JokerDataType.DOUBLE });
+                ret.DescriptionBuilder = _ => "Each played card with " + ret.DataDict["SUIT"].SpecificCardSuit + " suit gives X" + ret.DataDict["MULTMULTAMOUNT"].DoubleData + " Mult when scored, suit changes at end of round";
+                ret.Listeners.Add(new EngineEventListener()
+                {
+                    MyContextType = EventContextType.CardTrigger,
+                    MyAction = args =>
+                    {
+                        if (args is EngineCardTriggerArgs triggerArgs && triggerArgs.isScoringTrigger && triggerArgs.CardThatIsTriggering.IsSuit(ret.DataDict["SUIT"].SpecificCardSuit))
+                            Globals.EmitMultMult(ret.DataDict["MULTMULTAMOUNT"].DoubleData, c);
+                    }
+                });
+                ret.Listeners.Add(new EngineEventListener()
+                {
+                    MyContextType = EventContextType.EndPlayRound,
+                    MyAction = _ =>
+                    {
+                        ret.DataDict["SUIT"].SpecificCardSuit = getRandomSuit();
+                    }
+                });
+                return ret;
+            } },
+            { "RAMEN", c =>
+            {
+                var ret = BasicDataBlock("Ramen");
+                ret.DataDict.Add("MULTMULTAMOUNT", new JokerData() { DoubleData = 2, MyDataType = JokerDataType.DOUBLE });
+                ret.DataDict.Add("MULTMULTLOSS", new JokerData() { DoubleData = 0.01, MyDataType = JokerDataType.DOUBLE });
+                ret.DescriptionBuilder = _ => "X" + ret.DataDict["MULTMULTAMOUNT"].DoubleData.ToString("0.00") + " Mult, loses X" + ret.DataDict["MULTMULTLOSS"].DoubleData.ToString("0.00") + " Mult per card discarded";
+                ret.Listeners.Add(new EngineEventListener()
+                {
+                    MyContextType = EventContextType.HandDiscardDone,
+                    MyAction = args =>
+                    {
+                        if (args is EngineDiscardDoneArgs discardArgs)
+                        {
+                            //TODO: Trigger on each card instead of all at once at end of discard.
+                            ret.DataDict["MULTMULTAMOUNT"].DoubleData -= discardArgs.BeingDiscarded.Count * ret.DataDict["MULTMULTLOSS"].DoubleData;
+                            if (ret.DataDict["MULTMULTAMOUNT"].DoubleData <= 1)
+                                ZoneManager.DestroyCard(c, c.MyZone);
+                        }
+                    }
+                });
+                ret.Listeners.Add(new EngineEventListener()
+                {
+                    MyContextType = EventContextType.CardTrigger,
+                    MyAction = args =>
+                    {
+                        if (args is EngineCardTriggerArgs triggerArgs && triggerArgs.CardThatIsTriggering == c && triggerArgs.isScoringTrigger && ret.DataDict["MULTMULTAMOUNT"].DoubleData > 1)
+                            Globals.EmitMultMult(ret.DataDict["MULTMULTAMOUNT"].DoubleData, c);
+                    }
+                });
+                return ret;
+            } },
+
+
 
             //TODO: REMOVE BELOW AFTER REAL UNCOMMON/RARE ADDED, THESE ONLY FOR UNIT TESTS.
             { "TEMP UNCOMMON JOKER", c =>

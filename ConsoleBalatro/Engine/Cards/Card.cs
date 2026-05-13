@@ -44,6 +44,7 @@ namespace ConsoleBalatro.Engine.Cards
         public bool isVoucher => JokerData != null && JokerData.isVoucher;
         public bool isTag => JokerData != null && JokerData.isTag;
         public JokerCardDataBlock JokerData = null;
+        public TagDataBlock TagData => isTag ? JokerData.TagData : null;
 
         public PackType MyPackType = PackType.NONE;
         public bool isPack => MyPackType != PackType.NONE;

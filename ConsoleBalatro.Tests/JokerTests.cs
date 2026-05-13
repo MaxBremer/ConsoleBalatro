@@ -3,6 +3,7 @@ using ConsoleBalatro.Engine.Cards;
 using ConsoleBalatro.Engine.Cards.Consumables;
 using ConsoleBalatro.Engine.Cards.Enums;
 using ConsoleBalatro.Engine.Cards.Jokers;
+using ConsoleBalatro.Engine.Cards.Tags;
 using ConsoleBalatro.Engine.Events;
 using ConsoleBalatro.Engine.Events.Args;
 using ConsoleBalatro.Engine.Market;
@@ -1142,6 +1143,161 @@ namespace ConsoleBalatro.Tests
             Assert.True(s.record.ChipsFromEmits >= 50);
         }
 
+        [Fact]
+        public void PlayHand_WithLuckyCat_GainsMultMultFromSuccessfulLuckyTrigger()
+        {
+            var s = JokerSetup("LUCKY CAT");
+            var lucky = BuildKnownHand("AS")[0];
+            lucky.SetEnhancementOfficial(Enhancement.LUCKY);
+            RigNextRoll(true);
+            Globals.PlayCurrentlySelectedHand();
+            Assert.Contains(s.jok, s.record.MultMultSources);
+            Assert.Equal(1.25, s.jok.JokerData.DataDict["MULTMULTAMOUNT"].DoubleData, 2);
+        }
+
+        [Fact]
+        public void PlayHand_WithBaseballCard_TriggersFromUncommonJoker()
+        {
+            var s = JokerSetup("BASEBALL CARD");
+            AddJoker("STENCIL JOKER");
+            var stencil = ZoneManager.JokerZone.Cards.Single(x => x.JokerData.DBName == "STENCIL JOKER");
+            PlayHand("AS");
+            Assert.Contains(s.jok, s.record.MultMultSources);
+            Assert.Equal(2, s.record.MultMultSources.Count);//stencil and baseball
+            s.record.Reset();
+            ZoneManager.DestroyCard(stencil, ZoneManager.JokerZone);
+            PlayHand("AS");
+            Assert.Empty(s.record.MultMultSources);
+        }
+
+        [Fact]
+        public void PlayHand_WithBull_AddsChipsBasedOnMoney()
+        {
+            var s = JokerSetup("BULL");
+            Globals.Money = 10;
+            PlayHand("AS");
+            Assert.Contains(s.jok, s.record.ChipSources);
+            Assert.Equal(20 + 11, s.record.ChipsFromEmits);
+        }
+
+        [Fact]
+        public void SellDietCola_AddsDoubleTag()
+        {
+            var s = JokerSetup("DIET COLA");
+            var before = ZoneManager.TagZone.Cards.Count;
+            Globals.PerformSell(s.jok, ZoneManager.JokerZone);
+            Assert.Equal(before + 1, ZoneManager.TagZone.Cards.Count);
+            Assert.Equal(TagType.DOUBLE_TAG, ZoneManager.TagZone.Cards.Last().TagData.MyType);
+        }
+
+        [Fact]
+        public void FirstSingleCardDiscard_WithTradingCard_DestroysDiscardAndGainsMoney()
+        {
+            JokerSetup("TRADING CARD");
+            Globals.Money = 0;
+            DiscardHand("AS");
+            Assert.Equal(3, Globals.Money);
+            Assert.Empty(ZoneManager.DiscardZone.Cards);
+        }
+
+        [Fact]
+        public void RerollShop_WithFlashCard_GainsPermanentMult()
+        {
+            var s = JokerSetup("FLASH CARD");
+            PlayHand("AS,AS,AS,AS,AS");
+            Globals.Money = 999;
+            FlowHandler.ClosePostRound();
+            MarketGeneralManager.RerollMainMarket();
+            MarketGeneralManager.RerollMainMarket();
+            var flash = s.jok;
+            Assert.Equal(4, flash.JokerData.DataDict["MULTAMOUNT"].DoubleData);
+            FlowHandler.CloseMarketRound();
+            FlowHandler.StartSelectedBlind();
+            s.record.Reset();
+            PlayHand("AS");
+            Assert.Single(s.record.MultSources);
+            Assert.Equal(flash, s.record.MultSources[0]);
+            Assert.Equal(4, s.record.MultFromEmits);
+        }
+
+        [Fact]
+        public void EndRounds_WithPopcorn_ReducesMultAndDestroysAtZero()
+        {
+            var s = JokerSetup("POPCORN");
+            for (int i = 0; i < 5; i++)
+            {
+                FlowHandler.CurrentBossBlind = "NODISCARD";//Prevent the boss in the round we're going through from being something that could cause the hand to lose, like "must play 5 cards to score".
+                //doing it in the loop cause whatever, doesn't hurt anything, and makes doubly sure in weird cases.
+                var oldMult = s.jok.JokerData.DataDict["MULTAMOUNT"].DoubleData;
+                Globals.RequiredChipsForCurrentBlind = 1;
+                s.record.Reset();
+                PlayHand("AS");
+                if (i < 4)
+                {
+                    Assert.Equal(oldMult - 4, s.jok.JokerData.DataDict["MULTAMOUNT"].DoubleData);
+                    Assert.Single(s.record.MultSources);
+                    Assert.Equal(s.jok, s.record.MultSources[0]);
+                    Assert.Equal(oldMult, s.record.MultFromEmits);
+                    FlowHandler.ClosePostRound();
+                    FlowHandler.CloseMarketRound();
+                    FlowHandler.StartSelectedBlind();
+                }
+            }
+            Assert.DoesNotContain(s.jok, ZoneManager.JokerZone.Cards);
+        }
+
+        [Fact]
+        public void PlayTwoPair_WithSpareTrousers_GainsPermanentMult()
+        {
+            var s = JokerSetup("SPARE TROUSERS");
+            PlayHand("AS,AH,KS,KH");
+            Assert.Equal(2, s.jok.JokerData.DataDict["MULTAMOUNT"].DoubleData);
+            //BONUS APPLIES IMMEDIATELY
+            Assert.Equal(2, s.record.MultFromEmits);
+            Assert.Single(s.record.MultSources);
+            Assert.Equal(s.jok, s.record.MultSources[0]);
+            //no new bonus for next non-two-pair hand, but old bonus still applies
+            s.record.Reset();
+            PlayHand("AS");
+            Assert.Equal(2, s.record.MultFromEmits);
+            Assert.Single(s.record.MultSources);
+            Assert.Equal(s.jok, s.record.MultSources[0]);
+        }
+
+        [Fact]
+        public void PlayHandAndEndRound_WithAncientJoker_GainsMultAndChangesSuitAtEndRound()
+        {
+            var s = JokerSetup("ANCIENT JOKER");
+            s.jok.JokerData.DataDict["SUIT"].SpecificCardSuit = Suit.SPADES;
+            Globals.RequiredChipsForCurrentBlind = 1;
+            PlayHand("AS");
+            Assert.NotEqual(Suit.NONE, s.jok.JokerData.DataDict["SUIT"].SpecificCardSuit);
+            Assert.NotEqual(Suit.SPADES, s.jok.JokerData.DataDict["SUIT"].SpecificCardSuit);
+            Assert.Single(s.record.MultMultSources);
+            Assert.Equal(s.jok, s.record.MultMultSources[0]);
+            Assert.Equal(1.5, s.record.MultMultFromEmits, 6);
+        }
+
+        [Fact]
+        public void DiscardCards_WithRamen_ReducesMultMultAndDestroysAtOne()
+        {
+            var s = JokerSetup("RAMEN");
+            Globals.CurDiscardsRemaining = 999;
+            Assert.Equal(2, s.jok.JokerData.DataDict["MULTMULTAMOUNT"].DoubleData, 2);
+            DiscardHand("AS,KS,QS,JS,1S");
+            Assert.Equal(1.95, s.jok.JokerData.DataDict["MULTMULTAMOUNT"].DoubleData, 2);
+            PlayHand("AS");
+            Assert.Single(s.record.MultMultSources);
+            Assert.Equal(s.jok, s.record.MultMultSources[0]);
+            Assert.Equal(1.95, s.record.MultMultFromEmits, 2);
+            for (int i = 0; i < 19; i++)
+            {
+                var oldMult = s.jok.JokerData.DataDict["MULTMULTAMOUNT"].DoubleData;
+                DiscardHand("AS,KS,QS,JS,1S");
+                Assert.Equal(oldMult - 0.05, s.jok.JokerData.DataDict["MULTMULTAMOUNT"].DoubleData, 2);
+            }
+            Assert.DoesNotContain(s.jok, ZoneManager.JokerZone.Cards);
+        }
 
 
         /*[Theory]

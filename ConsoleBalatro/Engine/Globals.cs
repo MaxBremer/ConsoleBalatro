@@ -299,12 +299,12 @@ namespace ConsoleBalatro.Engine
             ZoneManager.DiscardSelectedFromHand();
             if (doRedraw)
                 ZoneManager.DrawHandful();
+            CurDiscardsRemaining -= 1;
             EngineEventHandler.TriggerEvent(new EngineDiscardDoneArgs()
             {
                 BeingDiscarded = selList,
                 MyContext = new EventContext() { Context = EventContextType.HandDiscardDone }
             });
-            CurDiscardsRemaining -= 1;
         }
 
         public static void EmitChipsAdd(int chipsNum, Card src)

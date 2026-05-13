@@ -270,20 +270,28 @@ namespace ConsoleBalatro.Engine
             ZoneManager.HiddenPlayZone.DrawUntilCapacityFrom(ZoneManager.CurrentlyBeingPlayedZone);
             CurHandsRemaining -= 1;
 
-            EngineEventHandler.TriggerEvent(new EngineHandPlayDoneArgs()
+            var handPlayDoneArgs = new EngineHandPlayDoneArgs()
             {
                 MyContext = new EventContext() { Context = EventContextType.HandPlayDone },
                 HandTypeThatWasPlayed = handTypePlayed,
                 CardsInPlayedHand = cardsForScoringCalc.ToList(),
                 CardsHeldInHand = ZoneManager.HandZone.Cards.ToList(),
-            });
+                CurrentTotalChips = TotalCurrentChips,
+                RequiredChipsForBlind = RequiredChipsForCurrentBlind,
+            };
+
+            EngineEventHandler.TriggerEvent(handPlayDoneArgs);
 
             if(TotalCurrentChips >= RequiredChipsForCurrentBlind)
             {
                 FlowHandler.ClosePlayRound();
             }else if(CurHandsRemaining == 0)
             {
-                FlowHandler.GameOver();
+                if (handPlayDoneArgs.PreventGameOverAndWinBlind)
+                    FlowHandler.ClosePlayRound();
+                else
+                    FlowHandler.GameOver();
+
             }
             else
             {

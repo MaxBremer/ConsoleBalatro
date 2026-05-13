@@ -1299,6 +1299,129 @@ namespace ConsoleBalatro.Tests
             Assert.DoesNotContain(s.jok, ZoneManager.JokerZone.Cards);
         }
 
+        [Fact]
+        public void PlayHand_WithWalkieTalkie_AddsChipsAndMultFor4And10()
+        {
+            var s = JokerSetup("WALKIE TALKIE");
+            PlayHand("4S,1S");
+            Assert.Equal(10 + 10, s.record.ChipsFromEmits);
+            Assert.Single(s.record.MultSources);
+            Assert.Equal(s.jok, s.record.MultSources[0]);
+            Assert.Equal(4, s.record.MultFromEmits);
+        }
+
+        [Fact]
+        public void PlayHands_WithSeltzer_RetriggersAndDestroysAfterTenHands()
+        {
+            var s = JokerSetup("SELTZER");
+            PlayHand("AS");
+            Globals.RequiredChipsForCurrentBlind = 999999;
+            Globals.CurHandsRemaining = 999;
+            Assert.Equal(2, s.record.ChipSources.Count(x => x.Rank == Rank.ACE));
+            Assert.Equal(9, s.jok.JokerData.DataDict["HANDSLEFT"].IntData);
+            for (var i = 0; i < 9; i++) 
+                PlayHand("AS");
+            Assert.DoesNotContain(s.jok, ZoneManager.JokerZone.Cards);
+        }
+
+        [Fact]
+        public void DiscardHand_WithCastle_GainsPermanentChips()
+        {
+            var s = JokerSetup("CASTLE");
+            s.jok.JokerData.DataDict["SUIT"].SpecificCardSuit = Suit.SPADES;
+            DiscardHand("AS,KS");
+            Assert.Equal(6, s.jok.JokerData.DataDict["CHIPAMOUNT"].IntData);
+            s.record.Reset();
+            PlayHand("2H");
+            Assert.Equal(6 + 2, s.record.ChipsFromEmits);
+            Assert.Contains(s.jok, s.record.ChipSources);
+        }
+
+        [Fact]
+        public void PlayHand_WithSmileyFace_AddsMultPerFaceCard()
+        {
+            var s = JokerSetup("SMILEY FACE");
+            PlayHand("JS,QS,1S,3S,5S");
+            Assert.Equal(10, s.record.MultFromEmits);
+            Assert.Equal(2, s.record.MultSources.Count);
+            Assert.All(s.record.MultSources, x => Assert.Equal(s.jok, x));
+        }
+
+        [Fact]
+        public void SellCard_WithCampfire_GainsMultMult_ThenResetsAfterBoss()
+        {
+            var s = JokerSetup("CAMPFIRE");
+            AddJoker("JIMBO");
+            Globals.PerformSell(GetJoker(1), ZoneManager.JokerZone);
+            Assert.Equal(1.25, s.jok.JokerData.DataDict["MULTMULTAMOUNT"].DoubleData, 2);
+            FlowHandler.CurrentBossBlind = "NODISCARD";
+            for (int i = 0; i < 2; i++)
+            {
+                Globals.RequiredChipsForCurrentBlind = 1;
+                PlayHand("AS");
+                FlowHandler.ClosePostRound();
+                FlowHandler.CloseMarketRound();
+                FlowHandler.StartSelectedBlind();
+            }
+            Globals.RequiredChipsForCurrentBlind = 1;
+            PlayHand("AS");
+            Assert.Equal(1, s.jok.JokerData.DataDict["MULTMULTAMOUNT"].DoubleData, 2);
+        }
+
+        [Fact]
+        public void PlayHand_WithGoldenTicket_GoldCardsGainMoney()
+        {
+            var s = JokerSetup("GOLDEN TICKET");
+            var cards = BuildKnownHand("AS,AS,AS,AS,AS");
+            cards[0].SetEnhancementOfficial(Enhancement.GOLD);
+            Globals.PlayCurrentlySelectedHand();
+            Assert.Equal(4, Globals.Money);
+        }
+
+        [Fact]
+        public void FinalHand_WithMrBones_PreventsGameOverAndDestroysSelf()
+        {
+            var s = JokerSetup("MR. BONES");
+            Globals.RequiredChipsForCurrentBlind = 64;
+            Globals.CurHandsRemaining = 1;
+            PlayHand("AS");//11 + base 5 = 16, 25% of 64, so mr bones triggers.
+            Assert.Equal(GameState.PostRoundRewardsMenu, Globals.CurrentGameState);
+            Assert.DoesNotContain(s.jok, ZoneManager.JokerZone.Cards);
+        }
+
+        [Fact]
+        public void FinalHand_WithAcrobat_AddsX3Mult()
+        {
+            var s = JokerSetup("ACROBAT");
+            PlayHand("AS");
+            Assert.Equal(1, s.record.MultMultFromEmits, 4);
+            Globals.CurHandsRemaining = 1;
+            PlayHand("AS");
+            Assert.Equal(3, s.record.MultMultFromEmits, 4);
+        }
+
+        [Fact]
+        public void PlayFaceCard_WithSockAndBuskin_RetriggersFaceCard()
+        {
+            JokerSetup("SOCK AND BUSKIN");
+            var record = CaptureScoringContributions();
+            PlayHand("JS");
+            Assert.Equal(2, record.ChipSources.Count(x => x.Rank == Rank.JACK));
+        }
+
+        [Fact]
+        public void PlayHand_WithSwashbuckler_AddsOtherJokersSellValueToMult()
+        {
+            var s = JokerSetup("SWASHBUCKLER");
+            AddJoker("DIET COLA");
+            AddJoker("GOLDEN JOKER");
+            var expected = GetJoker(1).SellCost + GetJoker(2).SellCost;
+            PlayHand("AS");
+            Assert.Single(s.record.MultSources);
+            Assert.Equal(s.jok, s.record.MultSources[0]);
+            Assert.Equal(expected, s.record.MultFromEmits);
+        }
+
 
         /*[Theory]
         [InlineData("TEMP UNCOMMON JOKER")]

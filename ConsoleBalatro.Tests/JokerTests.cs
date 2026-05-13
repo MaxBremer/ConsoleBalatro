@@ -1030,6 +1030,117 @@ namespace ConsoleBalatro.Tests
             Assert.DoesNotContain(bean, ZoneManager.JokerZone.Cards);
         }
 
+        [Fact]
+        public void PlayHand_WithErosion_AddsMultBasedOnMissingDeckCards()
+        {
+            var s = JokerSetup("EROSION");
+            ZoneManager.DestroyCard(ZoneManager.DeckZone.Cards[0], ZoneManager.DeckZone);
+            ZoneManager.DestroyCard(ZoneManager.DeckZone.Cards[0], ZoneManager.DeckZone);
+            ZoneManager.HandZone.Cards[0].ToggleSelect();
+            Globals.PlayCurrentlySelectedHand();
+            Assert.Single(s.record.MultSources);
+            Assert.Equal(8, s.record.MultFromEmits);
+        }
+
+        [Fact]
+        public void PlayHand_WithReservedParking_CanGainMoneyFromHeldFaceCards()
+        {
+            var s = JokerSetup("RESERVED PARKING");
+            RigNextRoll(true);
+            RigNextRoll(true);
+            BuildKnownHand("KS,QS,2D", selectAll: false);
+            ZoneManager.HandZone.Cards[2].isSelected = true;
+            var before = Globals.Money;
+            Globals.PlayCurrentlySelectedHand();
+            Assert.Equal(before + 2, Globals.Money);
+        }
+
+        [Fact]
+        public void Discard_WithMailInRebate_GivesMoneyPerTargetRank()
+        {
+            var s = JokerSetup("MAIL-IN REBATE");
+            s.jok.JokerData.DataDict["TARGETRANK"].SpecificCardRank = Rank.ACE;
+            var before = Globals.Money;
+            DiscardHand("AS,AH,2D");
+            Assert.Equal(before + 10, Globals.Money);
+        }
+
+        [Fact]
+        public void CloseRound_WithToTheMoon_AddsUncappedInterest()
+        {
+            ResetToFirstBlindPlayRound();
+            AddJoker("TO THE MOON");
+            Globals.Money = 100;
+            Globals.RequiredChipsForCurrentBlind = 1;
+            PlayHand("AS");
+            Assert.Contains(Globals.CurrentGameStateObj.PostRoundMoneySources, x => x.Item1 == "To the Moon" && x.Item2 == 20);
+        }
+
+        [Fact]
+        public void OpenPack_WithHallucination_CreatesTarotWhenRollSucceeds()
+        {
+            ResetToFirstBlindPlayRound();
+            AddJoker("HALLUCINATION");
+            RigNextRoll(true);
+            var before = ZoneManager.ConsumableZone.Cards.Count;
+            var pack = ConsumableManager.MakePack(PackType.BASIC_TAROT);
+            PackActions.OpenPack(pack);
+            Assert.Equal(before + 1, ZoneManager.ConsumableZone.Cards.Count);
+            Assert.Equal(ConsumableType.TAROT, ZoneManager.ConsumableZone.Cards.Last().ConsumableData.Type);
+        }
+
+        [Fact]
+        public void PlayHand_WithFortuneTeller_UsesTotalTarotsUsedThisRun()
+        {
+            ResetToFirstBlindPlayRound();
+            ZoneManager.HandZone.Cards[0].ToggleSelect();
+            AddTarot("The Magician");
+            UseCon();
+            AddTarot("The Devil");
+            UseCon();
+            var record = CaptureScoringContributions();
+            AddJoker("FORTUNE TELLER");
+            var jok = ZoneManager.JokerZone.Cards.Last();
+            PlayHand("AS");
+            Assert.Single(record.MultSources);
+            Assert.Equal(jok, record.MultSources[0]);
+            Assert.Equal(2, record.MultFromEmits);
+        }
+
+        [Fact]
+        public void AddRemoveJuggler_UpdatesHandSize()
+        {
+            ResetToFirstBlindPlayRound();
+            var baseSize = Globals.HandSize;
+            AddJoker("JUGGLER");
+            var jug = ZoneManager.JokerZone.Cards.Single();
+            Assert.Equal(baseSize + 1, Globals.HandSize);
+            ZoneManager.JokerZone.RemoveCard(jug);
+            Assert.Equal(baseSize, Globals.HandSize);
+        }
+
+        [Fact]
+        public void AddRemoveDrunkard_UpdatesMaxDiscardsPerRound()
+        {
+            ResetToFirstBlindPlayRound();
+            var baseDiscards = Globals.MaxDiscardsPerRound;
+            AddJoker("DRUNKARD");
+            var drunk = ZoneManager.JokerZone.Cards.Single();
+            Assert.Equal(baseDiscards + 1, Globals.MaxDiscardsPerRound);
+            ZoneManager.JokerZone.RemoveCard(drunk);
+            Assert.Equal(baseDiscards, Globals.MaxDiscardsPerRound);
+        }
+
+        [Fact]
+        public void PlayHand_WithStoneJoker_AddsChipsPerStoneCardInDeck()
+        {
+            var s = JokerSetup("STONE JOKER");
+            ZoneManager.DeckZone.Cards[0].SetEnhancementOfficial(Enhancement.STONE);
+            ZoneManager.DeckZone.Cards[1].SetEnhancementOfficial(Enhancement.STONE);
+            PlayHand("AS");
+            Assert.Contains(s.jok, s.record.ChipSources);
+            Assert.True(s.record.ChipsFromEmits >= 50);
+        }
 
 
 

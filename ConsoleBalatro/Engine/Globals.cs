@@ -275,6 +275,7 @@ namespace ConsoleBalatro.Engine
                 MyContext = new EventContext() { Context = EventContextType.HandPlayDone },
                 HandTypeThatWasPlayed = handTypePlayed,
                 CardsInPlayedHand = cardsForScoringCalc.ToList(),
+                CardsHeldInHand = ZoneManager.HandZone.Cards.ToList(),
             });
 
             if(TotalCurrentChips >= RequiredChipsForCurrentBlind)

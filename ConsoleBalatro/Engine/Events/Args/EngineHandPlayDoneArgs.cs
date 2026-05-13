@@ -11,5 +11,6 @@ namespace ConsoleBalatro.Engine.Events.Args
     {
         public PlayedHandType HandTypeThatWasPlayed { get; set; }
         public List<Card> CardsInPlayedHand { get; set; }
+        public List<Card> CardsHeldInHand { get; set; }
     }
 }

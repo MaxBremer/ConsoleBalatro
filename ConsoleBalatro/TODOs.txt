@@ -9,28 +9,6 @@ Name -> Description (notes on functionality, not to be included in description)
 RARITY, Price
 
 JOKERS
-The Duo -> X2 Mult if played hand contains a Pair
-RARE, $8
-The Trio -> X3 Mult if played hand contains a Three of a King
-RARE, $8
-The Family -> X4 Mult if played hand contains a Four of a Kind
-RARE, $8
-The Order -> X3 Mult if played hand contains a Straight
-RARE, $8
-The Tribe -> X2 Mult if played hand contains a Flush
-RARE, $8
-Stuntman -> +250 Chips, -2 hand size
-Rare, $7
-Invisible Joker -> After 2 rounds, sell this card to duplicate a random joker (Currently 0/2) (HIDDEN FUNCTIONALITY: Removes Negative from the copy if original has it)
-RARE, $8
-Brainstorm -> (SPECIAL CASE, HARD TO IMPLEMENT. MAKE PLACEHOLDER FOR NOW.)
-RARE, $10
-Satellite -> Earn $1 at end of round per unique Planet card used this run
-UNCOMMON, $6
-Shoot the Moon -> Each Queen held in hand gives +13 Mult (as in, cards in hand and not selected/played when a hand is played)
-COMMON, $5
-
-BATCH 3
 
 Driver's License -> X3 Mult if you have at least 16 Enhanced cards in your full deck (Currently 0)
 RARE, $7

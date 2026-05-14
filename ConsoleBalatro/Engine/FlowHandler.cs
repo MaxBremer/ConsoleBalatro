@@ -392,6 +392,7 @@ namespace ConsoleBalatro.Engine
 
         public static void StartSelectedBlind()
         {
+            EngineEventHandler.TriggerEvent(new EngineEventArgs() { MyContext = new EventContext() { Context = EventContextType.StartSelectedBlind } });
             CloseBlindSelectionRound();
             InitializePlayRound(CurrentSelectedBlind);
             //AttemptRoundInitialize(InitializePlayRound, CurrentSelectedBlind);

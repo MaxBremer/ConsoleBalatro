@@ -38,7 +38,7 @@ namespace ConsoleBalatro.Engine
             {
                 discArgs.ZoneCardIsLeaving.MaxCapacity -= 1;
             }
-            else if (args is EngineCardDetailsChangeArgs detailArgs && detailArgs.isEditionChange && detailArgs.isAfter && (detailArgs.NewEdition == Edition.NEGATIVE ^ detailArgs.OldEdition == Edition.NEGATIVE))
+            else if (args is EngineCardDetailsChangeArgs detailArgs && detailArgs.isEditionChange && detailArgs.isAfter && (detailArgs.NewEdition == Edition.NEGATIVE ^ detailArgs.OldEdition == Edition.NEGATIVE) && detailArgs.CardBeingChanged.MyZone != null)
             {
                 detailArgs.CardBeingChanged.MyZone.MaxCapacity += detailArgs.NewEdition == Edition.NEGATIVE ? 1 : -1;
             }

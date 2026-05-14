@@ -1725,6 +1725,140 @@ namespace ConsoleBalatro.Tests
             Assert.Equal(26, s.record.MultFromEmits);
         }
 
+        [Fact]
+        public void PlayHand_WithDriversLicense_RequiresSixteenEnhancedCards()
+        {
+            var s = JokerSetup("DRIVER'S LICENSE");
+            PlayHand("AS");
+            Assert.Empty(s.record.MultMultSources);
+            Assert.Equal(1, s.record.MultMultFromEmits);
+            foreach (var c in ZoneManager.GetFullDeckPlayingCards().Take(16))
+                c.SetEnhancementOfficial(Enhancement.BONUSCHIPS);
+
+            PlayHand("AS");
+            Assert.Single(s.record.MultMultSources);
+            Assert.Equal(3, s.record.MultMultFromEmits);
+        }
+
+        [Fact]
+        public void CloseBlindSelection_WithCartomancer_AddsTarotWhenRoom()
+        {
+            ResetToBlindSelection();
+            AddJoker("CARTOMANCER");
+            var before = ZoneManager.ConsumableZone.Cards.Count;
+            FlowHandler.StartSelectedBlind();
+            Assert.Equal(before + 1, ZoneManager.ConsumableZone.Cards.Count);
+            Assert.Equal(ConsumableType.TAROT, ZoneManager.ConsumableZone.Cards.Last().ConsumableData.Type);
+        }
+
+        [Fact]
+        public void PlayHand_WithBootstraps_AddsMultByMoney()
+        {
+            var s = JokerSetup("BOOTSTRAPS");
+            Globals.Money = 26;
+            PlayHand("AS");
+            Assert.Single(s.record.MultSources);
+            Assert.Equal(s.jok, s.record.MultSources[0]);
+            Assert.Equal(10, s.record.MultFromEmits);
+        }
+
+        [Fact]
+        public void DestroyFaceCard_WithCanio_IncreasesThenAppliesMultMult()
+        {
+            var s = JokerSetup("CANIO");
+            var j = CardFactory.PlayingCardFromDefString("JS");
+            ZoneManager.HandZone.AddCard(j, overrideSpace: true);
+            ZoneManager.DestroyCard(j, ZoneManager.HandZone);
+            PlayHand("AS");
+            Assert.Single(s.record.MultMultSources);
+            Assert.Equal(2, s.record.MultMultFromEmits);
+        }
+
+        [Fact]
+        public void EndMarket_WithPerkeo_CreatesNegativeCopyOfConsumable()
+        {
+            ResetToFirstBlindPlayRound();
+            AddJoker("PERKEO");
+            ZoneManager.ConsumableZone.AddCard(ConsumableManager.MakeTarotCard("STRENGTH"));
+            PlayHand("AS,AS,AS,AS,AS");
+            FlowHandler.ClosePostRound();
+            var before = ZoneManager.ConsumableZone.Cards.Count;
+            Assert.Equal(1, before);
+            FlowHandler.CloseMarketRound();
+            Assert.Equal(before + 1, ZoneManager.ConsumableZone.Cards.Count);
+            Assert.Contains(ZoneManager.ConsumableZone.Cards, x => x.Edition == Edition.NEGATIVE);
+        }
+
+        [Fact]
+        public void StartMarket_WithAstronomer_MakesPlanetCardsAndPacksFree()
+        {
+            ResetToFirstBlindPlayRound();
+            AddJoker("ASTRONOMER");
+            var planet = ConsumableManager.MakePlanetCard(PlayedHandType.PAIR);
+            var pack = ConsumableManager.MakePack(PackType.BASIC_PLANET);
+            ZoneManager.MainMarketZone.AddCard(planet, overrideSpace: true);
+            ZoneManager.PackMarketZone.AddCard(pack, overrideSpace: true);
+
+            EngineEventHandler.TriggerEvent(new EngineEventArgs() { MyContext = new EventContext() { Context = EventContextType.StartMarket } });
+
+            Assert.Equal(0, planet.BuyCost);
+            Assert.Equal(0, pack.BuyCost);
+        }
+
+        [Fact]
+        public void DiscardCards_WithBurntJoker_UpgradesFirstDiscardedHandPerRound()
+        {
+            ResetToFirstBlindPlayRound();
+            AddJoker("BURNT JOKER");
+            var before = ScoreHandler.HandLevels[PlayedHandType.PAIR];
+            var pair = CardFactory.CardListFromDefString("AS,AH", ",");
+            EngineEventHandler.TriggerEvent(new EngineDiscardDoneArgs() { BeingDiscarded = pair, MyContext = new EventContext() { Context = EventContextType.HandDiscardDone } });
+            Assert.Equal(before + 1, ScoreHandler.HandLevels[PlayedHandType.PAIR]);
+
+            var secondBefore = ScoreHandler.HandLevels[PlayedHandType.PAIR];
+            EngineEventHandler.TriggerEvent(new EngineDiscardDoneArgs() { BeingDiscarded = pair, MyContext = new EventContext() { Context = EventContextType.HandDiscardDone } });
+            Assert.Equal(secondBefore, ScoreHandler.HandLevels[PlayedHandType.PAIR]);
+        }
+
+        [Fact]
+        public void PlayHand_WithTriboulet_AddsMultMultForKingsAndQueens()
+        {
+            var s = JokerSetup("TRIBOULET");
+            PlayHand("KS,QH,JS,1S,9S");
+            Assert.Equal(2, s.record.MultMultSources.Count);
+            Assert.Equal(4, s.record.MultMultFromEmits);
+        }
+
+        [Fact]
+        public void DiscardCards_WithYorick_GainsMultMultAfterTwentyThreeDiscards()
+        {
+            var s = JokerSetup("YORICK");
+            for (var i = 0; i < 23; i++)
+            {
+                EngineEventHandler.TriggerEvent(new EngineCardDiscardedFromHandArgs()
+                {
+                    CardBeingDiscarded = CardFactory.PlayingCardFromDefString("AS"),
+                    MyContext = new EventContext() { Context = EventContextType.CardDiscardedFromHand }
+                });
+            }
+
+            Assert.Equal(2, s.jok.JokerData.DataDict["MULTMULTAMOUNT"].DoubleData);
+            Assert.Equal(23, s.jok.JokerData.DataDict["REMAINING"].IntData);
+        }
+
+        [Fact]
+        public void StartPlayRoundSetupOver_WithChicot_ClearsBossBlindEffects()
+        {
+            ResetToFirstBlindPlayRound();
+            AddJoker("CHICOT");
+            FlowHandler.CurrentSelectedBlind = BlindType.BOSS;
+            ZoneManager.HiddenBlindAttributeZone.AddCard(JokerDb.GenerateJokerCard("JIMBO"));
+            Assert.NotEmpty(ZoneManager.HiddenBlindAttributeZone.Cards);
+
+            EngineEventHandler.TriggerEvent(new EngineEventArgs() { MyContext = new EventContext() { Context = EventContextType.StartPlayRoundSetupOver } });
+
+            Assert.Empty(ZoneManager.HiddenBlindAttributeZone.Cards);
+        }
 
 
         /*[Theory]

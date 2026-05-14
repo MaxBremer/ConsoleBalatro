@@ -66,6 +66,8 @@ namespace ConsoleBalatro.Engine.Events
         StartBlindSelection,
         EndBlindSelection,
 
+        StartSelectedBlind,
+
         BlindChange,
         BlindSkip,
 

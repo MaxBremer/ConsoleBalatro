@@ -11,5 +11,7 @@ namespace ConsoleBalatro.Engine.Events.Args
     {
         public Card CardThatIsRolling;
         public bool? OverrideResult = null;
+        public int Numerator;
+        public int Denominator;
     }
 }

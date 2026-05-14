@@ -1,1 +1,86 @@
 ﻿BUGS:
+
+
+REMAINING JOKERS:
+
+FULL JOKER PROMPT
+Please implement the following jokers in JokerDb.cs, as well as implementing unit tests for them in JokerTests.cs. The format of the jokers is as follows:
+Name -> Description (notes on functionality, not to be included in description)
+RARITY, Price
+
+JOKERS
+BATCH 1
+Showman -> (SPECIAL CASE, HARD TO IMPLEMENT. MAKE PLACEHOLDER FOR NOW.)
+UNCOMMON, $5
+Flower Pot -> X3 Mult if poker hand contains a Diamond card, Club card, Heart card, and Spade card
+UNCOMMON, $6
+Blueprint -> (SPECIAL CASE, HARD TO IMPLEMENT. MAKE PLACEHOLDER FOR NOW.)
+RARE, $10
+Wee Joker -> This Joker gains +8 Chips when each played 2 is scored (Currently +0 Chips)
+RARE, $8
+Merry Andy -> +3 discards each round, -1 hand size
+UNCOMMON, $7
+Oops! All 6s -> Doubles all listed probabilities (ex: 1 in 3 -> 2 in 3)
+UNCOMMON, $4
+The Idol -> Each played [rank] of [suit] gives X2 Mult when scored, card changes every round (HIDDEN FUNCTIONALITY: this cannot actually choose ANY specific rank/suit combo, ONLY those that do appear somewhere in the players full deck. So if they had modified their deck to the point that it contained only Aces of Spades and Kings of Diamonds, this joker could only roll Ace of Spades or King of Diamonds)
+UNCOMMON, $6
+Seeing Double -> X2 Mult if played hand has a scoring Club card and a scoring card of any other suit
+UNCOMMON, $6
+Matador -> Earn $8 if played hand triggers the Boss Blind ability
+UNCOMMON, $7
+Hit the Road -> This Joker gains X0.5 Mult for every Jack discarded this round (Currently X1 Mult)
+RARE, $8
+
+BATCH 2
+
+The Duo -> X2 Mult if played hand contains a Pair
+RARE, $8
+The Trio -> X3 Mult if played hand contains a Three of a King
+RARE, $8
+The Family -> X4 Mult if played hand contains a Four of a Kind
+RARE, $8
+The Order -> X3 Mult if played hand contains a Straight
+RARE, $8
+The Tribe -> X2 Mult if played hand contains a Flush
+RARE, $8
+Stuntman -> +250 Chips, -2 hand size
+Rare, $7
+Invisible Joker -> After 2 rounds, sell this card to duplicate a random joker (Currently 0/2) (HIDDEN FUNCTIONALITY: Removes Negative from the copy if original has it)
+RARE, $8
+Brainstorm -> (SPECIAL CASE, HARD TO IMPLEMENT. MAKE PLACEHOLDER FOR NOW.)
+RARE, $10
+Satellite -> Earn $1 at end of round per unique Planet card used this run
+UNCOMMON, $6
+Shoot the Moon -> Each Queen held in hand gives +13 Mult (as in, cards in hand and not selected/played when a hand is played)
+COMMON, $5
+
+BATCH 3
+
+Driver's License -> X3 Mult if you have at least 16 Enhanced cards in your full deck (Currently 0)
+RARE, $7
+Cartomancer -> Create a Tarot card when Blind is selected (Must have room)
+UNCOMMON, $6
+Astronomer -> All Planet cards and Celestial Packs in the shop are free
+UNCOMMON, $8
+Burnt Joker -> Upgrade the level of the first discarded poker hand each round
+RARE, $8
+Bootstraps -> +2 Mult for every $5 you have (Currently +0 Mult)
+UNCOMMON, $7
+Canio -> This Joker gains X1 Mult when a face card is destroyed (Currently X1 Mult)
+LEGENDARY, $20
+Triboulet -> Played Kings and Queens each give X2 Mult when scored
+LEGENDARY, $20
+Yorick -> This Joker gains X1 Mult every 23 [remaining: 23] cards discarded (Currently X1 Mult)
+LEGENDARY, $20
+Chicot -> Disables effect of every Boss Blind
+LEGENDARY, $20
+Perkeo -> Creates a Negative copy of 1 random consumable card in your possession at the end of the shop
+LEGENDARY, $20
+
+BATCH 4
+COPY JOKER SPECIAL CASE
+Blueprint -> Copies ability of Joker to the right
+Brainstorm -> Copies the ability of leftmost Joker
+
+BATCH 5
+Showman -> Joker, Tarot, Planet, and Spectral cards may appear multiple times

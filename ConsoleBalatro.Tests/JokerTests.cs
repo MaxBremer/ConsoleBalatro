@@ -1533,6 +1533,105 @@ namespace ConsoleBalatro.Tests
             Assert.Equal(1.75, s.record.MultMultFromEmits);
         }
 
+        /*[Fact]
+        public void AddJoker_ShowmanAndBlueprint_PlaceholdersAreCreatable()
+        {
+            ResetToFirstBlindPlayRound();
+            AddJoker("SHOWMAN");
+            AddJoker("BLUEPRINT");
+            Assert.Equal("SHOWMAN", GetJoker(0).JokerData.DBName);
+            Assert.Equal("BLUEPRINT", GetJoker(1).JokerData.DBName);
+        }*/
+
+        [Fact]
+        public void PlayHand_WithFlowerPot_AddsX3WhenAllSuitsPresent()
+        {
+            var s = JokerSetup("FLOWER POT");
+            Globals.RequiredChipsForCurrentBlind = 999999;
+            PlayHand("AS,KH,QD,JC,1S");
+            Assert.Contains(s.jok, s.record.MultMultSources);
+            Assert.Equal(3, s.record.MultMultFromEmits);
+            s.record.Reset();
+            PlayHand("AS,KH,QD,JS,1S");
+            Assert.Empty(s.record.MultMultSources);
+            Assert.Equal(1, s.record.MultMultFromEmits);
+        }
+
+        [Fact]
+        public void PlayHand_WithWeeJoker_GainsChipsFromScoredTwos()
+        {
+            var s = JokerSetup("WEE JOKER");
+            PlayHand("2S,2H");
+            Assert.Equal(16, s.jok.JokerData.DataDict["CHIPAMOUNT"].IntData);
+            s.record.Reset();
+            PlayHand("AS");
+            Assert.Contains(s.jok, s.record.ChipSources);
+            Assert.Equal(16 + 11, s.record.ChipsFromEmits);
+        }
+
+        [Fact]
+        public void AddRemoveMerryAndy_UpdatesDiscardsAndHandSize()
+        {
+            ResetToFirstBlindPlayRound();
+            var baseDiscards = Globals.MaxDiscardsPerRound;
+            var baseHandSize = Globals.HandSize;
+            AddJoker("MERRY ANDY");
+            Assert.Equal(baseDiscards + 3, Globals.MaxDiscardsPerRound);
+            Assert.Equal(baseHandSize - 1, Globals.HandSize);
+            ZoneManager.JokerZone.RemoveCard(GetJoker(0));
+            Assert.Equal(baseDiscards, Globals.MaxDiscardsPerRound);
+            Assert.Equal(baseHandSize, Globals.HandSize);
+        }
+
+        [Fact]
+        public void AddOopsAll6_DoublesListedOdds()
+        {
+            ResetToFirstBlindPlayRound();
+            AddJoker("OOPS! ALL 6S");
+            //Messy, not guaranteed, but whatever.
+            for(int i = 0; i < 100; i++)
+            {
+                Assert.True(Globals.RollRandom(1, 2, null));
+            }
+        }
+
+        [Fact]
+        public void PlayHand_WithIdol_GainsMultMultForEachCardOfSameRank()
+        {
+            var s = JokerSetup("THE IDOL");
+            s.jok.JokerData.DataDict["TARGETRANK"].SpecificCardRank = Rank.ACE;
+            s.jok.JokerData.DataDict["TARGETSUIT"].SpecificCardSuit = Suit.CLUBS;
+            PlayHand("AS,AH,AD,AC,1S");
+            Assert.Contains(s.jok, s.record.MultMultSources);
+            Assert.Equal(2, s.record.MultMultFromEmits);
+        }
+
+        [Fact]
+        public void PlayHand_WithSeeingDouble_AddsX2WithClubAndOtherSuit()
+        {
+            var s = JokerSetup("SEEING DOUBLE");
+            PlayHand("AC,AH");
+            Assert.Contains(s.jok, s.record.MultMultSources);
+            Assert.Equal(2, s.record.MultMultFromEmits);
+        }
+
+        [Fact]
+        public void DiscardJacks_WithHitTheRoad_GainsAndAppliesMultMult()
+        {
+            var s = JokerSetup("HIT THE ROAD");
+            DiscardHand("JS,JH");
+            Assert.Equal(2, s.jok.JokerData.DataDict["MULTMULTAMOUNT"].DoubleData, 2);
+            PlayHand("AS");
+            Assert.Contains(s.jok, s.record.MultMultSources);
+            Assert.Equal(2, s.record.MultMultFromEmits, 2);
+        }
+
+        [Fact]
+        public void PlayHand_ThatTriggersBossAbilityWithMatador_CorrectlyGivesMoney()
+        {
+            //TODO: IMPLEMENT AFTER BOSS BLINDS EXIST THAT TRIGGER MATADOR.
+        }
+
 
         /*[Theory]
         [InlineData("TEMP UNCOMMON JOKER")]

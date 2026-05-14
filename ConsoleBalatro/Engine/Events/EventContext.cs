@@ -85,6 +85,8 @@ namespace ConsoleBalatro.Engine.Events
         RandomRollHappening,
 
         LuckyCardSuccessfulTrigger,
+
+        BossAbilityTriggeredByHand,
     }
     public class EventContext
     {

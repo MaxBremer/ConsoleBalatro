@@ -517,9 +517,9 @@ namespace ConsoleBalatro.Engine
 
         public static bool RollRandom(int numerator, int denominator, Card cardCalling)
         {
-            var args = new EngineRandomRollArgs() { MyContext = new() { Context = EventContextType.RandomRollHappening }, CardThatIsRolling = cardCalling };
+            var args = new EngineRandomRollArgs() { MyContext = new() { Context = EventContextType.RandomRollHappening }, CardThatIsRolling = cardCalling, Numerator = numerator, Denominator = denominator };
             EngineEventHandler.TriggerEvent(args);
-            return args.OverrideResult ?? ChooseRandomInclusive(1, denominator) <= numerator;
+            return args.OverrideResult ?? ChooseRandomInclusive(1, args.Denominator) <= args.Numerator;
         }
 
         public static int ChooseRandomInclusive(int min, int max)

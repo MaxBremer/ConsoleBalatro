@@ -1422,6 +1422,117 @@ namespace ConsoleBalatro.Tests
             Assert.Equal(expected, s.record.MultFromEmits);
         }
 
+        [Fact]
+        public void AddRemoveTroubadour_UpdatesHandSizeAndHandsPerRound()
+        {
+            ResetToFirstBlindPlayRound();
+            var baseHandSize = Globals.HandSize;
+            var baseHands = Globals.MaxHandsPerRound;
+            AddJoker("TROUBADOUR");
+            Assert.Equal(baseHandSize + 2, Globals.HandSize);
+            Assert.Equal(baseHands - 1, Globals.MaxHandsPerRound);
+
+            ZoneManager.JokerZone.RemoveCard(GetJoker(0));
+            Assert.Equal(baseHandSize, Globals.HandSize);
+            Assert.Equal(baseHands, Globals.MaxHandsPerRound);
+        }
+
+        [Fact]
+        public void StartRound_WithCertificate_AddsRandomSealedCardToHand()
+        {
+            ResetToFirstBlindPlayRound();
+            AddJoker("CERTIFICATE");
+            PlayHand("AS,AS,AS,AS,AS");
+            FlowHandler.ClosePostRound();
+            FlowHandler.CloseMarketRound();
+            FlowHandler.StartSelectedBlind();
+
+            Assert.Equal(Globals.HandSize + 1, ZoneManager.HandZone.Cards.Count);
+            Assert.Contains(ZoneManager.HandZone.Cards, c => c.Seal != Seal.NONE && c.Rank != Rank.NONE && c.Suit != Suit.NONE);
+        }
+
+        [Fact]
+        public void HaveHand_WithSmearedJoker_MakesRedAndBlackSuitsCountTogether()
+        {
+            JokerSetup("SMEARED JOKER");
+            var heart = BuildKnownHand("AH")[0];
+            Assert.True(heart.IsSuit(Suit.HEARTS));
+            Assert.True(heart.IsSuit(Suit.DIAMONDS));
+            Assert.False(heart.IsSuit(Suit.CLUBS));
+            Assert.False(heart.IsSuit(Suit.SPADES));
+            var club = BuildKnownHand("AC")[0];
+            Assert.True(club.IsSuit(Suit.CLUBS));
+            Assert.True(club.IsSuit(Suit.SPADES));
+            Assert.False(club.IsSuit(Suit.HEARTS));
+            Assert.False(club.IsSuit(Suit.DIAMONDS));
+        }
+
+        [Fact]
+        public void SkipBlindsAndPlayHand_WithThrowback_UsesBlindSkipsForMultMult()
+        {
+            var s = JokerSetup("THROWBACK");
+            FlowHandler.DoSkip();
+            FlowHandler.DoSkip();
+            FlowHandler.StartSelectedBlind();
+            PlayHand("AS");
+            Assert.Single(s.record.MultMultSources);
+            Assert.Equal(s.jok, s.record.MultMultSources[0]);
+            Assert.Equal(1.5, s.record.MultMultFromEmits);
+        }
+
+        [Fact]
+        public void PlayHand_WithHangingChad_RetriggersFirstScoringCardTwice()
+        {
+            var s = JokerSetup("HANGING CHAD");
+            var cards = BuildKnownHand("AS,KH,QH,JH,1H");
+            Globals.PlayCurrentlySelectedHand();
+            Assert.Equal(3, s.record.ChipSources.Count(x => x == cards[0]));
+            Assert.Equal(1, s.record.ChipSources.Count(x => x == cards[1]));
+            Assert.Equal(1, s.record.ChipSources.Count(x => x == cards[2]));
+            Assert.Equal(1, s.record.ChipSources.Count(x => x == cards[3]));
+            Assert.Equal(1, s.record.ChipSources.Count(x => x == cards[4]));
+        }
+
+        [Theory]
+        [InlineData("ROUGH GEM", "AD", 1, 0, 0)]
+        [InlineData("ARROWHEAD", "AS", 0, 50, 0)]
+        [InlineData("ONYX AGATE", "AC", 0, 0, 7)]
+        public void PlayHand_WithSuitBonusJokers_AddsExpectedScoringBonus(string jokerName, string hand, int moneyAdded, int chipsAdded, double multAdded)
+        {
+            var s = JokerSetup(jokerName);
+            var moneyBefore = Globals.Money;
+            PlayHand(hand);
+            Assert.Equal(moneyBefore + moneyAdded, Globals.Money);
+            Assert.Equal(chipsAdded, s.record.ChipsFromEmits - ZoneManager.HiddenPlayZone.Cards.Sum(c => c.ChipsBase));
+            Assert.Equal(multAdded, s.record.MultFromEmits);
+        }
+
+        [Fact]
+        public void PlayHand_WithBloodstone_TriggersOnSuccessfulRoll()
+        {
+            var s = JokerSetup("BLOODSTONE");
+            RigNextRoll(true);
+            PlayHand("AH");
+            Assert.Single(s.record.MultMultSources);
+            Assert.Equal(1.5, s.record.MultMultFromEmits);
+        }
+
+        [Fact]
+        public void DestroyGlassAndPlayHand_WithGlassJoker_GainsAndAppliesMultMultWhenGlassCardsDestroyed()
+        {
+            var s = JokerSetup("GLASS JOKER");
+            var glassCard = BuildKnownHand("AS")[0];
+            glassCard.Enhancement = Enhancement.GLASS;
+            Assert.Equal(1, s.jok.JokerData.DataDict["MULTMULTAMOUNT"].DoubleData);
+            ZoneManager.DestroyCard(glassCard, ZoneManager.HandZone);
+            Assert.Equal(1.75, s.jok.JokerData.DataDict["MULTMULTAMOUNT"].DoubleData);
+
+            BuildKnownHand("KH");
+            Globals.PlayCurrentlySelectedHand();
+            Assert.Single(s.record.MultMultSources);
+            Assert.Equal(1.75, s.record.MultMultFromEmits);
+        }
+
 
         /*[Theory]
         [InlineData("TEMP UNCOMMON JOKER")]

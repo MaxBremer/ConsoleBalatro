@@ -377,6 +377,13 @@ namespace ConsoleBalatro.Engine
             c.Suit = suitsToUse[Random.Shared.Next(suitsToUse.Count)];
         }
 
+        public static Card GenerateRandomPlayingCard()
+        {
+            var ret = new Card();
+            RandomizePlayingCard(ret);
+            return ret;
+        }
+
         private static Dictionary<Rank, List<Card>> GroupByRank(List<Card> cards)
         {
             return cards

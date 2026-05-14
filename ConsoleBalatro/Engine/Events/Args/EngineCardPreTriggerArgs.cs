@@ -12,5 +12,6 @@ namespace ConsoleBalatro.Engine.Events.Args
         public Card CardAboutToTrigger;
         public int numTriggersToDo = 1;
         public bool isInHandPostScoringTrigger = false;
+        public bool isScoringPreTrigger => !isInHandPostScoringTrigger;
     }
 }

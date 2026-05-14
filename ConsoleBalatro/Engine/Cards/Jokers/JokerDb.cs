@@ -139,6 +139,26 @@ namespace ConsoleBalatro.Engine.Cards.Jokers
             {"ARROWHEAD", new JokerTypeData { DBName = "ARROWHEAD", Price = 7, Rarity = JokerRarity.UNCOMMON } },
             {"ONYX AGATE", new JokerTypeData { DBName = "ONYX AGATE", Price = 7, Rarity = JokerRarity.UNCOMMON } },
             {"GLASS JOKER", new JokerTypeData { DBName = "GLASS JOKER", Price = 6, Rarity = JokerRarity.UNCOMMON } },
+            {"SHOWMAN", new JokerTypeData { DBName = "SHOWMAN", Price = 5, Rarity = JokerRarity.UNCOMMON } },
+            {"FLOWER POT", new JokerTypeData { DBName = "FLOWER POT", Price = 6, Rarity = JokerRarity.UNCOMMON } },
+            {"BLUEPRINT", new JokerTypeData { DBName = "BLUEPRINT", Price = 10, Rarity = JokerRarity.RARE } },
+            {"WEE JOKER", new JokerTypeData { DBName = "WEE JOKER", Price = 8, Rarity = JokerRarity.RARE } },
+            {"MERRY ANDY", new JokerTypeData { DBName = "MERRY ANDY", Price = 7, Rarity = JokerRarity.UNCOMMON } },
+            {"OOPS! ALL 6S", new JokerTypeData { DBName = "OOPS! ALL 6S", Price = 4, Rarity = JokerRarity.UNCOMMON } },
+            {"THE IDOL", new JokerTypeData { DBName = "THE IDOL", Price = 6, Rarity = JokerRarity.UNCOMMON } },
+            {"SEEING DOUBLE", new JokerTypeData { DBName = "SEEING DOUBLE", Price = 6, Rarity = JokerRarity.UNCOMMON } },
+            {"MATADOR", new JokerTypeData { DBName = "MATADOR", Price = 7, Rarity = JokerRarity.UNCOMMON } },
+            {"HIT THE ROAD", new JokerTypeData { DBName = "HIT THE ROAD", Price = 8, Rarity = JokerRarity.RARE } },
+            {"THE DUO", new JokerTypeData { DBName = "THE DUO", Price = 8, Rarity = JokerRarity.RARE } },
+            {"THE TRIO", new JokerTypeData { DBName = "THE TRIO", Price = 8, Rarity = JokerRarity.RARE } },
+            {"THE FAMILY", new JokerTypeData { DBName = "THE FAMILY", Price = 8, Rarity = JokerRarity.RARE } },
+            {"THE ORDER", new JokerTypeData { DBName = "THE ORDER", Price = 8, Rarity = JokerRarity.RARE } },
+            {"THE TRIBE", new JokerTypeData { DBName = "THE TRIBE", Price = 8, Rarity = JokerRarity.RARE } },
+            {"STUNTMAN", new JokerTypeData { DBName = "STUNTMAN", Price = 7, Rarity = JokerRarity.RARE } },
+            {"INVISIBLE JOKER", new JokerTypeData { DBName = "INVISIBLE JOKER", Price = 8, Rarity = JokerRarity.RARE } },
+            {"BRAINSTORM", new JokerTypeData { DBName = "BRAINSTORM", Price = 10, Rarity = JokerRarity.RARE } },
+            {"SATELLITE", new JokerTypeData { DBName = "SATELLITE", Price = 6, Rarity = JokerRarity.UNCOMMON } },
+            {"SHOOT THE MOON", new JokerTypeData { DBName = "SHOOT THE MOON", Price = 5 } },
             {"TEMP UNCOMMON JOKER", new JokerTypeData { DBName = "TEMP UNCOMMON JOKER", Price = 5, Rarity = JokerRarity.UNCOMMON } },
             {"TEMP RARE JOKER", new JokerTypeData { DBName = "TEMP RARE JOKER", Price = 5, Rarity = JokerRarity.RARE } },
             {"TEMP LEGENDARY JOKER", new JokerTypeData { DBName = "TEMP LEGENDARY JOKER", Price = 6, Rarity = JokerRarity.LEGENDARY } },
@@ -2599,7 +2619,91 @@ namespace ConsoleBalatro.Engine.Cards.Jokers
                 });
                 return ret;
             } },
-
+            { "THE DUO", c => BuildHandTypeMultMultJoker("The Duo", PlayedHandType.PAIR, 2, c) },
+            { "THE TRIO", c => BuildHandTypeMultMultJoker("The Trio", PlayedHandType.THREEOFAKIND, 3, c) },
+            { "THE FAMILY", c => BuildHandTypeMultMultJoker("The Family", PlayedHandType.FOUROFAKIND, 4, c) },
+            { "THE ORDER", c => BuildHandTypeMultMultJoker("The Order", PlayedHandType.STRAIGHT, 3, c) },
+            { "THE TRIBE", c => BuildHandTypeMultMultJoker("The Tribe", PlayedHandType.FLUSH, 2, c) },
+            { "STUNTMAN", c =>
+            {
+                var ret = BasicDataBlock("Stuntman");
+                ret.DataDict.Add("CHIPAMOUNT", new JokerData() { IntData = 250, MyDataType = JokerDataType.INT });
+                ret.DataDict.Add("HANDSIZEAMOUNT", new JokerData() { IntData = -2, MyDataType = JokerDataType.INT });
+                ret.DescriptionBuilder = _ => "+" + ret.DataDict["CHIPAMOUNT"].IntData + " Chips, " + ret.DataDict["HANDSIZEAMOUNT"].IntData + " hand size";
+                ret.OnJokerGainEffs.Add(() => Globals.HandSize += ret.DataDict["HANDSIZEAMOUNT"].IntData);
+                ret.OnJokerRemovalEffs.Add(() => Globals.HandSize -= ret.DataDict["HANDSIZEAMOUNT"].IntData);
+                ret.Listeners.Add(new EngineEventListener()
+                {
+                    MyContextType = EventContextType.CardTrigger,
+                    MyAction = args =>
+                    {
+                        if (args is EngineCardTriggerArgs t && t.CardThatIsTriggering == c && t.isScoringTrigger)
+                            Globals.EmitChipsAdd(ret.DataDict["CHIPAMOUNT"].IntData, c);
+                    }
+                });
+                return ret;
+            } },
+            { "INVISIBLE JOKER", c =>
+            {
+                var ret = BasicDataBlock("Invisible Joker");
+                ret.DataDict.Add("ROUNDSREMAINING", new JokerData() { IntData = 2, MyDataType = JokerDataType.INT });
+                ret.DescriptionBuilder = _ => "After " + ret.DataDict["ROUNDSREMAINING"].IntData + " rounds, sell this card to duplicate a random joker";
+                ret.Listeners.Add(new EngineEventListener() { MyContextType = EventContextType.EndPlayRound, MyAction = _ => ret.DataDict["ROUNDSREMAINING"].IntData = Math.Max(0, ret.DataDict["ROUNDSREMAINING"].IntData - 1)});
+                ret.Listeners.Add(new EngineEventListener()
+                {
+                    MyContextType = EventContextType.CardSell,
+                    MyAction = args =>
+                    {
+                        if (args is EngineCardSoldArgs s && s.CardBeingSold == c && ret.DataDict["ROUNDSREMAINING"].IntData <= 0)
+                        {
+                            var choices = ZoneManager.JokerZone.Cards.Where(x => x != c).ToList();
+                            if (!choices.Any())
+                                return;
+                            var toCopy = choices[Random.Shared.Next(choices.Count)];
+                            var copied = toCopy.MakeCopy();
+                            if (copied.Edition == Edition.NEGATIVE)
+                                copied.SetEditionOfficial(Edition.BASE);
+                            ZoneManager.JokerZone.AddCard(copied, overrideSpace: true);
+                        }
+                    }
+                });
+                return ret;
+            } },
+            { "BRAINSTORM", c => BasicDataBlock("Brainstorm", "TODO: Placeholder implementation.") },
+            { "SATELLITE", c =>
+            {
+                var ret = BasicDataBlock("Satellite");
+                Func<int> amt = () => EngineEventHandler.SavedEvents
+                    .Where(x => x.MyContext.Context == EventContextType.ConsumableUsed)
+                    .OfType<EngineConsumableUseArgs>()
+                    .Where(x => x.TypeUsed == ConsumableType.PLANET)
+                    .Select(x => x.ConsumableDBName)
+                    .Distinct()
+                    .Count();
+                ret.DescriptionBuilder = _ => "Earn $1 at end of round per unique Planet card used this run (" + amt() + " total)";
+                ret.Listeners.Add(new EngineEventListener()
+                {
+                    MyContextType = EventContextType.GatherPostRoundMoney,
+                    MyAction = args => { if (args is EngineGatherPostRoundMoneyArgs g) g.JokersContributed.Add((ret, amt())); }
+                });
+                return ret;
+            } },
+            { "SHOOT THE MOON", c =>
+            {
+                var ret = BasicDataBlock("Shoot the Moon");
+                ret.DataDict.Add("MULTAMOUNT", new JokerData() { DoubleData = 13, MyDataType = JokerDataType.DOUBLE });
+                ret.DescriptionBuilder = _ => "Each Queen held in hand gives +" + ret.DataDict["MULTAMOUNT"].DoubleData + " Mult";
+                ret.Listeners.Add(new EngineEventListener()
+                {
+                    MyContextType = EventContextType.CardTrigger,
+                    MyAction = args =>
+                    {//TODO: Trigger individually per card instead of all at once en-mass here. 
+                        if (args is EngineCardTriggerArgs t && t.CardThatIsTriggering == c && t.isScoringTrigger && ZoneManager.HandZone.Cards.Any(x => !x.isSelected && x.Rank == Rank.QUEEN))
+                            Globals.EmitMultAdd(ZoneManager.HandZone.Cards.Count(x => !x.isSelected && x.Rank == Rank.QUEEN) * ret.DataDict["MULTAMOUNT"].DoubleData, c);
+                    }
+                });
+                return ret;
+            } },
 
 
             //TODO: REMOVE BELOW AFTER REAL UNCOMMON/RARE ADDED, THESE ONLY FOR UNIT TESTS.
@@ -2710,6 +2814,25 @@ namespace ConsoleBalatro.Engine.Cards.Jokers
                 },
             };
         }
+
+        private static JokerCardDataBlock BuildHandTypeMultMultJoker(string name, PlayedHandType handType, double multMultAmount, Card c)
+        {
+            var ret = BasicDataBlock(name);
+            ret.DataDict.Add("MULTMULTAMOUNT", new JokerData() { DoubleData = multMultAmount, MyDataType = JokerDataType.DOUBLE });
+            ret.DataDict.Add("PLAYEDHAND", new JokerData() { HandTypeData = handType, MyDataType = JokerDataType.HANDTYPE });
+            ret.DescriptionBuilder = _ => "X" + ret.DataDict["MULTMULTAMOUNT"].DoubleData + " Mult if played hand contains a " + ret.DataDict["PLAYEDHAND"].HandTypeData.ToString();
+            ret.Listeners.Add(new EngineEventListener()
+            {
+                MyContextType = EventContextType.CardTrigger,
+                MyAction = args =>
+                {
+                    if (args is EngineCardTriggerArgs t && t.CardThatIsTriggering == c && t.isScoringTrigger && EngineUtils.HandContainsOtherHand(t.HandCurrentlyBeingPlayed, ret.DataDict["PLAYEDHAND"].HandTypeData))
+                        Globals.EmitMultMult(ret.DataDict["MULTMULTAMOUNT"].DoubleData, c);
+                }
+            });
+            return ret;
+        }
+
 
         private static JokerCardDataBlock BuildSuitScoringBonusJoker(string name, Suit suit, int moneyAmount = 0, int chipAmount = 0, double multAmount = 0, double multMultAmount = 0, int randomRollNumerator = 0, int randomRollDenominator = 0)
         {

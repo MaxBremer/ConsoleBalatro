@@ -9,30 +9,6 @@ Name -> Description (notes on functionality, not to be included in description)
 RARITY, Price
 
 JOKERS
-BATCH 1
-Showman -> (SPECIAL CASE, HARD TO IMPLEMENT. MAKE PLACEHOLDER FOR NOW.)
-UNCOMMON, $5
-Flower Pot -> X3 Mult if poker hand contains a Diamond card, Club card, Heart card, and Spade card
-UNCOMMON, $6
-Blueprint -> (SPECIAL CASE, HARD TO IMPLEMENT. MAKE PLACEHOLDER FOR NOW.)
-RARE, $10
-Wee Joker -> This Joker gains +8 Chips when each played 2 is scored (Currently +0 Chips)
-RARE, $8
-Merry Andy -> +3 discards each round, -1 hand size
-UNCOMMON, $7
-Oops! All 6s -> Doubles all listed probabilities (ex: 1 in 3 -> 2 in 3)
-UNCOMMON, $4
-The Idol -> Each played [rank] of [suit] gives X2 Mult when scored, card changes every round (HIDDEN FUNCTIONALITY: this cannot actually choose ANY specific rank/suit combo, ONLY those that do appear somewhere in the players full deck. So if they had modified their deck to the point that it contained only Aces of Spades and Kings of Diamonds, this joker could only roll Ace of Spades or King of Diamonds)
-UNCOMMON, $6
-Seeing Double -> X2 Mult if played hand has a scoring Club card and a scoring card of any other suit
-UNCOMMON, $6
-Matador -> Earn $8 if played hand triggers the Boss Blind ability
-UNCOMMON, $7
-Hit the Road -> This Joker gains X0.5 Mult for every Jack discarded this round (Currently X1 Mult)
-RARE, $8
-
-BATCH 2
-
 The Duo -> X2 Mult if played hand contains a Pair
 RARE, $8
 The Trio -> X3 Mult if played hand contains a Three of a King

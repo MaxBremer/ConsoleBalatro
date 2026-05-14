@@ -1632,6 +1632,100 @@ namespace ConsoleBalatro.Tests
             //TODO: IMPLEMENT AFTER BOSS BLINDS EXIST THAT TRIGGER MATADOR.
         }
 
+        [Theory]
+        [InlineData("THE DUO", "KS,KS", 2)]
+        [InlineData("THE TRIO", "KS,KS,KS", 3)]
+        [InlineData("THE FAMILY", "KS,KS,KS,KS", 4)]
+        [InlineData("THE ORDER", "KS,QS,JD,1C,9D", 3)]
+        [InlineData("THE TRIBE", "KS,QS,2S,5S,6S", 2)]
+        public void PlayHand_WithHandTypeMultMultJoker_EmitsExpectedMultMult(string jokerName, string hand, double expectedMultMult)
+        {
+            var s = JokerSetup(jokerName);
+            PlayHand(hand);
+
+            Assert.Single(s.record.MultMultSources);
+            Assert.Equal(s.jok, s.record.MultMultSources[0]);
+            Assert.Equal(expectedMultMult, s.record.MultMultFromEmits);
+        }
+
+        [Fact]
+        public void AddRemoveStuntman_UpdatesHandSizeAndAddsChipsOnScore()
+        {
+            ResetToFirstBlindPlayRound();
+            var baseHandSize = Globals.HandSize;
+            var s = JokerSetup("STUNTMAN");
+
+            Assert.Equal(baseHandSize - 2, Globals.HandSize);
+            PlayHand("AS");
+            Assert.Contains(s.jok, s.record.ChipSources);
+            Assert.Equal(250 + 11, s.record.ChipsFromEmits);
+
+            ZoneManager.JokerZone.RemoveCard(s.jok);
+            Assert.Equal(baseHandSize, Globals.HandSize);
+        }
+
+        [Fact]
+        public void SellInvisibleJoker_AfterTwoRounds_DuplicatesRandomJoker()
+        {
+            ResetToFirstBlindPlayRound();
+            AddJoker("INVISIBLE JOKER");
+            AddJoker("JIMBO");
+            var invisible = ZoneManager.JokerZone.Cards.First(x => x.JokerData.DBName == "INVISIBLE JOKER");
+            invisible.JokerData.DataDict["ROUNDSREMAINING"].IntData = 0;
+            var beforeCount = ZoneManager.JokerZone.Cards.Count;
+
+            Globals.PerformSell(invisible, ZoneManager.JokerZone);
+            Assert.Equal(beforeCount, ZoneManager.JokerZone.Cards.Count);
+            Assert.Equal(2, ZoneManager.JokerZone.Cards.Count(x => x.JokerData.DBName == "JIMBO"));
+        }
+
+        [Fact]
+        public void CloseRound_WithSatellite_AddsMoneyForUniquePlanetsUsed()
+        {
+            ResetToFirstBlindPlayRound();
+            AddJoker("SATELLITE");
+            var sat = ZoneManager.JokerZone.Cards.First();
+            EngineEventHandler.TriggerEvent(new EngineConsumableUseArgs()
+            {
+                TypeUsed = ConsumableType.PLANET,
+                ConsumableDBName = "MARS",
+                ConsumableName = "Mars",
+                MyContext = new EventContext() { Context = EventContextType.ConsumableUsed }
+            });
+            EngineEventHandler.TriggerEvent(new EngineConsumableUseArgs()
+            {
+                TypeUsed = ConsumableType.PLANET,
+                ConsumableDBName = "MARS",
+                ConsumableName = "Mars",
+                MyContext = new EventContext() { Context = EventContextType.ConsumableUsed }
+            });
+            EngineEventHandler.TriggerEvent(new EngineConsumableUseArgs()
+            {
+                TypeUsed = ConsumableType.PLANET,
+                ConsumableDBName = "VENUS",
+                ConsumableName = "Venus",
+                MyContext = new EventContext() { Context = EventContextType.ConsumableUsed }
+            });
+
+            Globals.RequiredChipsForCurrentBlind = 1;
+            PlayHand("AS");
+            Assert.Contains(Globals.CurrentGameStateObj.PostRoundMoneySources, x => x.Item1 == sat.JokerData.JokerName && x.Item2 == 2);
+        }
+
+        [Fact]
+        public void PlayHand_WithShootTheMoon_AddsMultPerHeldQueen()
+        {
+            var s = JokerSetup("SHOOT THE MOON");
+            BuildKnownHand("AS,QH,QC", selectAll: false);
+            ZoneManager.HandZone.Cards[0].isSelected = true;
+
+            Globals.PlayCurrentlySelectedHand();
+            Assert.Single(s.record.MultSources);
+            Assert.Equal(s.jok, s.record.MultSources[0]);
+            Assert.Equal(26, s.record.MultFromEmits);
+        }
+
+
 
         /*[Theory]
         [InlineData("TEMP UNCOMMON JOKER")]

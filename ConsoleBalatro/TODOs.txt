@@ -10,26 +10,6 @@ RARITY, Price
 
 JOKERS
 
-Driver's License -> X3 Mult if you have at least 16 Enhanced cards in your full deck (Currently 0)
-RARE, $7
-Cartomancer -> Create a Tarot card when Blind is selected (Must have room)
-UNCOMMON, $6
-Astronomer -> All Planet cards and Celestial Packs in the shop are free
-UNCOMMON, $8
-Burnt Joker -> Upgrade the level of the first discarded poker hand each round
-RARE, $8
-Bootstraps -> +2 Mult for every $5 you have (Currently +0 Mult)
-UNCOMMON, $7
-Canio -> This Joker gains X1 Mult when a face card is destroyed (Currently X1 Mult)
-LEGENDARY, $20
-Triboulet -> Played Kings and Queens each give X2 Mult when scored
-LEGENDARY, $20
-Yorick -> This Joker gains X1 Mult every 23 [remaining: 23] cards discarded (Currently X1 Mult)
-LEGENDARY, $20
-Chicot -> Disables effect of every Boss Blind
-LEGENDARY, $20
-Perkeo -> Creates a Negative copy of 1 random consumable card in your possession at the end of the shop
-LEGENDARY, $20
 
 BATCH 4
 COPY JOKER SPECIAL CASE
@@ -37,4 +17,5 @@ Blueprint -> Copies ability of Joker to the right
 Brainstorm -> Copies the ability of leftmost Joker
 
 BATCH 5
+SHOWMAN SPECIAL CASE
 Showman -> Joker, Tarot, Planet, and Spectral cards may appear multiple times

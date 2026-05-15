@@ -1,4 +1,6 @@
-﻿using System;
+﻿using ConsoleBalatro.Engine.Pools;
+using ConsoleBalatro.Engine.Pools.Rollables;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -11,5 +13,6 @@ namespace ConsoleBalatro.Engine.Cards.Jokers
         public string DBName;
         public int Price;
         public JokerRarity Rarity = JokerRarity.COMMON;
+        public Func<MarketEligibilityContext, bool> isEligible = _ => true;
     }
 }

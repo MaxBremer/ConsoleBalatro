@@ -974,13 +974,15 @@ namespace ConsoleBalatro.Engine.Cards.Consumables
             //TODO: Again, args to pass?
             c.ConsumableData.Use(null);
 
-            var args = new EngineConsumableUseArgs();
-            args.MyContext = new Events.EventContext() { Context = Events.EventContextType.ConsumableUsed };
-            args.ConsumableName = c.ConsumableData.ConsumableName;
-            args.ConsumableDBName = c.ConsumableData.DBName;
-            args.HandOfItemUsed = c.ConsumableData.PlanetHandType;
-            args.TypeUsed = c.ConsumableData.Type;
-            args.BuyItemUsed = c.ConsumableData.BuyType;
+            var args = new EngineConsumableUseArgs
+            {
+                MyContext = new EventContext() { Context = EventContextType.ConsumableUsed },
+                ConsumableName = c.ConsumableData.ConsumableName,
+                ConsumableDBName = c.ConsumableData.DBName,
+                HandOfItemUsed = c.ConsumableData.PlanetHandType,
+                TypeUsed = c.ConsumableData.Type,
+                BuyItemUsed = c.ConsumableData.BuyType
+            };
             EngineEventHandler.TriggerEvent(args);
 
             MarketOptionsManager.ReturnMarketItemFromZone(c, ZoneManager.CurrentlyActivatingConsumable);

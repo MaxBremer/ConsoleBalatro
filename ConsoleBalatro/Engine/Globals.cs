@@ -5,6 +5,7 @@ using ConsoleBalatro.Engine.Cards.Vouchers;
 using ConsoleBalatro.Engine.Events;
 using ConsoleBalatro.Engine.Events.Args;
 using ConsoleBalatro.Engine.Market;
+using ConsoleBalatro.Engine.Pools;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -150,6 +151,8 @@ namespace ConsoleBalatro.Engine
             FlowHandler.InitializeFlowListeners();
 
             PackActions.InitializePackData();
+
+            PoolManager.InitializeAllPools();
 
             RerollButtonCard = new();
         }

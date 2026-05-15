@@ -169,9 +169,6 @@ namespace ConsoleBalatro.Engine.Cards.Jokers
             {"YORICK", new JokerTypeData { DBName = "YORICK", Price = 20, Rarity = JokerRarity.LEGENDARY } },
             {"CHICOT", new JokerTypeData { DBName = "CHICOT", Price = 20, Rarity = JokerRarity.LEGENDARY } },
             {"PERKEO", new JokerTypeData { DBName = "PERKEO", Price = 20, Rarity = JokerRarity.LEGENDARY } },
-            {"TEMP UNCOMMON JOKER", new JokerTypeData { DBName = "TEMP UNCOMMON JOKER", Price = 5, Rarity = JokerRarity.UNCOMMON } },
-            {"TEMP RARE JOKER", new JokerTypeData { DBName = "TEMP RARE JOKER", Price = 5, Rarity = JokerRarity.RARE } },
-            {"TEMP LEGENDARY JOKER", new JokerTypeData { DBName = "TEMP LEGENDARY JOKER", Price = 6, Rarity = JokerRarity.LEGENDARY } },
         };
 
         public static List<string> JokerDbNames => JokerData.Keys.ToList();
@@ -2440,7 +2437,7 @@ namespace ConsoleBalatro.Engine.Cards.Jokers
                 });
                 return ret;
             } },
-            { "SHOWMAN", c => BasicDataBlock("Showman", "Placeholder: Showman special-case functionality not yet implemented") },
+            { "SHOWMAN", c => BasicDataBlock("Showman", "Copies of Jokers, Tarots, Planets, and Spectrals can appear.") },
             { "FLOWER POT", c =>
             {
                 var ret = BasicDataBlock("Flower Pot");
@@ -2908,35 +2905,6 @@ namespace ConsoleBalatro.Engine.Cards.Jokers
                 return ret;
             } },
 
-
-            //TODO: REMOVE BELOW AFTER REAL UNCOMMON/RARE ADDED, THESE ONLY FOR UNIT TESTS.
-            { "TEMP UNCOMMON JOKER", c =>
-            {
-                var ret = new JokerCardDataBlock();
-                ret.JokerName = "TEMP UNCOMMON Joker";
-                ret.DBName = "TEMP UNCOMMON JOKER";
-                ret.DescriptionBuilder = _ => "Temporary Uncommon Joker TO BE REMOVED";
-
-                return ret;
-            } },
-            { "TEMP RARE JOKER", c =>
-            {
-                var ret = new JokerCardDataBlock();
-                ret.JokerName = "TEMP RARE Joker";
-                ret.DBName = "TEMP RARE JOKER";
-                ret.DescriptionBuilder = _ => "Temporary Rare Joker TO BE REMOVED";
-
-                return ret;
-            } },
-            { "TEMP LEGENDARY JOKER", c =>
-            {
-                var ret = new JokerCardDataBlock();
-                ret.JokerName = "TEMP LEGENDARY Joker";
-                ret.DBName = "TEMP LEGENDARY JOKER";
-                ret.DescriptionBuilder = _ => "Temporary Legendary Joker TO BE REMOVED";
-
-                return ret;
-            } },
         };
 
         public static string GetRandomJokerOfRarity(JokerRarity rarity)

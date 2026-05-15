@@ -259,11 +259,6 @@ namespace ConsoleBalatro.Engine.Market
             return true;
         }
 
-        public static void DrawMarketItemOfTypeToConsumableZone(BuyItemType itemType)
-        {
-            DrawMarketItem(itemType, ZoneManager.ConsumableZone);
-        }
-
         public static void DrawMarketItem(BuyItemType itemType, CardZone zoneToDrawTo, bool applyMarketModifiers = false, bool overrideSpaceLimits = false)
         {
             //TODO: When duplicates allowed, draw from some static pool.

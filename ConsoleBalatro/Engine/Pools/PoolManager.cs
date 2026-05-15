@@ -1,5 +1,6 @@
 ﻿using ConsoleBalatro.Engine.Cards.Consumables;
 using ConsoleBalatro.Engine.Cards.Jokers;
+using ConsoleBalatro.Engine.Cards.Vouchers;
 using ConsoleBalatro.Engine.Pools.Rollables;
 using ConsoleBalatro.Engine.Pools.Rules;
 using System;
@@ -25,8 +26,16 @@ namespace ConsoleBalatro.Engine.Pools
         public static Dictionary<string, RollableDefinition> SpectralCardPool = new Dictionary<string, RollableDefinition>();
         public static Dictionary<string, RollableDefinition> PlanetCardPool = new Dictionary<string, RollableDefinition>();
         public static Dictionary<string, RollableDefinition> JokerPool = new Dictionary<string, RollableDefinition>();
+        public static Dictionary<string, RollableDefinition> PackPool = new Dictionary<string, RollableDefinition>();
+        public static Dictionary<string, RollableDefinition> VoucherPool = new Dictionary<string, RollableDefinition>();
 
         public static List<IMarketPoolRule> Rules = new List<IMarketPoolRule>();
+
+        public static void Initialize()
+        {
+            InitializeAllPools();
+            InitializeGlobalPoolRules();
+        }
 
         public static void InitializeAllPools()
         {
@@ -34,6 +43,8 @@ namespace ConsoleBalatro.Engine.Pools
             SpectralCardPool.Clear();
             PlanetCardPool.Clear();
             JokerPool.Clear();
+            PackPool.Clear();
+            VoucherPool.Clear();
 
             foreach (var tc in ConsumableManager.TarotNames)
             {
@@ -56,6 +67,23 @@ namespace ConsoleBalatro.Engine.Pools
             {
                 JokerPool.Add(j.DBName, new JokerRollableDefinition(j));
             }
+
+            foreach (var p in ConsumableManager.PackBasicNums.Values.Select(x => x.ID))
+            {
+                PackPool.Add(p, new PackRollableDefinition(p));
+            }
+
+            foreach (var v in VoucherDb.VoucherDBNames)
+            {
+                VoucherPool.Add(v, new VoucherRollableDefinition(v));
+            }
+        }
+
+        public static void InitializeGlobalPoolRules()
+        {
+            Rules.Clear();
+            Rules.Add(new NoOwnedDuplicatesRule());
+            Rules.Add(new ShowmanMarketRule());
         }
 
         public static RollableDefinition RollSingle(ContentRollRequest request)
@@ -94,6 +122,8 @@ namespace ConsoleBalatro.Engine.Pools
                 ItemPool.Spectral => SpectralCardPool,
                 ItemPool.Planet => PlanetCardPool,
                 ItemPool.Joker => JokerPool,
+                ItemPool.Pack => PackPool,
+                ItemPool.Voucher => VoucherPool,
                 _ => throw new ArgumentException("Invalid content pool specified.")
             };
             if (pool.Count == 0)

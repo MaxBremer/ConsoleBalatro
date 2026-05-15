@@ -152,7 +152,7 @@ namespace ConsoleBalatro.Engine
 
             PackActions.InitializePackData();
 
-            PoolManager.InitializeAllPools();
+            PoolManager.Initialize();
 
             RerollButtonCard = new();
         }

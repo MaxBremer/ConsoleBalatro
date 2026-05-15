@@ -12,6 +12,8 @@ namespace ConsoleBalatro.Engine.Pools
         Tarot,
         Planet,
         Spectral,
+        Pack,
+        Voucher,
         PlayingCard,
     }
 

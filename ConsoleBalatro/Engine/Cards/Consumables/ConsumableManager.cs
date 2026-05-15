@@ -23,6 +23,9 @@ namespace ConsoleBalatro.Engine.Cards.Consumables
             public string PackName;//TODO: THESE FIELDS ARE DISPLAY FIELDS. MOVE TO DISPLAY CLASSES.
             public string TopLine;
             public string BottomLine;
+            public string ID => PackName.ToUpper();
+
+
             public string GetItemTypeString()
             {
                 if (ItemTypeString.ContainsKey(RelevantBuyItemType))

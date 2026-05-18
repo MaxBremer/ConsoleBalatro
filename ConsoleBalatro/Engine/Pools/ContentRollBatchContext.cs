@@ -10,6 +10,6 @@ namespace ConsoleBalatro.Engine.Pools
     {
         public HashSet<string> GeneratedIds { get; } = new();
 
-        public bool AllowDuplicateResultsInSameBatch { get; set; }
+        public bool AllowDuplicateResultsInSameBatch { get; set; } = false;
     }
 }

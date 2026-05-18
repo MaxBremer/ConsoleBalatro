@@ -177,6 +177,8 @@ namespace ConsoleBalatro.Engine
             CurBossBlindRerollsAllowed = 0;
             BaseBossBlindRerollsAllowed = 0;
 
+            DiscountMultiplier = 1.0;
+
             ShopPlayingCardsGetModifiers = false;
 
             EngineUtils.ResetUtilValues();
@@ -529,5 +531,9 @@ namespace ConsoleBalatro.Engine
         {
             return Random.Shared.Next(min, max + 1);
         }
+
+        public static int randomNext(int val) => ChooseRandomInclusive(0, val - 1);
+
+        public static int randomNext(int min, int max) => ChooseRandomInclusive(min, max - 1);
     }
 }

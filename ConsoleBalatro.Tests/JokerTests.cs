@@ -1149,7 +1149,9 @@ namespace ConsoleBalatro.Tests
             var s = JokerSetup("LUCKY CAT");
             var lucky = BuildKnownHand("AS")[0];
             lucky.SetEnhancementOfficial(Enhancement.LUCKY);
+            //ensure that only ONE lucky trigger will go off.
             RigNextRoll(true);
+            RigNextRoll(false);
             Globals.PlayCurrentlySelectedHand();
             Assert.Contains(s.jok, s.record.MultMultSources);
             Assert.Equal(1.25, s.jok.JokerData.DataDict["MULTMULTAMOUNT"].DoubleData, 2);

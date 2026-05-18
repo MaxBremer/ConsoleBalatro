@@ -188,7 +188,7 @@ namespace ConsoleBalatro.Engine.Pools
             if (totalWeight <= 0)
                 throw new InvalidOperationException("Cannot roll from candidates with no positive weight.");
 
-            int roll = Random.Shared.Next(1, totalWeight + 1);
+            int roll = Globals.randomNext(1, totalWeight + 1);
 
             int running = 0;
 

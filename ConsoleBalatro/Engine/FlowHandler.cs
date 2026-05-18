@@ -349,7 +349,7 @@ namespace ConsoleBalatro.Engine
                 BossBlindDb.BossBlindsAlreadyUsed.Clear();
             }
             var oldBossBlind = CurrentBossBlind;
-            targetBossBlindName = BossBlindDb.AvailableBossBlinds[Random.Shared.Next(BossBlindDb.AvailableBossBlinds.Count)];
+            targetBossBlindName = BossBlindDb.AvailableBossBlinds[Globals.randomNext(BossBlindDb.AvailableBossBlinds.Count)];
             BossBlindDb.BossBlindsAlreadyUsed.Add(targetBossBlindName);
             if (isPlayerReroll)
             {
@@ -366,14 +366,14 @@ namespace ConsoleBalatro.Engine
             var values = Enum.GetValues(typeof(TagType)).Cast<TagType>().Where(x => x != TagType.NONE).ToArray();
             if (makeUnique)
             {
-                var shuffled = values.OrderBy(x => Random.Shared.Next()).ToArray();
+                var shuffled = values.OrderBy(x => Globals.randomNext(Int32.MaxValue)).ToArray();
                 CurSmallBlindTag = shuffled[0];
                 CurBigBlindTag = shuffled[1];
             }
             else
             {
-                CurSmallBlindTag = values[Random.Shared.Next(values.Length)];
-                CurBigBlindTag = values[Random.Shared.Next(values.Length)];
+                CurSmallBlindTag = values[Globals.randomNext(values.Length)];
+                CurBigBlindTag = values[Globals.randomNext(values.Length)];
             }
         }
 

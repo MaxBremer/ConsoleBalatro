@@ -1065,7 +1065,7 @@ namespace ConsoleBalatro.Engine.Cards.Consumables
         public static Card MakePackByOdds()
         {
             PackType chosenPackType = PackType.BASIC_JOKER;
-            var roll = Random.Shared.Next(PackTotalOdds);
+            var roll = Globals.randomNext(PackTotalOdds);
             foreach (var kv in PackBasicNums)
             {
                 if(roll < kv.Value.ChanceToAppear)
@@ -1140,7 +1140,7 @@ namespace ConsoleBalatro.Engine.Cards.Consumables
             {
                 for (int i = 0; i < ret.DataDict["DESTROYAMOUNT"].IntData; i++)
                 {
-                    var toRem = ZoneManager.HandZone.Cards[Random.Shared.Next(ZoneManager.HandZone.Cards.Count)];
+                    var toRem = ZoneManager.HandZone.Cards[Globals.randomNext(ZoneManager.HandZone.Cards.Count)];
                     ZoneManager.DestroyCard(toRem, ZoneManager.HandZone);
                 }
                 var toAdd = new List<Card>();
@@ -1150,7 +1150,7 @@ namespace ConsoleBalatro.Engine.Cards.Consumables
                 {
                     var newCard = new Card();
                     EngineUtils.RandomizePlayingCard(newCard, validRanks: validRanks);
-                    newCard.Enhancement = validEnhancements[Random.Shared.Next(validEnhancements.Count)];
+                    newCard.Enhancement = validEnhancements[Globals.randomNext(validEnhancements.Count)];
                     toAdd.Add(newCard);
                 }
                 ZoneManager.HandZone.AddCards(toAdd, overrideSpace: true);

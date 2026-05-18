@@ -77,7 +77,7 @@ namespace ConsoleBalatro.Engine.Cards.Tags
             {TagType.ORBITAL, c => {
                 var ret = PrepBlockForTag("Orbital Tag", c);
                 var upgradable = Enum.GetValues(typeof(PlayedHandType)).Cast<PlayedHandType>().ToList();
-                var targetUpgrade = upgradable[Random.Shared.Next(upgradable.Count)];
+                var targetUpgrade = upgradable[Globals.randomNext(upgradable.Count)];
                 ret.DescriptionBuilder = _ => "Upgrades " + targetUpgrade.ToString() + " by three levels.";
                 ret.TagData.OnAddAction = _ =>
                 {

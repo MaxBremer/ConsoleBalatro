@@ -273,7 +273,7 @@ namespace ConsoleBalatro.Engine.Market
                 {
                     foreach (var ed in RandomEditionOdds[itemType].Keys)
                     {
-                        if(Random.Shared.Next(1000) < RandomEditionOdds[itemType][ed])
+                        if(Globals.randomNext(1000) < RandomEditionOdds[itemType][ed])
                         {
                             cardDrawn.Edition = ed;
                             break; //Not do this? later rolls override?
@@ -292,15 +292,15 @@ namespace ConsoleBalatro.Engine.Market
                     List<Seal> validSeals = new List<Seal>() { Seal.GOLD, Seal.RED, Seal.BLUE, Seal.PURPLE };
                     if (doEdition)
                     {
-                        cardDrawn.SetEditionOfficial(validEditions[Random.Shared.Next(validEditions.Count)]);
+                        cardDrawn.SetEditionOfficial(validEditions[Globals.randomNext(validEditions.Count)]);
                     }
                     if (doEnhancement)
                     {
-                        cardDrawn.SetEnhancementOfficial(validEnhancements[Random.Shared.Next(validEnhancements.Count)]);
+                        cardDrawn.SetEnhancementOfficial(validEnhancements[Globals.randomNext(validEnhancements.Count)]);
                     }
                     if (doSeal)
                     {
-                        cardDrawn.Seal = validSeals[Random.Shared.Next(validSeals.Count)];
+                        cardDrawn.Seal = validSeals[Globals.randomNext(validSeals.Count)];
                     }
                 }
             }
@@ -320,7 +320,7 @@ namespace ConsoleBalatro.Engine.Market
                 {
                     foreach (var ed in RandomEditionOdds[itemType].Keys)
                     {
-                        if (Random.Shared.Next(1000) < RandomEditionOdds[itemType][ed])
+                        if (Globals.randomNext(1000) < RandomEditionOdds[itemType][ed])
                         {
                             cardDrawn.Edition = ed;
                             break; //Not do this? later rolls override?
@@ -357,7 +357,7 @@ namespace ConsoleBalatro.Engine.Market
             var total = odds.Values.Sum();
             for (int i = 0; i < numItems; i++)
             {
-                var roll = Random.Shared.Next(total);
+                var roll = Globals.randomNext(total);
                 BuyItemType chosenType = BuyItemType.NONE;
                 foreach (var typeOpt in odds)
                 {
@@ -396,7 +396,7 @@ namespace ConsoleBalatro.Engine.Market
             var valid = pool.Cards.Where(x => x.isJoker && (!rarity.HasValue || x.JokerData.Rarity == rarity.Value)).ToList();
             if (valid.Count == 0)
                 return Globals.USE_DEFAULT_JOKER_IF_POOL_EMPTY ? JokerDb.GenerateDefaultJokerCard() : null;
-            var chosen = valid[Random.Shared.Next(valid.Count)];
+            var chosen = valid[Globals.randomNext(valid.Count)];
             if (removeFromPool)
                 pool.RemoveCard(chosen);
             return chosen;

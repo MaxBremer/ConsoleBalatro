@@ -373,8 +373,8 @@ namespace ConsoleBalatro.Engine
         {
             var ranksToUse = validRanks ?? Enum.GetValues(typeof(Rank)).Cast<Rank>().Where(r => r != Rank.NONE).ToList();
             var suitsToUse = validSuits ?? Enum.GetValues(typeof(Suit)).Cast<Suit>().Where(s => s != Suit.NONE).ToList();
-            c.Rank = ranksToUse[Random.Shared.Next(ranksToUse.Count)];
-            c.Suit = suitsToUse[Random.Shared.Next(suitsToUse.Count)];
+            c.Rank = ranksToUse[Globals.randomNext(ranksToUse.Count)];
+            c.Suit = suitsToUse[Globals.randomNext(suitsToUse.Count)];
         }
 
         public static Card GenerateRandomPlayingCard()

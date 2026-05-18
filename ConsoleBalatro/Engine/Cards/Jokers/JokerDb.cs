@@ -593,7 +593,7 @@ namespace ConsoleBalatro.Engine.Cards.Jokers
                     MyContextType = EventContextType.EndBlindSelection,
                     MyAction = args =>
                     {
-                        var newCard = CardFactory.PlayingCardFromRankSuit((Rank)Random.Shared.Next(1, 14), (Suit)Random.Shared.Next(0, 4));
+                        var newCard = CardFactory.PlayingCardFromRankSuit((Rank)Globals.randomNext(1, 14), (Suit)Globals.randomNext(4));
                         newCard.SetEnhancementOfficial(Enhancement.STONE);
                         ZoneManager.DeckZone.AddCard(newCard);
                     },
@@ -641,7 +641,7 @@ namespace ConsoleBalatro.Engine.Cards.Jokers
                     {
                         if (args is EngineCardTriggerArgs triggerArgs && triggerArgs.isScoringTrigger && triggerArgs.CardThatIsTriggering.Rank == Rank.EIGHT && ZoneManager.ConsumableZone.HasRoom && Globals.RollRandom(ret.DataDict["NUMERATOR"].IntData, ret.DataDict["DENOMINATOR"].IntData, c))
                         {
-                            var tarotType = ConsumableManager.TarotNames[Random.Shared.Next(ConsumableManager.TarotNames.Count)];
+                            var tarotType = ConsumableManager.TarotNames[Globals.randomNext(ConsumableManager.TarotNames.Count)];
                             ZoneManager.ConsumableZone.AddCard(ConsumableManager.MakeTarotCard(tarotType));
                         }
                     },
@@ -660,7 +660,7 @@ namespace ConsoleBalatro.Engine.Cards.Jokers
                     {
                         if (args is EngineCardTriggerArgs triggerArgs && triggerArgs.CardThatIsTriggering == c && triggerArgs.isScoringTrigger)
                         {
-                            ret.DataDict["MULTAMOUNT"].DoubleData = Random.Shared.Next(24);
+                            ret.DataDict["MULTAMOUNT"].DoubleData = Globals.randomNext(24);
                             Globals.EmitMultAdd(ret.DataDict["MULTAMOUNT"].DoubleData, c);
                         }
                     },
@@ -1274,7 +1274,7 @@ namespace ConsoleBalatro.Engine.Cards.Jokers
                 var getRandomHand = new Func<PlayedHandType, PlayedHandType>(oldHand =>
                 {
                     var handTypes = Enum.GetValues<PlayedHandType>().Where(x => x != oldHand).ToList();//Makes sure we never roll to the same hand.
-                    return handTypes[Random.Shared.Next(handTypes.Count)];
+                    return handTypes[Globals.randomNext(handTypes.Count)];
                 });
                 ret.DataDict.Add("HANDTYPE", new JokerData() { HandTypeData = getRandomHand(PlayedHandType.HIGHCARD), MyDataType = JokerDataType.HANDTYPE });
                 ret.Listeners.Add(new EngineEventListener()
@@ -1369,7 +1369,7 @@ namespace ConsoleBalatro.Engine.Cards.Jokers
                             ret.DataDict["MULTMULTAMOUNT"].DoubleData += ret.DataDict["MULTMULTGAIN"].DoubleData; 
                             var valid = ZoneManager.JokerZone.Cards.Where(x => x != c && x.IsDestructible).ToList(); 
                             if (valid.Any())
-                                ZoneManager.DestroyCard(valid[Random.Shared.Next(valid.Count)], ZoneManager.JokerZone); 
+                                ZoneManager.DestroyCard(valid[Globals.randomNext(valid.Count)], ZoneManager.JokerZone); 
                         } 
                     } 
                 });
@@ -1784,7 +1784,7 @@ namespace ConsoleBalatro.Engine.Cards.Jokers
                     MyAction = _ => 
                     { 
                         var vals = Enum.GetValues<Rank>().Where(x => x != Rank.NONE).ToList(); 
-                        ret.DataDict["TARGETRANK"].SpecificCardRank = vals[Random.Shared.Next(vals.Count)]; }});
+                        ret.DataDict["TARGETRANK"].SpecificCardRank = vals[Globals.randomNext(vals.Count)]; }});
                 return ret;
             } },
             { "TO THE MOON", c =>
@@ -2033,7 +2033,7 @@ namespace ConsoleBalatro.Engine.Cards.Jokers
                 var getRandomSuit = new Func<Suit>(() =>
                 {
                     var vals = Enum.GetValues<Suit>().Where(x => x != Suit.NONE && x != ret.DataDict["SUIT"].SpecificCardSuit).ToList();
-                    return vals[Random.Shared.Next(vals.Count)];
+                    return vals[Globals.randomNext(vals.Count)];
                 });
                 ret.DataDict.Add("SUIT", new JokerData() { SpecificCardSuit = Suit.NONE, MyDataType = JokerDataType.SUIT });
                 ret.DataDict["SUIT"].SpecificCardSuit = getRandomSuit();
@@ -2140,7 +2140,7 @@ namespace ConsoleBalatro.Engine.Cards.Jokers
                 var getRandomSuit = new Func<Suit>(() =>
                 {
                     var vals = Enum.GetValues<Suit>().Where(x => x != Suit.NONE && x != ret.DataDict["SUIT"].SpecificCardSuit).ToList();
-                    return vals[Random.Shared.Next(vals.Count)];
+                    return vals[Globals.randomNext(vals.Count)];
                 });
                 ret.DataDict.Add("CHIPAMOUNT", new JokerData() { IntData = 0, MyDataType = JokerDataType.INT });
                 ret.DataDict.Add("CHIPGAIN", new JokerData() { IntData = 3, MyDataType = JokerDataType.INT });
@@ -2331,7 +2331,7 @@ namespace ConsoleBalatro.Engine.Cards.Jokers
                     {
                         var created = EngineUtils.GenerateRandomPlayingCard();
                         var possibleSeals = Enum.GetValues<Seal>().Where(x => x != Seal.NONE).ToList();
-                        created.Seal = possibleSeals[Random.Shared.Next(possibleSeals.Count)];
+                        created.Seal = possibleSeals[Globals.randomNext(possibleSeals.Count)];
                         ZoneManager.HandZone.AddCard(created, overrideSpace: true);
                     }
                 });
@@ -2540,7 +2540,7 @@ namespace ConsoleBalatro.Engine.Cards.Jokers
                     var options = ZoneManager.GetFullDeckPlayingCards().GroupBy(x => (x.Rank, x.Suit)).Select(x => x.Key).ToList(); 
                     if(options.Count == 0) 
                         return; 
-                    var pick = options[Random.Shared.Next(options.Count)]; 
+                    var pick = options[Globals.randomNext(options.Count)]; 
                     ret.DataDict["TARGETRANK"].SpecificCardRank = pick.Rank; 
                     ret.DataDict["TARGETSUIT"].SpecificCardSuit = pick.Suit; 
                 };
@@ -2666,7 +2666,7 @@ namespace ConsoleBalatro.Engine.Cards.Jokers
                             var choices = ZoneManager.JokerZone.Cards.Where(x => x != c).ToList();
                             if (!choices.Any())
                                 return;
-                            var toCopy = choices[Random.Shared.Next(choices.Count)];
+                            var toCopy = choices[Globals.randomNext(choices.Count)];
                             var copied = toCopy.MakeCopy();
                             if (copied.Edition == Edition.NEGATIVE)
                                 copied.SetEditionOfficial(Edition.BASE);
@@ -2896,7 +2896,7 @@ namespace ConsoleBalatro.Engine.Cards.Jokers
                     { 
                         if (!ZoneManager.ConsumableZone.HasRoom || !ZoneManager.ConsumableZone.Cards.Any()) 
                             return; 
-                        var chosen = ZoneManager.ConsumableZone.Cards[Random.Shared.Next(ZoneManager.ConsumableZone.Cards.Count)]; 
+                        var chosen = ZoneManager.ConsumableZone.Cards[Globals.randomNext(ZoneManager.ConsumableZone.Cards.Count)]; 
                         var copy = chosen.MakeCopy(); 
                         copy.SetEditionOfficial(Edition.NEGATIVE); 
                         ZoneManager.ConsumableZone.AddCard(copy, overrideSpace: true); 
@@ -2912,7 +2912,7 @@ namespace ConsoleBalatro.Engine.Cards.Jokers
             var jokersOfRarity = JokerMetadata.Where(x => x.Value.Rarity == rarity).ToList();
             if (!jokersOfRarity.Any())
                 return null;
-            var randomIndex = Random.Shared.Next(jokersOfRarity.Count);
+            var randomIndex = Globals.randomNext(jokersOfRarity.Count);
             return jokersOfRarity[randomIndex].Key;
         }
 

@@ -21,7 +21,7 @@ namespace ConsoleBalatro.Engine.Pools.Rollables
         }
         public override string Id { get; init; }
         public override ItemPool Pool => ItemPool.Planet;
-        public override JokerRarity Rarity { get; init; };
+        public override JokerRarity Rarity { get; init; }
         public override bool IsEligible(MarketEligibilityContext context)
         {
             return _myInnerEligFunc(context);

@@ -9,7 +9,6 @@ namespace ConsoleBalatro.Engine.Pools
 {
     public class ContentRollRequest
     {
-        public required GameState Game { get; init; }
         public required ItemPool Pool { get; init; }
         public required GenerationSource Source { get; init; }
 

@@ -145,5 +145,26 @@ namespace ConsoleBalatro.Engine
                 DrawFrom(zone);
             }
         }
+
+        public void SwapCardPositions(Card c1, Card c2)
+        {
+            if(!Cards.Contains(c1)  || !Cards.Contains(c2) || c1 == c2) return;
+            var firstInd = Cards.IndexOf(c1);
+            var secondInd = Cards.IndexOf(c2);
+
+            var args = new EngineCardPositionsSwappingArgs()
+            {
+                Card1 = c1,
+                Card2 = c2,
+                Card1OldIndex = firstInd,
+                Card2OldIndex = secondInd,
+                ZoneOfSwap = this,
+                MyContext = new EventContext() { Context = EventContextType.CardPositionsSwapping }
+            };
+            EngineEventHandler.TriggerEvent(args);
+
+            Cards[secondInd] = c1;
+            Cards[firstInd] = c2;
+        }
     }
 }

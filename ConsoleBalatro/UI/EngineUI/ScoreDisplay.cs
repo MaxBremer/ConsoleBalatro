@@ -11,7 +11,7 @@ namespace ConsoleBalatro.UI.EngineUI
 {
     public class ScoreDisplay : TextDisplayPanel
     {
-        public ScoreDisplay() : base(new List<string>(), EngineDisplayGlobals.SCOREDISPLAY_WIDTH_MIN, EngineDisplayGlobals.SCOREDISPLAY_HEIGHT_MIN)
+        public ScoreDisplay() : base(new List<string>(), EngineDisplayConstants.SCOREDISPLAY_WIDTH_MIN, EngineDisplayConstants.SCOREDISPLAY_HEIGHT_MIN)
         {
             ResetTextLines();
             EngineEventHandler.StartListening(new EngineEventListener() { MyAction = OnSelectAction, MyContextType = EventContextType.CardSelect });

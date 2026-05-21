@@ -12,10 +12,10 @@ namespace ConsoleBalatro.UI.EngineUI
         private const int NUM_X_LOC = 0;
         private const int NUM_Y_LOC = 5;
         private int min_width = 0;
-        public CardZoneConsumableDisplay(CardZone zone) : base(zone, 5 + 1, 30)
+        public CardZoneConsumableDisplay(CardZone zone) : base(zone, EngineDisplayConstants.CONSUMABLE_DISPLAY_HEIGHT, EngineDisplayConstants.CONSUMABLE_DISPLAY_WIDTH)
         {
-            xLoc = 70;
-            yLoc = 0;
+            xLoc = EngineDisplayConstants.CONSUMABLE_DISPLAY_XLOC;
+            yLoc = EngineDisplayConstants.CONSUMABLE_DISPLAY_YLOC;
         }
         public override void PreDisplaySetup()
         {

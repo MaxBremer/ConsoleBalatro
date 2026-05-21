@@ -18,6 +18,7 @@ namespace ConsoleBalatro.Engine.Events
         CardSelect,
         CardDiscarded,
         CardDestroyed,
+        CardPositionsSwapping,
         Reroll,
         PackOpen,
         PackSkip,

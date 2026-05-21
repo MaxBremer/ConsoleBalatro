@@ -18,7 +18,7 @@ namespace ConsoleBalatro.UI.EngineUI
             { BlindType.BOSS, "BOSS Blind" },
         };
 
-        public BlindDisplayEntity(BlindType myBlind, int xloc, int yloc) : base(new List<string>(), EngineDisplayGlobals.BLINDDISPLAY_HEIGHT, EngineDisplayGlobals.BLINDDISPLAY_WIDTH)
+        public BlindDisplayEntity(BlindType myBlind, int xloc, int yloc) : base(new List<string>(), EngineDisplayConstants.BLINDDISPLAY_HEIGHT, EngineDisplayConstants.BLINDDISPLAY_WIDTH)
         {
             xLoc = xloc;
             yLoc = yloc;

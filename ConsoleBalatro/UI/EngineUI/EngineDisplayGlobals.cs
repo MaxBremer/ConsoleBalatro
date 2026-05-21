@@ -75,19 +75,6 @@ namespace ConsoleBalatro.UI.EngineUI
         public static BlindDisplayEntity SecondBlindPanel;
         public static BlindDisplayEntity ThirdBlindPanel;
 
-        public const int SCOREDISPLAY_WIDTH_MIN = 16;
-        public const int SCOREDISPLAY_HEIGHT_MIN = 20;
-        public const int SCOREDISPLAY_HARD_X_LOC = 17;
-        public const int SCOREDISPLAY_HARD_Y_LOC = 15;
-
-        public const int MARKETSIDEDISPLAY_WIDTH_MIN = 16;
-        public const int MARKETSIDEDISPLAY_HEIGHT_MIN = 20;
-        public const int MARKETSIDEDISPLAY_HARD_X_LOC = 17;
-        public const int MARKETSIDEDISPLAY_HARD_Y_LOC = 15;
-
-        public const int BLINDDISPLAY_HEIGHT = 18;
-        public const int BLINDDISPLAY_WIDTH = 19;
-
         public static int DisplayRequiredChipsForBlind;
         public static int DisplayTotalCurrentChips;
 
@@ -105,7 +92,6 @@ namespace ConsoleBalatro.UI.EngineUI
 
         public static TextDisplayPanel InfoDisplayPanel;
         public static CardDisplay CardBeingViewed = null;
-        public const int INFO_PANEL_WIDTH = 20;
 
         public static EngineActionAnimation Animation = new EngineActionAnimation();
 
@@ -152,7 +138,7 @@ namespace ConsoleBalatro.UI.EngineUI
         public static void ShowInfoDisplay(string infoToDisplay, string breakChar)
         {
             InfoDisplayPanel.SetLines(infoToDisplay, breakChar);
-            InfoDisplayPanel.AdjustLinesByWrapWidth(INFO_PANEL_WIDTH);
+            InfoDisplayPanel.AdjustLinesByWrapWidth(EngineDisplayConstants.INFO_PANEL_WIDTH);
             InfoDisplayPanel.Visible = true;
             //Also not this funcs responsibility to redraw.
         }
@@ -183,29 +169,29 @@ namespace ConsoleBalatro.UI.EngineUI
             EngineDisplays.Add(BeingPlayedDisplay);
             HandDisplay = new CardZoneHandDisplay(ZoneManager.HandZone);
             EngineDisplays.Add(HandDisplay);
-            MainMarketDisplay = new MarketTemplateDisplay(ZoneManager.MainMarketZone, 7, 50, 20, 9, false);
+            MainMarketDisplay = new MarketTemplateDisplay(ZoneManager.MainMarketZone, EngineDisplayConstants.MAIN_MARKET_HEIGHT, EngineDisplayConstants.MAIN_MARKET_WIDTH, EngineDisplayConstants.MAIN_MARKET_XPOS, EngineDisplayConstants.MAIN_MARKET_YPOS, false);
             EngineDisplays.Add(MainMarketDisplay);
-            VoucherMarketDisplay = new MarketTemplateDisplay(ZoneManager.VoucherMarketZone, 7, 12, 20, 19, false);
+            VoucherMarketDisplay = new MarketTemplateDisplay(ZoneManager.VoucherMarketZone, EngineDisplayConstants.VOUCH_MARKET_HEIGHT, EngineDisplayConstants.VOUCH_MARKET_WIDTH, EngineDisplayConstants.VOUCH_MARKET_XPOS, EngineDisplayConstants.VOUCH_MARKET_YPOS, false);
             EngineDisplays.Add(VoucherMarketDisplay);
-            PackMarketDisplay = new MarketTemplateDisplay(ZoneManager.PackMarketZone, 7, 24, 33, 19, false);
+            PackMarketDisplay = new MarketTemplateDisplay(ZoneManager.PackMarketZone, EngineDisplayConstants.PACK_MARKET_HEIGHT, EngineDisplayConstants.PACK_MARKET_WIDTH, EngineDisplayConstants.PACK_MARKET_XPOS, EngineDisplayConstants.PACK_MARKET_YPOS, false);
             EngineDisplays.Add(PackMarketDisplay);
             ScoreDisplay = new ScoreDisplay();
             EngineDisplays.Add(ScoreDisplay);
-            InfoDisplayPanel = new TextDisplayPanel(new List<string>() { "INFO" }, 20, 28);
-            InfoDisplayPanel.xLoc = 93;
+            InfoDisplayPanel = new TextDisplayPanel(new List<string>() { "INFO" }, EngineDisplayConstants.TEXT_DISPLAY_MINWIDTH, EngineDisplayConstants.TEXT_DISPLAY_MINHEIGHT);
+            InfoDisplayPanel.xLoc = EngineDisplayConstants.TEXT_DISPLAY_XLOC;
             EngineDisplays.Add(InfoDisplayPanel);
-            PackOptionsDisplay = new CardZoneTemplateDisplay(ZoneManager.PackOptionZone, 7, 37, 20, 6, false);
+            PackOptionsDisplay = new CardZoneTemplateDisplay(ZoneManager.PackOptionZone, EngineDisplayConstants.PACK_OPTIONS_HEIGHT, EngineDisplayConstants.PACK_OPTIONS_WIDTH, EngineDisplayConstants.PACK_OPTIONS_XPOS, EngineDisplayConstants.PACK_OPTIONS_YPOS, false);
             EngineDisplays.Add(PackOptionsDisplay);
             MarketSidePanelDisplay = new MarketSideDisplay();
             EngineDisplays.Add(MarketSidePanelDisplay);
 
-            FirstBlindPanel = new BlindDisplayEntity(BlindType.SMALL, 20, 9);
+            FirstBlindPanel = new BlindDisplayEntity(BlindType.SMALL, EngineDisplayConstants.BLIND_PANEL1_XLOC, EngineDisplayConstants.BLIND_PANEL_YLOC);
             EngineDisplays.Add(FirstBlindPanel);
 
-            SecondBlindPanel = new BlindDisplayEntity(BlindType.BIG, 40, 9);
+            SecondBlindPanel = new BlindDisplayEntity(BlindType.BIG, EngineDisplayConstants.BLIND_PANEL2_XLOC, EngineDisplayConstants.BLIND_PANEL_YLOC);
             EngineDisplays.Add(SecondBlindPanel);
 
-            ThirdBlindPanel = new BlindDisplayEntity(BlindType.BOSS, 60, 9);
+            ThirdBlindPanel = new BlindDisplayEntity(BlindType.BOSS, EngineDisplayConstants.BLIND_PANEL3_XLOC, EngineDisplayConstants.BLIND_PANEL_YLOC);
             EngineDisplays.Add(ThirdBlindPanel);
 
             foreach (var dispEnt in EngineDisplays)
@@ -454,8 +440,8 @@ namespace ConsoleBalatro.UI.EngineUI
                 {
                     textDisplay = new AboveCardDisplay(GlobalCardDisplays[gainArgs.SourceOfEmit]);
                     textDisplay.MyOverrideLines.Add(textLine);
-                    textDisplay.OverrideXLoc = SCOREDISPLAY_HARD_X_LOC;
-                    textDisplay.OverrideYLoc = SCOREDISPLAY_HARD_Y_LOC;
+                    textDisplay.OverrideXLoc = EngineDisplayConstants.SCOREDISPLAY_HARD_X_LOC;
+                    textDisplay.OverrideYLoc = EngineDisplayConstants.SCOREDISPLAY_HARD_Y_LOC;
                     EngineInterface.AddEntity(textDisplay);
                 }
 
@@ -518,8 +504,8 @@ namespace ConsoleBalatro.UI.EngineUI
                 {
                     textDisplay = new AboveCardDisplay(GlobalCardDisplays[goldArgs.SourceOfEmit]);
                     textDisplay.MyOverrideLines.Add(textLine);
-                    textDisplay.OverrideXLoc = SCOREDISPLAY_HARD_X_LOC;
-                    textDisplay.OverrideYLoc = SCOREDISPLAY_HARD_Y_LOC;
+                    textDisplay.OverrideXLoc = EngineDisplayConstants.SCOREDISPLAY_HARD_X_LOC;
+                    textDisplay.OverrideYLoc = EngineDisplayConstants.SCOREDISPLAY_HARD_Y_LOC;
                     EngineInterface.AddEntity(textDisplay);
                 }
 

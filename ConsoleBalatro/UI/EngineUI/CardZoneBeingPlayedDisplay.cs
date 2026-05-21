@@ -11,10 +11,10 @@ namespace ConsoleBalatro.UI.EngineUI
 {
     public class CardZoneBeingPlayedDisplay : CardZoneDisplay
     {
-        public CardZoneBeingPlayedDisplay(CardZone zone) : base(zone, 7, 37)//TODO: CONST INT AT LEAST
+        public CardZoneBeingPlayedDisplay(CardZone zone) : base(zone, EngineDisplayConstants.PLAYED_DISPLAY_HEIGHT, EngineDisplayConstants.PLAYED_DISPLAY_WIDTH)
         {
-            xLoc = 20;
-            yLoc = 6;
+            xLoc = EngineDisplayConstants.PLAYED_DISPLAY_XLOC;
+            yLoc = EngineDisplayConstants.PLAYED_DISPLAY_YLOC;
             EngineEventHandler.StartListening(new EngineEventListener() { MyAction = OnScoringHandCalced, MyContextType = EventContextType.HandPlayedCalculated });
         }
 

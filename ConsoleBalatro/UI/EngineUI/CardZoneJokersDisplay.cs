@@ -11,10 +11,10 @@ namespace ConsoleBalatro.UI.EngineUI
     {
         private const int NUM_X_LOC = 0;
         private const int NUM_Y_LOC = 5;
-        public CardZoneJokersDisplay(CardZone zone) : base(zone, 5 + 1, 45)
+        public CardZoneJokersDisplay(CardZone zone) : base(zone, EngineDisplayConstants.JOKER_DISPLAY_HEIGHT, EngineDisplayConstants.JOKER_DISPLAY_WIDTH)
         {
-            xLoc = 20;
-            yLoc = 0;
+            xLoc = EngineDisplayConstants.JOKER_DISPLAY_XLOC;
+            yLoc = EngineDisplayConstants.JOKER_DISPLAY_YLOC;
         }
 
         public override void PreDisplaySetup()

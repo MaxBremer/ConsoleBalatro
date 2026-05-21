@@ -9,7 +9,7 @@ namespace ConsoleBalatro.UI.EngineUI.MarketPanels
 {
     public class MarketSideDisplay : TextDisplayPanel
     {
-        public MarketSideDisplay() : base(new List<string>(), EngineDisplayGlobals.MARKETSIDEDISPLAY_WIDTH_MIN, EngineDisplayGlobals.MARKETSIDEDISPLAY_HEIGHT_MIN)
+        public MarketSideDisplay() : base(new List<string>(), EngineDisplayConstants.MARKETSIDEDISPLAY_WIDTH_MIN, EngineDisplayConstants.MARKETSIDEDISPLAY_HEIGHT_MIN)
         {
             ResetTextLines();
         }

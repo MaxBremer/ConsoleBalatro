@@ -118,7 +118,7 @@ namespace ConsoleBalatro.UI.EngineUI
 
         protected void OnCardZoneChangeAction(EngineEventArgs args)
         {
-            if(args is EngineCardDrawnToZoneArgs cDArgs && args.MyContext.Context == EventContextType.CardDrawnToZone && cDArgs.ZoneDrawnTo == MyCardZone)
+            if (args is EngineCardDrawnToZoneArgs cDArgs && args.MyContext.Context == EventContextType.CardDrawnToZone && cDArgs.ZoneDrawnTo == MyCardZone)
             {
                 /*AddCard(cDArgs.CardBeingDrawn);
                 EngineDisplayGlobals.Redraw();*/
@@ -127,7 +127,7 @@ namespace ConsoleBalatro.UI.EngineUI
                     AddCard(cDArgs.CardBeingDrawn);
                 }, 150);
             }
-            else if(args is EngineCardDiscardedFromZoneArgs cDiscArgs && args.MyContext.Context == EventContextType.CardDiscarded && cDiscArgs.ZoneCardIsLeaving == MyCardZone)
+            else if (args is EngineCardDiscardedFromZoneArgs cDiscArgs && args.MyContext.Context == EventContextType.CardDiscarded && cDiscArgs.ZoneCardIsLeaving == MyCardZone)
             {
                 /*RemoveCard(cDiscArgs.CardBeingDiscarded);
                 EngineDisplayGlobals.Redraw();*/
@@ -135,6 +135,19 @@ namespace ConsoleBalatro.UI.EngineUI
                 {
                     RemoveCard(cDiscArgs.CardBeingDiscarded);
                 }, 150);
+            }
+            else if (args is EngineCardPositionsSwappingArgs posArgs && args.MyContext.Context == EventContextType.CardPositionsSwapping && posArgs.ZoneOfSwap == MyCardZone)
+            {
+                
+                EngineDisplayGlobals.CacheAnimationAction(_ =>
+                {
+                    var firstInd = posArgs.Card1OldIndex;
+                    var secondInd = posArgs.Card2OldIndex;
+                    CardList[secondInd] = posArgs.Card1;
+                    CardList[firstInd] = posArgs.Card2;
+                    SetCardPositions();
+                    PreDisplaySetup();
+                }, 100);
             }
         }
     }

@@ -1,4 +1,5 @@
 ﻿using ConsoleBalatro.Engine.Cards.Enums;
+using ConsoleBalatro.Engine.Events;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -16,6 +17,9 @@ namespace ConsoleBalatro.Engine.Cards.Jokers
         public PlayedHandType HandTypeData;
         public Rank SpecificCardRank;
         public Suit SpecificCardSuit;
+        public List<string> StringList = new();
+        public List<EngineEventListener> CopiedListeners = new();
+        public Card? CardData;
 
         public string GetDataString()
         {
@@ -35,13 +39,17 @@ namespace ConsoleBalatro.Engine.Cards.Jokers
                     return SpecificCardSuit.ToString();
                 case JokerDataType.RANK:
                     return SpecificCardRank.ToString();
+                case JokerDataType.STRINGLIST:
+                    return string.Join(", ", StringList);
+                case JokerDataType.CARD:
+                    return CardData?.ToString() ?? "No Card Data";
                 default:
                     return "Unknown Data Type";
             }
         }
 
-        public JokerData MakeCopy() {  
-            return new JokerData()
+        public JokerData MakeCopy() {
+            var ret = new JokerData
             {
                 MyDataType = MyDataType,
                 IntData = IntData,
@@ -49,8 +57,11 @@ namespace ConsoleBalatro.Engine.Cards.Jokers
                 BoolData = BoolData,
                 HandTypeData = HandTypeData,
                 SpecificCardRank = SpecificCardRank,
-                SpecificCardSuit = SpecificCardSuit
+                SpecificCardSuit = SpecificCardSuit,
+                StringList = [.. StringList],
+                CardData = CardData,
             };
+            return ret;
         }
     }
 }

@@ -16,6 +16,11 @@ namespace ConsoleBalatro.Engine.Cards.Jokers
     public static class JokerDb
     {
         public static string DEFAULT_JOKER_NAME = "JOLLY JOKER";
+        public static HashSet<string> JokersNotCopyable = new()
+        {
+            "INVISIBLE JOKER"
+        };
+
 
         //Costs of jokers... should prob just include in the db.
         //Or maybe better to separate this stuff out, idk.
@@ -1441,7 +1446,7 @@ namespace ConsoleBalatro.Engine.Cards.Jokers
                             var common = JokerDb.GetRandomJokerOfRarity(JokerRarity.COMMON); 
                             if (ZoneManager.JokerZone.HasRoom && common != null) 
                                 ZoneManager.JokerZone.AddCard(JokerDb.GenerateJokerCard(common)); 
-                            //TODO: Currently generates. Should prob draw from pool??
+                            //TODO: CHANGE TO MARKET PULL MANAGER CALLS
                         } 
                     } 
                 });
@@ -1630,7 +1635,7 @@ namespace ConsoleBalatro.Engine.Cards.Jokers
                     { 
                         if (args is EngineHandPlayArgs t && t.CardsSelected.Any(x => EngineUtils.isFace(x)))
                         {
-                            foreach (var card in t.CardsSelected.Where(x => EngineUtils.isFace(x)))
+                            foreach (var card in t.CardsSelected.Where(x => EngineUtils.isFace(x) && x.Enhancement != Enhancement.GOLD))
                             {
                                 card.SetEnhancementOfficial(Enhancement.GOLD);
                             }
@@ -2476,7 +2481,7 @@ namespace ConsoleBalatro.Engine.Cards.Jokers
                 });
                 return ret;
             } },
-            { "BLUEPRINT", c => BasicDataBlock("Blueprint", "Placeholder: Blueprint special-case functionality not yet implemented") },
+            { "BLUEPRINT", c => BuildCopyJoker("Blueprint", c, GetJokerRightOfCard, "Joker to the right") },
             { "WEE JOKER", c =>
             {
                 var ret = BasicDataBlock("Wee Joker");
@@ -2683,7 +2688,7 @@ namespace ConsoleBalatro.Engine.Cards.Jokers
                 });
                 return ret;
             } },
-            { "BRAINSTORM", c => BasicDataBlock("Brainstorm", "TODO: Placeholder implementation.") },
+            { "BRAINSTORM", c => BuildCopyJoker("Brainstorm", c, GetLeftmostJoker, "leftmost Joker") },
             { "SATELLITE", c =>
             {
                 var ret = BasicDataBlock("Satellite");
@@ -2764,6 +2769,13 @@ namespace ConsoleBalatro.Engine.Cards.Jokers
                 };
                 ret.Listeners.Add(new EngineEventListener() { MyContextType = EventContextType.StartMarket, MyAction = _ => applyCosts() });
                 ret.Listeners.Add(new EngineEventListener() { MyContextType = EventContextType.Reroll, MyAction = _ => applyCosts() });
+                ret.OnJokerRemovalEffs.Add(() =>
+                {
+                    foreach (var card in ZoneManager.MainMarketZone.Cards.Where(x => x.isConsumable && x.ConsumableData.Type == ConsumableType.PLANET))
+                        card.BuyCostOverride = null;
+                    foreach (var card in ZoneManager.PackMarketZone.Cards.Where(x => x.MyPackType == PackType.BASIC_PLANET || x.MyPackType == PackType.JUMBO_PLANET || x.MyPackType == PackType.MEGA_PLANET))
+                        card.BuyCostOverride = null;
+                });
                 return ret;
             } },
             { "BURNT JOKER", c =>
@@ -3058,6 +3070,104 @@ namespace ConsoleBalatro.Engine.Cards.Jokers
                 }
             });
             return ret;
+        }
+
+        private static JokerCardDataBlock BuildCopyJoker(string name, Card self, Func<Card, Card?> copyTargetGetter, string copyTargetString)
+        {
+            var ret = BasicDataBlock(name);
+            //This also serves as a flag for copy jokers
+            ret.DataDict.Add("TARGETCOPYCARD", new JokerData() { MyDataType = JokerDataType.CARD });
+            ret.DataDict.Add("COPIEDLISTENERS", new JokerData() { MyDataType = JokerDataType.COPIEDLISTENERS });
+
+            Func<Card?> curTarget = () => copyTargetGetter(self);
+            Func<bool> validTarget = () => curTarget() != null && !JokersNotCopyable.Contains(curTarget()!.JokerData.DBName);
+
+            ret.DescriptionBuilder = _ =>
+            {
+                var target = curTarget();
+                if (target == null)
+                    return $"Copies ability of {copyTargetString} (Current target: none)";
+                var validTxt = validTarget() ? "VALID" : "INVALID";
+                return $"Copies ability of {copyTargetString} (Current target: {target.JokerData.JokerName}, {validTxt})";
+            };
+
+            Action refreshCopy = () =>
+            {
+                var target = curTarget();
+                ret.DataDict["TARGETCOPYCARD"].CardData = target;
+                var newData = target != null && validTarget() ? target.JokerData : null;
+                ReplaceJokerEffectsAndData(self, ret, newData);
+            };
+
+            ret.Listeners.Add(new EngineEventListener()
+            {
+                MyContextType = EventContextType.CardPositionsSwapping,
+                MyAction = args =>
+                {
+                    if (args is EngineCardPositionsSwappingArgs p && p.ZoneOfSwap == ZoneManager.JokerZone)
+                        refreshCopy();
+                }
+            });
+            ret.Listeners.Add(new EngineEventListener()
+            {
+                MyContextType = EventContextType.CardDrawnToZone,
+                MyAction = args =>
+                {
+                    if (args is EngineCardDrawnToZoneArgs d && d.ZoneDrawnTo == ZoneManager.JokerZone)
+                        refreshCopy();
+                }
+            });
+            ret.Listeners.Add(new EngineEventListener()
+            {
+                MyContextType = EventContextType.CardDiscarded,
+                MyAction = args =>
+                {
+                    if (args is EngineCardDiscardedFromZoneArgs d && d.ZoneCardIsLeaving == ZoneManager.JokerZone)
+                        refreshCopy();
+                }
+            });
+            ret.OnJokerGainEffs.Add(refreshCopy);
+            ret.OnJokerRemovalEffs.Add(() => ReplaceJokerEffectsAndData(self, ret, null));
+
+            return ret;
+        }
+
+        private static Card? GetJokerRightOfCard(Card c)
+        {
+            if (c.MyZone != ZoneManager.JokerZone || !ZoneManager.JokerZone.Cards.Contains(c))
+                return null;
+            var i = ZoneManager.JokerZone.Cards.IndexOf(c);
+            return i >= 0 && i + 1 < ZoneManager.JokerZone.Cards.Count ? ZoneManager.JokerZone.Cards[i + 1] : null;
+        }
+
+        private static Card? GetLeftmostJoker(Card _)
+        {
+            return ZoneManager.JokerZone.Cards.FirstOrDefault();
+        }
+
+        private static void ReplaceJokerEffectsAndData(Card self, JokerCardDataBlock selfDataBlock, JokerCardDataBlock? sourceDataBlock)
+        {
+
+            var toRemoveList = selfDataBlock.DataDict.Keys.Where(k => k != "TARGETCOPYCARD" && k != "COPIEDLISTENERS").ToList();
+            foreach (var item in toRemoveList)
+            {
+                selfDataBlock.DataDict.Remove(item);
+            }
+            foreach (var list in selfDataBlock.DataDict["COPIEDLISTENERS"].CopiedListeners)
+            {
+                EngineEventHandler.StopListening(list);
+            }
+            selfDataBlock.Listeners = selfDataBlock.Listeners
+                .Where(x => !selfDataBlock.DataDict["COPIEDLISTENERS"].CopiedListeners.Contains(x))
+                .ToList();
+            selfDataBlock.DataDict["COPIEDLISTENERS"].CopiedListeners.Clear();
+
+            if (sourceDataBlock != null)
+            {
+                sourceDataBlock.CopyDataDictTo(selfDataBlock, clearFirst: false);
+                foreach (var listener in sourceDataBlock.Listeners)
+                    selfDataBlock.Listeners.Add(listener);
+            }
         }
 
     }

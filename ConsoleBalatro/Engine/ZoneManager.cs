@@ -14,7 +14,7 @@ namespace ConsoleBalatro.Engine
     public static class ZoneManager
     {
         //Constantly visible zones
-        public static CardZone JokerZone;
+        public static JokerZone JokerZone;
         public static CardZone ConsumableZone;
         public static CardZone TagZone;
 

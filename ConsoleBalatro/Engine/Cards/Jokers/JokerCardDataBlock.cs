@@ -19,6 +19,8 @@ namespace ConsoleBalatro.Engine.Cards.Jokers
         public List<EngineEventListener> Listeners = new();
         public Dictionary<string, JokerData> DataDict = new();
 
+        public JokerCardDataBlock HiddenCopiedData = null;
+
         public List<Action> OnJokerGainEffs = new();
         public List<Action> OnJokerRemovalEffs = new();
 
@@ -32,9 +34,10 @@ namespace ConsoleBalatro.Engine.Cards.Jokers
         public bool isTag = false;
         public TagDataBlock TagData;
 
-        public void CopyDataDictTo(JokerCardDataBlock target)
+        public void CopyDataDictTo(JokerCardDataBlock target, bool clearFirst = true)
         {
-            target.DataDict.Clear();
+            if (clearFirst)
+                target.DataDict.Clear();
             foreach (var k in DataDict.Keys)
             {
                 target.DataDict.Add(k, DataDict[k].MakeCopy());

@@ -15,5 +15,8 @@ namespace ConsoleBalatro.Engine.Cards.Jokers
         SPECIFICCARD,
         SUIT,
         RANK,
+        STRINGLIST,
+        CARD,
+        COPIEDLISTENERS,
     }
 }

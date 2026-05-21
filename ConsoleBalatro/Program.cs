@@ -1,5 +1,6 @@
 ﻿// See https://aka.ms/new-console-template for more information
 using ConsoleBalatro.Engine;
+using ConsoleBalatro.Engine.Cards.Consumables;
 using ConsoleBalatro.Engine.Cards.Enums;
 using ConsoleBalatro.Engine.Cards.Jokers;
 using ConsoleBalatro.Engine.Market;
@@ -43,8 +44,8 @@ class Program
         ZoneManager.JokerZone.AddCard(JokerDb.GenerateJokerCard("CREDIT CARD"));
 
         //Test consumables
-        ZoneManager.ConsumableZone.DrawTargetFrom(MarketOptionsManager.MarketPoolsToDrawFrom[BuyItemType.TAROT_CARD], MarketOptionsManager.MarketPoolsToDrawFrom[BuyItemType.TAROT_CARD].Cards.Where(x => x.ConsumableData.ConsumableName == "The Emperor").First());
-        ZoneManager.ConsumableZone.DrawTargetFrom(MarketOptionsManager.MarketPoolsToDrawFrom[BuyItemType.TAROT_CARD], MarketOptionsManager.MarketPoolsToDrawFrom[BuyItemType.TAROT_CARD].Cards.Where(x => x.ConsumableData.ConsumableName == "The World").First());
+        ZoneManager.ConsumableZone.AddCard(ConsumableManager.MakeTarotCard("EMPEROR"));
+        ZoneManager.ConsumableZone.AddCard(ConsumableManager.MakeTarotCard("WORLD"));
         ZoneManager.ConsumableZone.Cards[0].Edition = Edition.HOLOGRAPHIC;
 
         Globals.EmitMoneyGain(999, null);

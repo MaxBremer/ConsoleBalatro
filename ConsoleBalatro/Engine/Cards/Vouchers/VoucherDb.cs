@@ -423,11 +423,12 @@ namespace ConsoleBalatro.Engine.Cards.Vouchers
                             if(args is EngineOddsEstablishedForPackArgs packArgs && packArgs.PackDataBeingOpened.RelevantBuyItemType == BuyItemType.PLANET_CARD)
                             {
                                 var targetHand = ScoreHandler.MostPlayedHand;
-                                var targetCard = MarketOptionsManager.MarketPoolsToDrawFrom[BuyItemType.PLANET_CARD].Cards.FirstOrDefault(x => x.ConsumableData.PlanetHandType == targetHand);
-                                if(targetCard != null)
-                                {
-                                    ZoneManager.PackOptionZone.DrawTargetFrom(MarketOptionsManager.MarketPoolsToDrawFrom[BuyItemType.PLANET_CARD], targetCard);
-                                }
+                                ZoneManager.PackOptionZone.AddCard(ConsumableManager.MakePlanetCard(targetHand));//TODO: Determine whether telescope can create dupes of owned.
+                                //var targetCard = MarketOptionsManager.MarketPoolsToDrawFrom[BuyItemType.PLANET_CARD].Cards.FirstOrDefault(x => x.ConsumableData.PlanetHandType == targetHand);
+                                //if(targetCard != null)
+                                //{
+                                //    ZoneManager.PackOptionZone.DrawTargetFrom(MarketOptionsManager.MarketPoolsToDrawFrom[BuyItemType.PLANET_CARD], targetCard);
+                                //}
                             }
                         }
                     };
@@ -557,14 +558,25 @@ namespace ConsoleBalatro.Engine.Cards.Vouchers
                     var ret = VoucherDatablock("Tarot Merchant", nextVoucher: "TAROT TYCOON");
                     ret.DescriptionBuilder = _ => "Tarot cards appear 2X more frequently in the shop.";
                     //NOTE: Lying description, blah blah blah, look above.
-                    ret.OnJokerGainEffs.Add(() =>
+                    ret.Listeners.Add(new EngineEventListener()
                     {
-                        MarketOptionsManager.MainMarketWeights[BuyItemType.TAROT_CARD] *= 2;
+                        MyContextType = EventContextType.MarketTypeBeingChosen,
+                        MyAction = args =>
+                        {
+                            if(args is EngineMarketTypeBeingChosenArgs mArgs && mArgs.WeightsBeingRolled.ContainsKey(BuyItemType.TAROT_CARD))
+                            {
+                                mArgs.WeightsBeingRolled[BuyItemType.TAROT_CARD] *= 2;
+                            }
+                        }
                     });
-                    ret.OnJokerRemovalEffs.Add(() =>
-                    {
-                        MarketOptionsManager.MainMarketWeights[BuyItemType.TAROT_CARD] /= 2;
-                    });
+                    //ret.OnJokerGainEffs.Add(() =>
+                    //{
+                    //    MarketOptionsManager.MainMarketWeights[BuyItemType.TAROT_CARD] *= 2;
+                    //});
+                    //ret.OnJokerRemovalEffs.Add(() =>
+                    //{
+                    //    MarketOptionsManager.MainMarketWeights[BuyItemType.TAROT_CARD] /= 2;
+                    //});
 
                     return ret;
                 }
@@ -576,14 +588,25 @@ namespace ConsoleBalatro.Engine.Cards.Vouchers
                     var ret = VoucherDatablock("Tarot Tycoon", prevVoucher: "TAROT MERCHANT");
                     ret.DescriptionBuilder = _ => "Tarot cards appear 4X more frequently in the shop.";
                     //NOTE: Lying description, blah blah blah, look above.
-                    ret.OnJokerGainEffs.Add(() =>
+                    ret.Listeners.Add(new EngineEventListener()
                     {
-                        MarketOptionsManager.MainMarketWeights[BuyItemType.TAROT_CARD] *= 2;
+                        MyContextType = EventContextType.MarketTypeBeingChosen,
+                        MyAction = args =>
+                        {
+                            if(args is EngineMarketTypeBeingChosenArgs mArgs && mArgs.WeightsBeingRolled.ContainsKey(BuyItemType.TAROT_CARD))
+                            {
+                                mArgs.WeightsBeingRolled[BuyItemType.TAROT_CARD] *= 2;
+                            }
+                        }
                     });
-                    ret.OnJokerRemovalEffs.Add(() =>
-                    {
-                        MarketOptionsManager.MainMarketWeights[BuyItemType.TAROT_CARD] /= 2;
-                    });
+                    //ret.OnJokerGainEffs.Add(() =>
+                    //{
+                    //    MarketOptionsManager.MainMarketWeights[BuyItemType.TAROT_CARD] *= 2;
+                    //});
+                    //ret.OnJokerRemovalEffs.Add(() =>
+                    //{
+                    //    MarketOptionsManager.MainMarketWeights[BuyItemType.TAROT_CARD] /= 2;
+                    //});
 
                     return ret;
                 }
@@ -595,14 +618,25 @@ namespace ConsoleBalatro.Engine.Cards.Vouchers
                     var ret = VoucherDatablock("Planet Merchant", nextVoucher: "PLANET TYCOON");
                     ret.DescriptionBuilder = _ => "Planet cards appear 2X more frequently in the shop.";
                     //NOTE: Lying description, blah blah blah, look above.
-                    ret.OnJokerGainEffs.Add(() =>
+                    ret.Listeners.Add(new EngineEventListener()
                     {
-                        MarketOptionsManager.MainMarketWeights[BuyItemType.PLANET_CARD] *= 2;
+                        MyContextType = EventContextType.MarketTypeBeingChosen,
+                        MyAction = args =>
+                        {
+                            if(args is EngineMarketTypeBeingChosenArgs mArgs && mArgs.WeightsBeingRolled.ContainsKey(BuyItemType.PLANET_CARD))
+                            {
+                                mArgs.WeightsBeingRolled[BuyItemType.PLANET_CARD] *= 2;
+                            }
+                        }
                     });
-                    ret.OnJokerRemovalEffs.Add(() =>
-                    {
-                        MarketOptionsManager.MainMarketWeights[BuyItemType.PLANET_CARD] /= 2;
-                    });
+                    //ret.OnJokerGainEffs.Add(() =>
+                    //{
+                    //    MarketOptionsManager.MainMarketWeights[BuyItemType.PLANET_CARD] *= 2;
+                    //});
+                    //ret.OnJokerRemovalEffs.Add(() =>
+                    //{
+                    //    MarketOptionsManager.MainMarketWeights[BuyItemType.PLANET_CARD] /= 2;
+                    //});
 
                     return ret;
                 }
@@ -614,14 +648,25 @@ namespace ConsoleBalatro.Engine.Cards.Vouchers
                     var ret = VoucherDatablock("Planet Tycoon", prevVoucher: "PLANET MERCHANT");
                     ret.DescriptionBuilder = _ => "Planet cards appear 4X more frequently in the shop.";
                     //NOTE: Lying description, blah blah blah, look above.
-                    ret.OnJokerGainEffs.Add(() =>
+                    ret.Listeners.Add(new EngineEventListener()
+                    {
+                        MyContextType = EventContextType.MarketTypeBeingChosen,
+                        MyAction = args =>
+                        {
+                            if(args is EngineMarketTypeBeingChosenArgs mArgs && mArgs.WeightsBeingRolled.ContainsKey(BuyItemType.PLANET_CARD))
+                            {
+                                mArgs.WeightsBeingRolled[BuyItemType.PLANET_CARD] *= 2;
+                            }
+                        }
+                    });
+                    /*ret.OnJokerGainEffs.Add(() =>
                     {
                         MarketOptionsManager.MainMarketWeights[BuyItemType.PLANET_CARD] *= 2;
                     });
                     ret.OnJokerRemovalEffs.Add(() =>
                     {
                         MarketOptionsManager.MainMarketWeights[BuyItemType.PLANET_CARD] /= 2;
-                    });
+                    });*/
 
                     return ret;
                 }
@@ -633,14 +678,25 @@ namespace ConsoleBalatro.Engine.Cards.Vouchers
                     var ret = VoucherDatablock("Magic Trick", nextVoucher: "ILLUSION");
                     ret.DescriptionBuilder = _ => "Playing cards can be purchased from the shop.";
                     //NOTE: Lying description, blah blah blah, look above.
-                    ret.OnJokerGainEffs.Add(() =>
+                    ret.Listeners.Add(new EngineEventListener()
+                    {
+                        MyContextType = EventContextType.MarketTypeBeingChosen,
+                        MyAction = args =>
+                        {
+                            if(args is EngineMarketTypeBeingChosenArgs mArgs)
+                            {
+                                mArgs.WeightsBeingRolled.Add(BuyItemType.PLAYING_CARD, 5);
+                            }
+                        }
+                    });
+                    /*ret.OnJokerGainEffs.Add(() =>
                     {
                         MarketOptionsManager.MainMarketWeights.Add(BuyItemType.PLAYING_CARD, 5);
                     });
                     ret.OnJokerRemovalEffs.Add(() =>
                     {
                         MarketOptionsManager.MainMarketWeights.Remove(BuyItemType.PLAYING_CARD);
-                    });
+                    });*/
 
                     return ret;
                 }
@@ -685,7 +741,7 @@ namespace ConsoleBalatro.Engine.Cards.Vouchers
         }
 
         //Generate and return a fresh Card object that is the named Voucher (DB NAME)
-        public static Card GenerateVoucherCard(string VoucherName)
+        public static Card MakeVoucherCard(string VoucherName)
         {
             var c = new Card();
             MakeCardVoucher(c, VoucherName);

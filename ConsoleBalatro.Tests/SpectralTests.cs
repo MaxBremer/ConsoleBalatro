@@ -266,7 +266,7 @@ namespace ConsoleBalatro.Tests
         public void ActivateConsumable_Soul_CorrectlyCreatesLegendary()
         {
             ResetToBlindSelection();
-            AddSpectral("The Soul");
+            AddSpectral("SOUL");
             Assert.Single(ZoneManager.ConsumableZone.Cards);
             Assert.Empty(ZoneManager.JokerZone.Cards);
             var record = CaptureCardChangeEvents();

@@ -85,6 +85,7 @@ namespace ConsoleBalatro.Engine.Events
         TagActivatedInstantly,
 
         RandomRollHappening,
+        MarketTypeBeingChosen,
 
         LuckyCardSuccessfulTrigger,
 

@@ -273,21 +273,35 @@ namespace ConsoleBalatro.Tests
         public void AddVoucher_TarotMerchantAndTycoon_CorrectlyIncreaseOdds()
         {
             ResetToBlindSelection(returnVoucher: true);
-            TestIncreasingIntVouchers(() => MarketOptionsManager.MainMarketWeights[BuyItemType.TAROT_CARD], "Tarot Merchant", "Tarot Tycoon", firstIncrement: 5, secondIncrement: 15);
+            TestIncreasingIntVouchers(() => GetIntArgOfRoll(BuyItemType.TAROT_CARD), "Tarot Merchant", "Tarot Tycoon", firstIncrement: 5, secondIncrement: 15);
         }
 
         [Fact]
         public void AddVoucher_PlanetMerchantAndTycoon_CorrectlyIncreaseOdds()
         {
             ResetToBlindSelection(returnVoucher: true);
-            TestIncreasingIntVouchers(() => MarketOptionsManager.MainMarketWeights[BuyItemType.PLANET_CARD], "Planet Merchant", "Planet Tycoon", firstIncrement: 5, secondIncrement: 15);
+            TestIncreasingIntVouchers(() => GetIntArgOfRoll(BuyItemType.PLANET_CARD), "Planet Merchant", "Planet Tycoon", firstIncrement: 5, secondIncrement: 15);
         }
 
         [Fact]
         public void AddVoucher_MagicTrick_CorrectlyAllowsCardPurchases()
         {
             ResetToBlindSelection(returnVoucher: true);
-            TestIncreasingIntVouchers(() => MarketOptionsManager.MainMarketWeights.TryGetValue(BuyItemType.PLAYING_CARD, out int outcome) ? outcome : 0, "Magic Trick", "Illusion", firstIncrement: 5, secondIncrement: 5);
+            TestIncreasingIntVouchers(() => GetIntArgOfRoll(BuyItemType.PLAYING_CARD), "Magic Trick", "Illusion", firstIncrement: 5, secondIncrement: 5);
+        }
+
+        private int GetIntArgOfRoll(BuyItemType itemType)
+        {
+            var args = new EngineMarketTypeBeingChosenArgs
+            {
+                WeightsBeingRolled = MarketPullManager.MainMarketWeights.ToDictionary(),
+                MyContext = new()
+                {
+                    Context = EventContextType.MarketTypeBeingChosen,
+                }
+            };
+            EngineEventHandler.TriggerEvent(args);
+            return args.WeightsBeingRolled.TryGetValue(itemType, out int outcome) ? outcome : 0;
         }
 
         [Fact]

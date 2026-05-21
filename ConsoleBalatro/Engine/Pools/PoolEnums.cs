@@ -19,11 +19,20 @@ namespace ConsoleBalatro.Engine.Pools
 
     public enum GenerationSource
     {
+        Market,
+        GenericJoker,
         Shop,
         Pack,
         SoulCard,
         JudgementCard,
-        TopUpTag,
+        Tag,
+        UncommonTag,
+        RareTag,
         RiffRaffJoker,
+        HighPriestessCard,
+        EmperorCard,
+        PurpleSeal,
+        WraithCard,
+        TopUpTag,
     }
 }

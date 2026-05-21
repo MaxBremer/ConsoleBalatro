@@ -132,6 +132,11 @@ namespace ConsoleBalatro.UI.EngineUI.Controls
                 EngineDisplayGlobals.Redraw();
             });
 
+            ret.AvailableActions.Add(ConsoleKey.G, _ =>
+            {
+                Globals.RequiredChipsForCurrentBlind = 1;//debug button
+            });
+
             foreach (var n in numKeyList)
             {
                 ret.AvailableActions.Add(n, BuildActionForNumKey(n));

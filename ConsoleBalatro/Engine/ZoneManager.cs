@@ -223,6 +223,12 @@ namespace ConsoleBalatro.Engine
         {
             DestroyCard(c, c.MyZone);
         }
+
+        public static void DeleteCard(Card c)
+        {
+            if (c.MyZone != null)
+                c.MyZone.RemoveCard(c);
+        }
         public static List<Card> GetFullDeckCards()
         {
             var ret = new List<Card>();

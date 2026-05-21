@@ -4,6 +4,7 @@ using ConsoleBalatro.Engine.Cards.Jokers;
 using ConsoleBalatro.Engine.Events;
 using ConsoleBalatro.Engine.Events.Args;
 using ConsoleBalatro.Engine.Market;
+using ConsoleBalatro.Engine.Pools;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -64,7 +65,8 @@ namespace ConsoleBalatro.Engine.Cards.Tags
             {
                 for (int i = 0; i < 2 && ZoneManager.JokerZone.HasRoom; i++)
                     {
-                        var commonJoker = MarketOptionsManager.PullRandomJokerFromPool(JokerRarity.COMMON, removeFromPool: true);
+                        //var commonJoker = MarketOptionsManager.PullRandomJokerFromPool(JokerRarity.COMMON, removeFromPool: true);
+                        var commonJoker = MarketPullManager.PickMarketCard(BuyItemType.JOKER, source: GenerationSource.TopUpTag);
                         if (commonJoker == null)
                             break;
                         ZoneManager.JokerZone.AddCard(commonJoker, invisibleAdd: false);
@@ -94,7 +96,8 @@ namespace ConsoleBalatro.Engine.Cards.Tags
                 jdb.DescriptionBuilder = _ => "Adds a Voucher to the next Shop";
                 jdb.TagData.Activate = _ =>
                 {
-                    MarketOptionsManager.DrawMarketItem(BuyItemType.VOUCHER, ZoneManager.VoucherMarketZone, overrideSpaceLimits: true);
+                    MarketPullManager.DrawMarketItem(BuyItemType.VOUCHER, ZoneManager.VoucherMarketZone, overrideSpaceLimits: true, source: GenerationSource.GenericJoker);
+                    //MarketOptionsManager.DrawMarketItem(BuyItemType.VOUCHER, ZoneManager.VoucherMarketZone, overrideSpaceLimits: true);
                 };
                 return jdb;
             } },
@@ -211,12 +214,13 @@ namespace ConsoleBalatro.Engine.Cards.Tags
                 //TODO: TECHNICALLY THIS IS NOT CORRECT.
                 //CURRENTLY DOES: AT START OF MARKET, BEFORE POPULATION, DRAW A JOKER OF CORRECT REQUIREMENTS.
                 //SHOULD DO: WHEN A JOKER IS NEXT DRAWN TO MARKET, SET ITS EDITION AND OVERRIDE COST.
-                var toAdd = MarketOptionsManager.PullRandomJokerFromPool(null);
+                var toAdd = MarketPullManager.PickMarketCard(BuyItemType.JOKER, GenerationSource.Tag);
                 if (toAdd == null)
                     return;
                 toAdd.SetEditionOfficial(edition);
                 toAdd.BuyCostOverride = 0;
-                MarketOptionsManager.DrawTargetMarketItem(BuyItemType.JOKER, ZoneManager.MainMarketZone, toAdd);
+                ZoneManager.MainMarketZone.AddCard(toAdd);
+                //MarketOptionsManager.DrawTargetMarketItem(BuyItemType.JOKER, ZoneManager.MainMarketZone, toAdd);
             };
             jokerDataBlock.DescriptionBuilder = _ => "The next base edition Joker you find in a Shop becomes " + edition.ToString() + " " + EngineUtils.EditionDescriptors[edition] + " and free.";
             return jokerDataBlock;
@@ -224,16 +228,19 @@ namespace ConsoleBalatro.Engine.Cards.Tags
 
         private static JokerCardDataBlock BuildRarityShopTag(string name, JokerRarity rarity, Card c)
         {
+            var targetSource = rarity == JokerRarity.RARE ? GenerationSource.RareTag : GenerationSource.UncommonTag;
             var jokerDataBlock = PrepBlockForTag(name, c);
             jokerDataBlock.TagData.EventTypesTrigger.Add(EventContextType.StartMarket);
             jokerDataBlock.TagData.DoTrigger = (_, _) => ZoneManager.MainMarketZone.HasRoom;
             jokerDataBlock.TagData.Activate = _ =>
             {
-                var toAdd = MarketOptionsManager.PullRandomJokerFromPool(rarity);
+                //var toAdd = MarketOptionsManager.PullRandomJokerFromPool(rarity);
+                var toAdd = MarketPullManager.PickMarketCard(BuyItemType.JOKER, targetSource);
                 if (toAdd == null)
                     return;
                 toAdd.BuyCostOverride = 0;
-                MarketOptionsManager.DrawTargetMarketItem(BuyItemType.JOKER, ZoneManager.MainMarketZone, toAdd);
+                ZoneManager.MainMarketZone.AddCard(toAdd);
+                //MarketOptionsManager.DrawTargetMarketItem(BuyItemType.JOKER, ZoneManager.MainMarketZone, toAdd);
             };
             jokerDataBlock.DescriptionBuilder = _ => "The next shop will have a free " + rarity.ToString() + " Joker.";
             return jokerDataBlock;

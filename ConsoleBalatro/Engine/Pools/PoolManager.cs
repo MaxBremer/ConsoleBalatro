@@ -28,6 +28,7 @@ namespace ConsoleBalatro.Engine.Pools
         public static Dictionary<string, RollableDefinition> JokerPool = new Dictionary<string, RollableDefinition>();
         public static Dictionary<string, RollableDefinition> PackPool = new Dictionary<string, RollableDefinition>();
         public static Dictionary<string, RollableDefinition> VoucherPool = new Dictionary<string, RollableDefinition>();
+        public static Dictionary<string, RollableDefinition> PlayingCardPool = new Dictionary<string, RollableDefinition>();
 
         public static List<IMarketPoolRule> Rules = new List<IMarketPoolRule>();
 
@@ -45,6 +46,7 @@ namespace ConsoleBalatro.Engine.Pools
             JokerPool.Clear();
             PackPool.Clear();
             VoucherPool.Clear();
+            PlayingCardPool.Clear();
 
             foreach (var tc in ConsumableManager.TarotNames)
             {
@@ -77,6 +79,15 @@ namespace ConsoleBalatro.Engine.Pools
             {
                 VoucherPool.Add(v, new VoucherRollableDefinition(v));
             }
+
+            foreach (var rankS in new List<string> { "A", "K", "Q", "J", "1", "9", "8", "7", "6", "5", "4", "3", "2"})
+            {
+                foreach (var suitS in new List<string> { "S", "C", "H", "D"})
+                {
+                    var c = rankS + suitS;
+                    PlayingCardPool.Add(c, new PlayingCardRollableDefinition() { Id = c });
+                }
+            }
         }
 
         public static void InitializeGlobalPoolRules()
@@ -84,6 +95,9 @@ namespace ConsoleBalatro.Engine.Pools
             Rules.Clear();
             Rules.Add(new NoOwnedDuplicatesRule());
             Rules.Add(new ShowmanMarketRule());
+            Rules.Add(new JokerForcedRarityRule());
+            Rules.Add(new JokerNoLegosRule());
+            Rules.Add(new VoucherPoolRules());
         }
 
         public static RollableDefinition RollSingle(ContentRollRequest request)
@@ -124,6 +138,7 @@ namespace ConsoleBalatro.Engine.Pools
                 ItemPool.Joker => JokerPool,
                 ItemPool.Pack => PackPool,
                 ItemPool.Voucher => VoucherPool,
+                ItemPool.PlayingCard => PlayingCardPool,
                 _ => throw new ArgumentException("Invalid content pool specified.")
             };
             if (pool.Count == 0)
@@ -144,7 +159,7 @@ namespace ConsoleBalatro.Engine.Pools
 
             foreach (var def in pool.Values)
             {
-                if((!request.Batch.AllowDuplicateResultsInSameBatch) && request.Batch.GeneratedIds.Contains(def.Id))
+                if((request.Batch != null && !request.Batch.AllowDuplicateResultsInSameBatch) && request.Batch.GeneratedIds.Contains(def.Id))
                     continue;
                 if(!def.IsEligible(eligibilityContext))
                     continue;

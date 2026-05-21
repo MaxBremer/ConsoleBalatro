@@ -29,7 +29,8 @@ namespace ConsoleBalatro.Engine.Market
             });
         }
 
-        public static void FillMainMarket() => MarketOptionsManager.DrawItemsByMainMarketOddsUntilFull(ZoneManager.MainMarketZone, true);
+        //public static void FillMainMarket() => MarketOptionsManager.DrawItemsByMainMarketOddsUntilFull(ZoneManager.MainMarketZone, true);
+        public static void FillMainMarket() => MarketPullManager.FillMainMarket();
 
         public static void MarketClosing()
         {
@@ -68,7 +69,7 @@ namespace ConsoleBalatro.Engine.Market
                 MarketOptionsManager.ReturnMarketItemFromZone(c, ZoneManager.MainMarketZone);
             }
 
-            MarketOptionsManager.DrawItemsByMainMarketOddsUntilFull(ZoneManager.MainMarketZone, true);
+            FillMainMarket();
         }
 
         //Tho in game player can't actually refresh pack market, this is for debug.
@@ -102,7 +103,8 @@ namespace ConsoleBalatro.Engine.Market
 
             while (ZoneManager.VoucherMarketZone.HasRoom)
             {
-                MarketOptionsManager.DrawMarketItem(BuyItemType.VOUCHER, ZoneManager.VoucherMarketZone);
+                MarketPullManager.DrawMarketItem(BuyItemType.VOUCHER, ZoneManager.VoucherMarketZone, source: Pools.GenerationSource.Market);
+                //MarketOptionsManager.DrawMarketItem(BuyItemType.VOUCHER, ZoneManager.VoucherMarketZone);
             }
         }
 

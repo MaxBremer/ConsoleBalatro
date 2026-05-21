@@ -124,7 +124,7 @@ namespace ConsoleBalatro.Engine
                 if(discArgs.CardBeingDiscarded.Seal == Seal.PURPLE)
                 {
                     if(ZoneManager.ConsumableZone.HasRoom)
-                        MarketOptionsManager.DrawNumMarketItems(BuyItemType.PLANET_CARD, 1, ZoneManager.ConsumableZone);
+                        MarketPullManager.DrawNumMarketItems(BuyItemType.TAROT_CARD, 1, ZoneManager.ConsumableZone, source: Pools.GenerationSource.PurpleSeal);
                 }
             }
         }

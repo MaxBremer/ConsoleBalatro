@@ -1,4 +1,5 @@
 ﻿using ConsoleBalatro.Engine;
+using ConsoleBalatro.Engine.Cards.Consumables;
 using ConsoleBalatro.Engine.Market;
 using System;
 using System.Collections.Generic;
@@ -44,14 +45,15 @@ namespace ConsoleBalatro.Tests
         #region Helpers
         private void AddPlanetForHand(PlayedHandType handType)
         {
-            if (!MarketOptionsManager.IsHiddenPlanet(handType))
-            {
-                ZoneManager.ConsumableZone.DrawTargetFrom(MarketOptionsManager.MarketPoolsToDrawFrom[BuyItemType.PLANET_CARD], MarketOptionsManager.MarketPoolsToDrawFrom[BuyItemType.PLANET_CARD].Cards.First(x => x.ConsumableData.PlanetHandType == handType));
-            }
-            else
-            {
-                ZoneManager.ConsumableZone.DrawTargetFrom(MarketOptionsManager.SpecialPool_HiddenPlanets, MarketOptionsManager.SpecialPool_HiddenPlanets.Cards.First(x => x.ConsumableData.PlanetHandType == handType));
-            }
+            ZoneManager.ConsumableZone.AddCard(ConsumableManager.MakePlanetCard(handType));
+            //if (!MarketOptionsManager.IsHiddenPlanet(handType))
+            //{
+            //    ZoneManager.ConsumableZone.DrawTargetFrom(MarketOptionsManager.MarketPoolsToDrawFrom[BuyItemType.PLANET_CARD], MarketOptionsManager.MarketPoolsToDrawFrom[BuyItemType.PLANET_CARD].Cards.First(x => x.ConsumableData.PlanetHandType == handType));
+            //}
+            //else
+            //{
+            //    ZoneManager.ConsumableZone.DrawTargetFrom(MarketOptionsManager.SpecialPool_HiddenPlanets, MarketOptionsManager.SpecialPool_HiddenPlanets.Cards.First(x => x.ConsumableData.PlanetHandType == handType));
+            //}
         }
         #endregion
     }

@@ -4,6 +4,7 @@ using ConsoleBalatro.Engine.Cards.Tags;
 using ConsoleBalatro.Engine.Events;
 using ConsoleBalatro.Engine.Events.Args;
 using ConsoleBalatro.Engine.Market;
+using ConsoleBalatro.Engine.Pools;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -1167,7 +1168,8 @@ namespace ConsoleBalatro.Engine.Cards.Jokers
                             ZoneManager.DestroyCard(ZoneManager.CurrentlyBeingPlayedZone.Cards[0], ZoneManager.CurrentlyBeingPlayedZone);
                             if (ZoneManager.ConsumableZone.HasRoom)
                             {
-                                MarketOptionsManager.DrawMarketItem(BuyItemType.SPECTRAL_CARD, ZoneManager.ConsumableZone);
+                                //MarketOptionsManager.DrawMarketItem(BuyItemType.SPECTRAL_CARD, ZoneManager.ConsumableZone);
+                                MarketPullManager.DrawMarketItem(BuyItemType.SPECTRAL_CARD, ZoneManager.ConsumableZone, source: Pools.GenerationSource.GenericJoker);
                             }
                         }
                         ret.DataDict["FIRSTHAND"].IntData = 0;
@@ -1260,7 +1262,8 @@ namespace ConsoleBalatro.Engine.Cards.Jokers
                     {
                         if (args is EngineHandPlayDoneArgs handArgs && EngineUtils.HandContainsOtherHand(handArgs.HandTypeThatWasPlayed, PlayedHandType.STRAIGHT) && handArgs.CardsInPlayedHand.Any(x => x.Rank == Rank.ACE) && ZoneManager.ConsumableZone.HasRoom)
                         {
-                            MarketOptionsManager.DrawMarketItem(BuyItemType.TAROT_CARD, ZoneManager.ConsumableZone);
+                            //MarketOptionsManager.DrawMarketItem(BuyItemType.TAROT_CARD, ZoneManager.ConsumableZone);
+                            MarketPullManager.DrawMarketItem(BuyItemType.TAROT_CARD, ZoneManager.ConsumableZone, source: GenerationSource.GenericJoker);
                         }
                     },
                 });
@@ -1418,7 +1421,8 @@ namespace ConsoleBalatro.Engine.Cards.Jokers
                     MyAction = args => 
                     { 
                         if (args is EngineHandPlayDoneArgs h && h.HandTypeThatWasPlayed == PlayedHandType.STRAIGHTFLUSH && ZoneManager.ConsumableZone.HasRoom) 
-                            MarketOptionsManager.DrawMarketItem(BuyItemType.SPECTRAL_CARD, ZoneManager.ConsumableZone); 
+                            MarketPullManager.DrawMarketItem(BuyItemType.SPECTRAL_CARD, ZoneManager.ConsumableZone, source: GenerationSource.GenericJoker); 
+                            //MarketOptionsManager.DrawMarketItem(BuyItemType.SPECTRAL_CARD, ZoneManager.ConsumableZone); 
                     } 
                 });
                 return ret;
@@ -1519,7 +1523,7 @@ namespace ConsoleBalatro.Engine.Cards.Jokers
                     MyAction = _ =>
                     {
                         if (Globals.Money <= ret.DataDict["MONEYREQ"].IntData && ZoneManager.ConsumableZone.HasRoom)
-                            MarketOptionsManager.DrawMarketItem(BuyItemType.TAROT_CARD, ZoneManager.ConsumableZone);
+                            MarketPullManager.DrawMarketItem(BuyItemType.TAROT_CARD, ZoneManager.ConsumableZone, source : GenerationSource.GenericJoker);
                     },
                 });
                 return ret;
@@ -1813,7 +1817,10 @@ namespace ConsoleBalatro.Engine.Cards.Jokers
                     MyAction = args => 
                     { 
                         if(ZoneManager.ConsumableZone.HasRoom && Globals.RollRandom(ret.DataDict["NUMERATOR"].IntData, ret.DataDict["DENOMINATOR"].IntData, c)) 
-                            MarketOptionsManager.DrawMarketItem(BuyItemType.TAROT_CARD, ZoneManager.ConsumableZone); }});
+                            MarketPullManager.DrawMarketItem(BuyItemType.TAROT_CARD, ZoneManager.ConsumableZone, source: GenerationSource.GenericJoker); 
+                    }
+                });
+                            //MarketOptionsManager.DrawMarketItem(BuyItemType.TAROT_CARD, ZoneManager.ConsumableZone); }});
                 return ret;
             } },
             { "FORTUNE TELLER", c =>
@@ -2737,7 +2744,8 @@ namespace ConsoleBalatro.Engine.Cards.Jokers
                     MyAction = _ => 
                     {
                         if (ZoneManager.ConsumableZone.HasRoom)
-                            MarketOptionsManager.DrawMarketItem(BuyItemType.TAROT_CARD, ZoneManager.ConsumableZone); 
+                            MarketPullManager.DrawMarketItem(BuyItemType.TAROT_CARD, ZoneManager.ConsumableZone, source: GenerationSource.GenericJoker); 
+                            //MarketOptionsManager.DrawMarketItem(BuyItemType.TAROT_CARD, ZoneManager.ConsumableZone); 
                     } 
                 });
                 return ret;

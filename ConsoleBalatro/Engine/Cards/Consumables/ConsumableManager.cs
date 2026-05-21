@@ -3,6 +3,7 @@ using ConsoleBalatro.Engine.Cards.Jokers;
 using ConsoleBalatro.Engine.Events;
 using ConsoleBalatro.Engine.Events.Args;
 using ConsoleBalatro.Engine.Market;
+using ConsoleBalatro.Engine.Pools;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -352,7 +353,8 @@ namespace ConsoleBalatro.Engine.Cards.Consumables
                 ret.IsActivatable = _ => ZoneManager.JokerZone.HasRoom;
                 ret.Use = _ =>
                 {
-                    var rareJoker = MarketOptionsManager.PullRandomJokerFromPool(JokerRarity.RARE, removeFromPool: true);
+                    //var rareJoker = MarketOptionsManager.PullRandomJokerFromPool(JokerRarity.RARE, removeFromPool: true);
+                    var rareJoker = MarketPullManager.PickMarketCard(BuyItemType.JOKER, source: Pools.GenerationSource.WraithCard);
                     if (rareJoker != null)
                     {
                         ZoneManager.JokerZone.AddCard(rareJoker);
@@ -430,10 +432,11 @@ namespace ConsoleBalatro.Engine.Cards.Consumables
                 ret.IsActivatable = _ => ZoneManager.JokerZone.HasRoom;
                 ret.Use = _ =>
                 {
-                    var rareJoker = MarketOptionsManager.PullRandomJokerFromPool(JokerRarity.LEGENDARY, removeFromPool: true);
-                    if (rareJoker != null)
+                    //var rareJoker = MarketOptionsManager.PullRandomJokerFromPool(JokerRarity.LEGENDARY, removeFromPool: true);
+                    var legendJoker = MarketPullManager.PickMarketCard(BuyItemType.JOKER, Pools.GenerationSource.SoulCard, forcedRarity: JokerRarity.LEGENDARY);
+                    if (legendJoker != null)
                     {
-                        ZoneManager.JokerZone.AddCard(rareJoker);
+                        ZoneManager.JokerZone.AddCard(legendJoker);
                     }
                 };
                 return ret;
@@ -506,7 +509,7 @@ namespace ConsoleBalatro.Engine.Cards.Consumables
                 ret.IsActivatable = _ => ZoneManager.ConsumableZone.HasRoom || ZoneManager.ConsumableZone.Cards.Contains(ret.MyCard);
                 ret.Use = _ =>
                 {
-                    MarketOptionsManager.DrawNumMarketItems(BuyItemType.PLANET_CARD, ret.DataDict["INTAMOUNT"].IntData, ZoneManager.ConsumableZone);
+                    MarketPullManager.DrawNumMarketItems(BuyItemType.PLANET_CARD, ret.DataDict["INTAMOUNT"].IntData, ZoneManager.ConsumableZone, source: GenerationSource.HighPriestessCard, batchContext: new ContentRollBatchContext());
                 };
 
                 return ret;
@@ -521,7 +524,9 @@ namespace ConsoleBalatro.Engine.Cards.Consumables
                 ret.IsActivatable = _ => ZoneManager.ConsumableZone.HasRoom || ZoneManager.ConsumableZone.Cards.Contains(ret.MyCard);
                 ret.Use = _ =>
                 {
-                    MarketOptionsManager.DrawNumMarketItems(BuyItemType.TAROT_CARD, ret.DataDict["INTAMOUNT"].IntData, ZoneManager.ConsumableZone);
+                    var context = new ContentRollBatchContext();
+                    context.GeneratedIds.Add("EMPEROR");//TODO: Janky hack so it can't make more emperors.
+                    MarketPullManager.DrawNumMarketItems(BuyItemType.TAROT_CARD, ret.DataDict["INTAMOUNT"].IntData, ZoneManager.ConsumableZone, source: GenerationSource.EmperorCard, batchContext: context);
                 };
 
                 return ret;
@@ -792,11 +797,11 @@ namespace ConsoleBalatro.Engine.Cards.Consumables
 
                 return ret;
             } },
-            { "TERMPERANCE", c =>
+            { "TEMPERANCE", c =>
             {
                 var ret = new ConsumableCardDataBlock();
                 ret.ConsumableName = "Temperance";
-                ret.DBName = "TERMPERANCE";
+                ret.DBName = "TEMPERANCE";
                 ret.DataDict.Add("INTAMOUNT", new JokerData() { MyDataType = JokerDataType.INT, IntData = 50});
                 ret.DescriptionBuilder = _ =>
                 {
@@ -828,7 +833,7 @@ namespace ConsoleBalatro.Engine.Cards.Consumables
                 ret.IsActivatable = _ => ZoneManager.JokerZone.HasRoom;
                 ret.Use = _ =>
                 {
-                    MarketOptionsManager.DrawNumMarketItems(BuyItemType.JOKER, ret.DataDict["INTAMOUNT"].IntData, ZoneManager.JokerZone);
+                    MarketPullManager.DrawNumMarketItems(BuyItemType.JOKER, ret.DataDict["INTAMOUNT"].IntData, ZoneManager.JokerZone, source: Pools.GenerationSource.JudgementCard);
                 };
 
                 return ret;
@@ -944,6 +949,8 @@ namespace ConsoleBalatro.Engine.Cards.Consumables
             {PlayedHandType.FLUSHFIVE, "Eris" },
             {PlayedHandType.FLUSHHOUSE, "Ceres" },
         };
+
+        public static Dictionary<string, PlayedHandType> PlanetsToHandType => PlanetCardNames.ToDictionary(pair => pair.Value.ToUpper(), pair => pair.Key);
 
         public static void UseConsumable(Card c)
         {

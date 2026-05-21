@@ -146,7 +146,6 @@ namespace ConsoleBalatro.Engine
             VoucherDb.ResetDependants();
 
             MarketOptionsManager.InitializeMarketPools();
-            MarketOptionsManager.ShufflePools();
 
             FlowHandler.InitializeFlowListeners();
 

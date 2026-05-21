@@ -4,6 +4,7 @@ using ConsoleBalatro.Engine.Cards.Enums;
 using ConsoleBalatro.Engine.Events;
 using ConsoleBalatro.Engine.Events.Args;
 using ConsoleBalatro.Engine.Market;
+using ConsoleBalatro.Engine.Pools;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -95,7 +96,13 @@ namespace ConsoleBalatro.Engine
             };
             EngineEventHandler.TriggerEvent(args);
             //MarketOptionsManager.DrawNumMarketItems(packInfo.RelevantBuyItemType, packInfo.NumOptionsPresented, ZoneManager.PackOptionZone);
-            MarketOptionsManager.DrawItemsByOdds(packInfo.NumOptionsPresented, ZoneManager.PackOptionZone, args.Odds);
+            var batchInfo = new ContentRollBatchContext();
+            for (int i = 0; i < packInfo.NumOptionsPresented; i++)
+            {
+                var type = MarketPullManager.ChooseRollItemByOdds(args.Odds);
+                MarketPullManager.DrawMarketItem(type, ZoneManager.PackOptionZone, source: Pools.GenerationSource.Pack, batchContext: batchInfo);
+            }
+            //MarketOptionsManager.DrawItemsByOdds(packInfo.NumOptionsPresented, ZoneManager.PackOptionZone, args.Odds);
 
             //OPTIONS:
             //JOKER: choose to add to jokerzone

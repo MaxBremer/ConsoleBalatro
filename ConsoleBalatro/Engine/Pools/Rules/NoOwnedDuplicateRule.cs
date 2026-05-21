@@ -24,6 +24,12 @@ namespace ConsoleBalatro.Engine.Pools.Rules
                 ownedIds.Add(card.ConsumableData.DBName);
             }
 
+            //no duplicate vouchers either
+            foreach (var card in ZoneManager.ActiveVoucherZone.Cards.Where(x => x.isVoucher))
+            {
+                ownedIds.Add(card.JokerData.DBName);
+            }
+
             context.Candidates.RemoveAll(c => ownedIds.Contains(c.Definition.Id));
         }
     }

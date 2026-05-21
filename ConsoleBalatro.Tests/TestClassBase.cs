@@ -4,9 +4,11 @@ using ConsoleBalatro.Engine.Cards.Blinds;
 using ConsoleBalatro.Engine.Cards.Consumables;
 using ConsoleBalatro.Engine.Cards.Enums;
 using ConsoleBalatro.Engine.Cards.Jokers;
+using ConsoleBalatro.Engine.Cards.Vouchers;
 using ConsoleBalatro.Engine.Events;
 using ConsoleBalatro.Engine.Events.Args;
 using ConsoleBalatro.Engine.Market;
+using ConsoleBalatro.Engine.Pools.Rules;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -201,22 +203,26 @@ namespace ConsoleBalatro.Tests
 
         public void AddTarot(string tarotName)
         {
-            ZoneManager.ConsumableZone.DrawTargetFrom(MarketOptionsManager.MarketPoolsToDrawFrom[BuyItemType.TAROT_CARD], MarketOptionsManager.MarketPoolsToDrawFrom[BuyItemType.TAROT_CARD].Cards.First(x => x.ConsumableData.ConsumableName == tarotName));
+            ZoneManager.ConsumableZone.AddCard(ConsumableManager.MakeTarotCard(tarotName.ToUpper()));
+            //ZoneManager.ConsumableZone.DrawTargetFrom(MarketOptionsManager.MarketPoolsToDrawFrom[BuyItemType.TAROT_CARD], MarketOptionsManager.MarketPoolsToDrawFrom[BuyItemType.TAROT_CARD].Cards.First(x => x.ConsumableData.ConsumableName == tarotName));
         }
 
         public void AddSpectral(string spectralName)
         {
-            ZoneManager.ConsumableZone.DrawTargetFrom(MarketOptionsManager.MarketPoolsToDrawFrom[BuyItemType.SPECTRAL_CARD], MarketOptionsManager.MarketPoolsToDrawFrom[BuyItemType.SPECTRAL_CARD].Cards.First(x => x.ConsumableData.ConsumableName == spectralName));
+            ZoneManager.ConsumableZone.AddCard(ConsumableManager.MakeSpectralCard(spectralName.ToUpper()));
+            //ZoneManager.ConsumableZone.DrawTargetFrom(MarketOptionsManager.MarketPoolsToDrawFrom[BuyItemType.SPECTRAL_CARD], MarketOptionsManager.MarketPoolsToDrawFrom[BuyItemType.SPECTRAL_CARD].Cards.First(x => x.ConsumableData.ConsumableName == spectralName));
         }
 
         public void AddVoucher(string voucherName)
         {
-            ZoneManager.ActiveVoucherZone.DrawTargetFrom(MarketOptionsManager.MarketPoolsToDrawFrom[BuyItemType.VOUCHER], MarketOptionsManager.MarketPoolsToDrawFrom[BuyItemType.VOUCHER].Cards.First(x => x.isVoucher && x.JokerData.JokerName == voucherName));
+            ZoneManager.ActiveVoucherZone.AddCard(VoucherDb.MakeVoucherCard(voucherName.ToUpper()));
+            //ZoneManager.ActiveVoucherZone.DrawTargetFrom(MarketOptionsManager.MarketPoolsToDrawFrom[BuyItemType.VOUCHER], MarketOptionsManager.MarketPoolsToDrawFrom[BuyItemType.VOUCHER].Cards.First(x => x.isVoucher && x.JokerData.JokerName == voucherName));
         }
 
         public bool VoucherIsInMarket(string voucherName)
         {
-            return MarketOptionsManager.MarketPoolsToDrawFrom[BuyItemType.VOUCHER].Cards.Any(x => x.isVoucher && x.JokerData.JokerName == voucherName);
+            return VoucherPoolRules.CurrentValidVouchers.Contains(voucherName.ToUpper()) && !ZoneManager.ActiveVoucherZone.Cards.Any(c => c.isVoucher && c.JokerData.DBName == voucherName.ToUpper());
+            //return MarketOptionsManager.MarketPoolsToDrawFrom[BuyItemType.VOUCHER].Cards.Any(x => x.isVoucher && x.JokerData.JokerName == voucherName);
         }
 
         public void UseCon() => ConsumableManager.UseConsumable(ZoneManager.ConsumableZone.Cards[0]);

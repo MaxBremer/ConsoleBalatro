@@ -1095,9 +1095,9 @@ namespace ConsoleBalatro.Tests
         {
             ResetToFirstBlindPlayRound();
             ZoneManager.HandZone.Cards[0].ToggleSelect();
-            AddTarot("The Magician");
+            AddTarot("Magician");
             UseCon();
-            AddTarot("The Devil");
+            AddTarot("Devil");
             UseCon();
             var record = CaptureScoringContributions();
             AddJoker("FORTUNE TELLER");

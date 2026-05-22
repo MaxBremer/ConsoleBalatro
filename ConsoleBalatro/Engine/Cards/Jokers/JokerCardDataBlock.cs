@@ -21,6 +21,7 @@ namespace ConsoleBalatro.Engine.Cards.Jokers
 
         public bool isCopyJoker = false;
         public JokerCardDataBlock HiddenCopiedData = null;
+        public Func<Card, Card?>? GetCopyTargetFunc = null;
 
         public List<Action> OnJokerGainEffs = new();
         public List<Action> OnJokerRemovalEffs = new();

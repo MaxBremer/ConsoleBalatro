@@ -18,7 +18,35 @@ namespace ConsoleBalatro.Engine.Cards.Jokers
         public static string DEFAULT_JOKER_NAME = "JOLLY JOKER";
         public static HashSet<string> JokersNotCopyable = new()
         {
-            "INVISIBLE JOKER"
+            "ASTRONOMER",
+            "CHAOS THE CLOWN",
+            "CHICOT",
+            "CLOUD 9",
+            "CREDIT CARD",
+            "DELAYED GRATIFICATION",
+            "DRUNKARD",
+            "EGG",
+            "FOUR FINGERS",
+            "GIFT CARD",
+            "GOLDEN JOKER",
+            "INVISIBLE JOKER",
+            "JUGGLER",
+            "MERRY ANDY",
+            "MIDAS MASK",
+            "MR. BONES",
+            "OOPS! ALL 6S",
+            "PAREIDOLIA",
+            "ROCKET",
+            "SATELLITE",
+            "SHORTCUT",
+            "SHOWMAN",
+            "SIXTH SENSE",
+            "SMEARED JOKER",
+            "SPLASH",
+            "TO THE MOON",
+            "TRADING CARD",
+            "TROUBADOUR",
+            "TURTLE BEAN",
         };
 
 
@@ -580,6 +608,12 @@ namespace ConsoleBalatro.Engine.Cards.Jokers
                 });
                 ret.Listeners.Add(BuildMultAddListener(c, ret));
 
+                ret.OnCopyModifications = newDb =>
+                {
+                    newDb.Listeners.Clear();
+                    newDb.Listeners.Add(BuildMultAddListener(newDb.MyCard, ret));
+                };
+
                 return ret;
             } },
             { "MYSTIC SUMMIT", c =>
@@ -874,6 +908,12 @@ namespace ConsoleBalatro.Engine.Cards.Jokers
                             ZoneManager.DestroyCard(c, ZoneManager.JokerZone);
                     },
                 });
+
+                ret.OnCopyModifications = newDB =>
+                {
+                    newDB.Listeners.RemoveAt(1);//remove the hidden destroy potential.
+                };
+
                 return ret;
             } },
             { "EVEN STEVEN", c =>
@@ -1331,6 +1371,10 @@ namespace ConsoleBalatro.Engine.Cards.Jokers
                             ZoneManager.DestroyCard(c, ZoneManager.JokerZone);
                     },
                 });
+                ret.OnCopyModifications = newDB =>
+                {
+                    newDB.Listeners.RemoveAt(1);//remove the hidden destroy potential.
+                };
                 return ret;
             } },
             { "CARD SHARP", c =>
@@ -1389,6 +1433,20 @@ namespace ConsoleBalatro.Engine.Cards.Jokers
                             Globals.EmitMultMult(ret.DataDict["MULTMULTAMOUNT"].DoubleData, c); 
                         } 
                 });
+
+                ret.OnCopyModifications = newDb =>
+                {
+                    newDb.Listeners.Clear();
+                    newDb.Listeners.Add(new EngineEventListener()
+                    {
+                        MyContextType = EventContextType.CardTrigger,
+                        MyAction = args => {
+                            if (args is EngineCardTriggerArgs t && t.CardThatIsTriggering == newDb.MyCard && t.isScoringTrigger)
+                                Globals.EmitMultMult(ret.DataDict["MULTMULTAMOUNT"].DoubleData, newDb.MyCard);
+                            }
+                    });
+                };
+
                 return ret;
             } },
             { "SQUARE JOKER", c =>
@@ -1480,6 +1538,20 @@ namespace ConsoleBalatro.Engine.Cards.Jokers
                             Globals.EmitMultMult(ret.DataDict["MULTMULTAMOUNT"].DoubleData, c); 
                     } 
                 });
+
+                ret.OnCopyModifications = newDb =>
+                {
+                    newDb.Listeners.Clear();
+                    newDb.Listeners.Add(new EngineEventListener()
+                    {
+                        MyContextType = EventContextType.CardTrigger,
+                        MyAction = args =>
+                        {
+                            if (args is EngineCardTriggerArgs t && t.CardThatIsTriggering == newDb.MyCard && t.isScoringTrigger && ret.DataDict["MULTMULTAMOUNT"].DoubleData > 1)
+                                Globals.EmitMultMult(ret.DataDict["MULTMULTAMOUNT"].DoubleData, newDb.MyCard);
+                        }
+                    });
+                };
                 return ret;
             } },
             { "SHORTCUT", c =>
@@ -3080,6 +3152,7 @@ namespace ConsoleBalatro.Engine.Cards.Jokers
             ret.DataDict.Add("COPIEDLISTENERS", new JokerData() { MyDataType = JokerDataType.COPIEDLISTENERS });
             //...but also a flag just in case
             ret.isCopyJoker = true;
+            ret.GetCopyTargetFunc = copyTargetGetter;
 
             Func<Card?> curTarget = () => copyTargetGetter(self);
             Func<bool> validTarget = () => curTarget() != null && !JokersNotCopyable.Contains(curTarget()!.JokerData.DBName);
@@ -3098,7 +3171,7 @@ namespace ConsoleBalatro.Engine.Cards.Jokers
                 var target = curTarget();
                 var origTarget = ret.DataDict["TARGETCOPYCARD"].CardData;
                 var origData = ret.HiddenCopiedData;
-                if (target == origTarget)
+                if (target == origTarget && (origTarget != null && origTarget.JokerData != null && !origTarget.JokerData.isCopyJoker))
                     return;
                 if(origData != null)
                 {
@@ -3187,17 +3260,47 @@ namespace ConsoleBalatro.Engine.Cards.Jokers
             return ZoneManager.JokerZone.Cards.FirstOrDefault();
         }
 
+        private static bool CheckForLoopFloodFill(Card copierCard, JokerCardDataBlock copierDataBlock, JokerCardDataBlock targetDataBlock)
+        {
+            var traversed = new List<JokerCardDataBlock>();
+            traversed.Add(copierDataBlock);
+            traversed.Add(targetDataBlock);
+            while(targetDataBlock != null && !traversed.Contains(targetDataBlock.GetCopyTargetFunc(targetDataBlock.MyCard).JokerData))
+            {
+                if (!targetDataBlock.GetCopyTargetFunc(targetDataBlock.MyCard).JokerData.isCopyJoker)
+                {
+                    return false;
+                }
+                else
+                {
+                    targetDataBlock = targetDataBlock.GetCopyTargetFunc(targetDataBlock.MyCard).JokerData;
+                    traversed.Add(targetDataBlock);
+                }
+            }
+            traversed.Clear();
+            return targetDataBlock != null && targetDataBlock.GetCopyTargetFunc(targetDataBlock.MyCard).JokerData != null;
+        }
+
         private static void InstallCopyOf(Card copierCard, JokerCardDataBlock copierDataBlock, JokerCardDataBlock? targetDataBlock, int depth = 1)
         {
-            if(targetDataBlock != null && targetDataBlock.isCopyJoker && targetDataBlock.HiddenCopiedData != null)
+            if(targetDataBlock != null && targetDataBlock.isCopyJoker)
             {
-                //If the target is a copy, propagate the copying through.
-                //hacky way to prevent infinite loops lol
-                if (depth < 1000)
-                    InstallCopyOf(copierCard, copierDataBlock, targetDataBlock.HiddenCopiedData, depth + 1);
+                if((!CheckForLoopFloodFill(copierCard, copierDataBlock, targetDataBlock)) && targetDataBlock.HiddenCopiedData != null)
+                {
+                    //If the target is a copy, propagate the copying through.
+                    //hacky way to prevent infinite loops lol
+                    if (depth < 1000)
+                        InstallCopyOf(copierCard, copierDataBlock, targetDataBlock.HiddenCopiedData, depth + 1);
+                    else
+                        InstallCopyOf(copierCard, copierDataBlock, null);
+                    return;
+                }
                 else
-                    InstallCopyOf(copierCard, copierDataBlock, null);
-                return;
+                {
+                    copierDataBlock.HiddenCopiedData = null;
+                    return;
+                }
+                
             }
 
             if(targetDataBlock == null)

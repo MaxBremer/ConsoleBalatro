@@ -146,6 +146,13 @@ namespace ConsoleBalatro.Engine
             }
         }
 
+        public void SwapCardPositions(int ind1, int ind2)
+        {
+            if (ind1 < 0 || ind2 < 0 || ind1 >= Cards.Count || ind2 >= Cards.Count) return;
+
+            SwapCardPositions(Cards[ind1], Cards[ind2]);
+        }
+
         public void SwapCardPositions(Card c1, Card c2)
         {
             if(!Cards.Contains(c1)  || !Cards.Contains(c2) || c1 == c2) return;

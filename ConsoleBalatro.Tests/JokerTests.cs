@@ -1895,6 +1895,13 @@ namespace ConsoleBalatro.Tests
             Assert.Contains(record.MultSources, x => x.JokerData.DBName == "BLUEPRINT");
             Assert.Contains(record.MultSources, x => x.JokerData.DBName == "BRAINSTORM");
             Assert.Contains(record.MultSources, x => x.JokerData.DBName == "JIMBO");
+
+            ZoneManager.JokerZone.SwapCardPositions(1, 2);
+            record.Reset();
+            PlayHand("AS");
+            Assert.Equal(4, record.MultFromEmits);
+            var target = Assert.Single(record.MultSources);
+            Assert.Equal("JIMBO", target.JokerData.DBName);
         }
 
         [Fact]
@@ -1906,9 +1913,38 @@ namespace ConsoleBalatro.Tests
 
             var desc = GetJoker(0).JokerData.DescriptionBuilder(null);
             Assert.Contains("INVALID", desc);
+            Assert.Null(GetJoker(0).JokerData.HiddenCopiedData);
         }
 
+        [Fact]
+        public void AddJokers_BlueprintAndBrainstorm_DoesNotCreateInfiniteLoop()
+        {
+            ResetToFirstBlindPlayRound();
+            AddJoker("BLUEPRINT");
+            AddJoker("BRAINSTORM");
 
+            Assert.Null(ZoneManager.JokerZone.Cards[0].JokerData.HiddenCopiedData);
+        }
+
+        [Fact]
+        public void AddJokers_BlueprintDaggerJimbo_BlueprintGainsMultButDoesntDestroy()
+        {
+            ResetToBlindSelection();
+            AddJoker("BLUEPRINT");
+            AddJoker("CEREMONIAL DAGGER");
+            AddJoker("JIMBO");
+            var jimboSell = GetJoker(2).SellCost;
+            FlowHandler.StartSelectedBlind();
+
+            Assert.Equal(2, ZoneManager.JokerZone.Cards.Count);
+            Assert.Equal("BLUEPRINT", GetJoker(0).JokerData.DBName);
+            Assert.Equal("CEREMONIAL DAGGER", GetJoker(1).JokerData.DBName);
+            var record = CaptureScoringContributions();
+            Globals.RequiredChipsForCurrentBlind = 999999;
+            PlayHand("AS");
+            Assert.Equal(2, record.MultSources.Count);
+            Assert.Equal(jimboSell * 4, record.MultFromEmits);
+        }
 
         /*[Theory]
         [InlineData("TEMP UNCOMMON JOKER")]

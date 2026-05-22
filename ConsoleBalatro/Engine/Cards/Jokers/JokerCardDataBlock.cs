@@ -19,10 +19,13 @@ namespace ConsoleBalatro.Engine.Cards.Jokers
         public List<EngineEventListener> Listeners = new();
         public Dictionary<string, JokerData> DataDict = new();
 
+        public bool isCopyJoker = false;
         public JokerCardDataBlock HiddenCopiedData = null;
 
         public List<Action> OnJokerGainEffs = new();
         public List<Action> OnJokerRemovalEffs = new();
+
+        public Action<JokerCardDataBlock>? OnCopyModifications = null;
 
         //Voucher fields
         public bool isVoucher = false;

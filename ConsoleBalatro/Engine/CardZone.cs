@@ -165,6 +165,17 @@ namespace ConsoleBalatro.Engine
 
             Cards[secondInd] = c1;
             Cards[firstInd] = c2;
+
+            var nargs = new EngineCardPositionsSwappingArgs()
+            {
+                Card1 = c1,
+                Card2 = c2,
+                Card1OldIndex = firstInd,
+                Card2OldIndex = secondInd,
+                ZoneOfSwap = this,
+                MyContext = new EventContext() { Context = EventContextType.CardPositionsSwapDone }
+            };
+            EngineEventHandler.TriggerEvent(nargs);
         }
     }
 }

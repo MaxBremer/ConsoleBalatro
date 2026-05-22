@@ -3078,6 +3078,8 @@ namespace ConsoleBalatro.Engine.Cards.Jokers
             //This also serves as a flag for copy jokers
             ret.DataDict.Add("TARGETCOPYCARD", new JokerData() { MyDataType = JokerDataType.CARD });
             ret.DataDict.Add("COPIEDLISTENERS", new JokerData() { MyDataType = JokerDataType.COPIEDLISTENERS });
+            //...but also a flag just in case
+            ret.isCopyJoker = true;
 
             Func<Card?> curTarget = () => copyTargetGetter(self);
             Func<bool> validTarget = () => curTarget() != null && !JokersNotCopyable.Contains(curTarget()!.JokerData.DBName);
@@ -3094,14 +3096,43 @@ namespace ConsoleBalatro.Engine.Cards.Jokers
             Action refreshCopy = () =>
             {
                 var target = curTarget();
+                var origTarget = ret.DataDict["TARGETCOPYCARD"].CardData;
+                var origData = ret.HiddenCopiedData;
+                if (target == origTarget)
+                    return;
+                if(origData != null)
+                {
+                    foreach (var list in origData.Listeners)
+                    {
+                        EngineEventHandler.StopListening(list);
+                    }
+                    foreach (var onRem in origData.OnJokerRemovalEffs)
+                    {
+                        onRem();
+                    }
+                }
+
                 ret.DataDict["TARGETCOPYCARD"].CardData = target;
                 var newData = target != null && validTarget() ? target.JokerData : null;
-                ReplaceJokerEffectsAndData(self, ret, newData);
+
+                InstallCopyOf(self, ret, newData);
+                newData = ret.HiddenCopiedData;
+
+                if (newData == null)
+                    return;
+                foreach (var list in newData.Listeners)
+                {
+                    EngineEventHandler.StartListening(list);
+                }
+                foreach (var onAdd in newData.OnJokerGainEffs)
+                {
+                    onAdd();
+                }
             };
 
             ret.Listeners.Add(new EngineEventListener()
             {
-                MyContextType = EventContextType.CardPositionsSwapping,
+                MyContextType = EventContextType.CardPositionsSwapDone,
                 MyAction = args =>
                 {
                     if (args is EngineCardPositionsSwappingArgs p && p.ZoneOfSwap == ZoneManager.JokerZone)
@@ -3127,7 +3158,18 @@ namespace ConsoleBalatro.Engine.Cards.Jokers
                 }
             });
             ret.OnJokerGainEffs.Add(refreshCopy);
-            ret.OnJokerRemovalEffs.Add(() => ReplaceJokerEffectsAndData(self, ret, null));
+            ret.OnJokerRemovalEffs.Add(() => 
+            {
+                foreach (var list in ret.HiddenCopiedData.Listeners)
+                {
+                    EngineEventHandler.StopListening(list);
+                }
+                foreach (var onRem in ret.HiddenCopiedData.OnJokerRemovalEffs)
+                {
+                    onRem();
+                }
+                InstallCopyOf(self, ret, null);
+            });
 
             return ret;
         }
@@ -3145,30 +3187,33 @@ namespace ConsoleBalatro.Engine.Cards.Jokers
             return ZoneManager.JokerZone.Cards.FirstOrDefault();
         }
 
-        private static void ReplaceJokerEffectsAndData(Card self, JokerCardDataBlock selfDataBlock, JokerCardDataBlock? sourceDataBlock)
+        private static void InstallCopyOf(Card copierCard, JokerCardDataBlock copierDataBlock, JokerCardDataBlock? targetDataBlock, int depth = 1)
         {
+            if(targetDataBlock != null && targetDataBlock.isCopyJoker && targetDataBlock.HiddenCopiedData != null)
+            {
+                //If the target is a copy, propagate the copying through.
+                //hacky way to prevent infinite loops lol
+                if (depth < 1000)
+                    InstallCopyOf(copierCard, copierDataBlock, targetDataBlock.HiddenCopiedData, depth + 1);
+                else
+                    InstallCopyOf(copierCard, copierDataBlock, null);
+                return;
+            }
 
-            var toRemoveList = selfDataBlock.DataDict.Keys.Where(k => k != "TARGETCOPYCARD" && k != "COPIEDLISTENERS").ToList();
-            foreach (var item in toRemoveList)
+            if(targetDataBlock == null)
             {
-                selfDataBlock.DataDict.Remove(item);
+                copierDataBlock.HiddenCopiedData = null;
+                return;
             }
-            foreach (var list in selfDataBlock.DataDict["COPIEDLISTENERS"].CopiedListeners)
-            {
-                EngineEventHandler.StopListening(list);
-            }
-            selfDataBlock.Listeners = selfDataBlock.Listeners
-                .Where(x => !selfDataBlock.DataDict["COPIEDLISTENERS"].CopiedListeners.Contains(x))
-                .ToList();
-            selfDataBlock.DataDict["COPIEDLISTENERS"].CopiedListeners.Clear();
 
-            if (sourceDataBlock != null)
-            {
-                sourceDataBlock.CopyDataDictTo(selfDataBlock, clearFirst: false);
-                foreach (var listener in sourceDataBlock.Listeners)
-                    selfDataBlock.Listeners.Add(listener);
-            }
+            var dbTarget = targetDataBlock.DBName;
+            var newBlock = JokerData[dbTarget](copierCard);
+            newBlock.MyCard = copierCard;
+
+            targetDataBlock.CopyDataDictTo(newBlock);
+            targetDataBlock.OnCopyModifications?.Invoke(newBlock);
+
+            copierDataBlock.HiddenCopiedData = newBlock;
         }
-
     }
 }

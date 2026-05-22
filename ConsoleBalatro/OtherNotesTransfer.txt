@@ -15,14 +15,14 @@ notable outcomes:
 
 chunk destroyer pick
 blockers:
-- Shriekers (any other ancient city loot for high-tier goo)
+- [x] Shriekers (any other ancient city loot for high-tier goo)
 - Wireless power
 - Power sufficient for the pick
 - backpack upgrades
 
 mob farm (dreadful dirt + spawners, just do a big pillar)
 blockers:
-- goo for dw20 items, better collector and XP absorber (same blocker as chunk destroyer)
+- [x] goo for dw20 items, better collector and XP absorber (same blocker as chunk destroyer)
 - ars nouveau portal setup
 notable outcomes:
 - BETTER NETHERITE SOURCE (LIVING ARMOR)

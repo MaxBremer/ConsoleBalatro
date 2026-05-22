@@ -79,7 +79,8 @@ All triggers with a source will see the source as the copied joker, not as the b
 Visual problem, otherwise only an issue for modded stuff.
 It basically will behave the same as if that joker is being retriggered.
 
-An alternative option; set up a "pass-thru" joker. Basically another hidden joker to handle everything, but all systems treat it like 
+An alternative option; set up a "pass-thru" joker. Basically another hidden joker to handle everything, but all systems treat it like
+
 OK OK SOLUTION
 a true hidden joker
 on refresh, if the target is valid, build its data block anew from the jokerdb PASSING IN THE COPIER
@@ -99,3 +100,7 @@ This takes care of all of them EXCEPT Vampire; just remove the listener for the 
 For Vampire I think we just gotta get gross; static global list of cards that got cleared this turn. Then in the mult adder, if those exist AND our owning cards joker data block is not null and not ourselves (ensure it's a copier, not another Vampire, which should NOT gain the extra mult), gain the additional multmult. 
 Clear the static global list at end of round I guess? Yeah new Vamp end-of-round listener.
 super duper gross, but it works.
+NO NO BETTER
+in the dupe-setup-func, INSTEAD of the original mult listener, remove all listeners and give it a new listener that takes from the originals data dict instead of the new ones own.
+this works for all 5 problem cases.
+yeah, you're basically building a new custom joker just to be a ""copy"" of the original, but whatever man.

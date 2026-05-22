@@ -189,7 +189,7 @@ namespace ConsoleBalatro.Engine
             return MakeZone("Hand", handSize);
         }
 
-        public static CardZone MakeJokerZone(int numSlots = 5)
+        public static JokerZone MakeJokerZone(int numSlots = 5)
         {
             return new JokerZone(numSlots);
         }

@@ -1862,6 +1862,53 @@ namespace ConsoleBalatro.Tests
             Assert.Empty(ZoneManager.HiddenBlindAttributeZone.Cards);
         }
 
+        [Fact]
+        public void PlayHand_WithBlueprint_CopiesJokerToRightAndUpdatesAfterSwap()
+        {
+            ResetToFirstBlindPlayRound();
+            AddJoker("BLUEPRINT");
+            AddJoker("JIMBO");
+            var record = CaptureScoringContributions();
+
+            PlayHand("AS");
+            Assert.Equal(8, record.MultFromEmits); // Blueprint + Jimbo
+
+            record.Reset();
+            ZoneManager.JokerZone.SwapCardPositions(GetJoker(0), GetJoker(1)); // Jimbo left, Blueprint right (no target)
+            PlayHand("AS");
+            Assert.Equal(4, record.MultFromEmits);
+        }
+
+        [Fact]
+        public void PlayHand_WithBrainstormAndBlueprintChain_BothCopySameUnderlyingJoker()
+        {
+            ResetToFirstBlindPlayRound();
+            AddJoker("BLUEPRINT");
+            AddJoker("JIMBO");
+            AddJoker("BRAINSTORM");
+            var record = CaptureScoringContributions();
+            Globals.RequiredChipsForCurrentBlind = 999999;
+
+            PlayHand("AS");
+            Assert.Equal(12, record.MultFromEmits); // Jimbo + Blueprint(copy Jimbo) + Brainstorm(copy Blueprint->Jimbo)
+            Assert.Equal(3, record.MultSources.Count);
+            Assert.Contains(record.MultSources, x => x.JokerData.DBName == "BLUEPRINT");
+            Assert.Contains(record.MultSources, x => x.JokerData.DBName == "BRAINSTORM");
+            Assert.Contains(record.MultSources, x => x.JokerData.DBName == "JIMBO");
+        }
+
+        [Fact]
+        public void BlueprintDescription_IndicatesInvalidCopyTarget()
+        {
+            ResetToFirstBlindPlayRound();
+            AddJoker("BLUEPRINT");
+            AddJoker("INVISIBLE JOKER");
+
+            var desc = GetJoker(0).JokerData.DescriptionBuilder(null);
+            Assert.Contains("INVALID", desc);
+        }
+
+
 
         /*[Theory]
         [InlineData("TEMP UNCOMMON JOKER")]

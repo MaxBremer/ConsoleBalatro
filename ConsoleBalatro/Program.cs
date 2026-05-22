@@ -25,6 +25,7 @@ class Program
             {
                 c.Enhancement = Enhancement.STEEL;
                 c.Seal = Seal.RED;
+                c.FaceDown = true;
             }
         }
 

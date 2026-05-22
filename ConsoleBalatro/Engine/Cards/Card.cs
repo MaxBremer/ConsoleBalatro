@@ -39,6 +39,7 @@ namespace ConsoleBalatro.Engine.Cards
         public CardZone MyZone = null;
         public bool Flipped = false;
         public bool Debuffed = false;
+        public bool FaceDown = false;
         public bool IsDestructible = true;//TODO: Later things can prevent destruction, for now does nothing.
         public bool isJoker => JokerData != null && JokerData.isJoker;
         public bool isVoucher => JokerData != null && JokerData.isVoucher;
@@ -454,7 +455,11 @@ namespace ConsoleBalatro.Engine.Cards
             var retStr = "";
             //TODO: Below conditional precludes some weird modded cases, like being a joker and consumable or pack and consumable at the same time.
             //Prime example is playing card and consumable, which I know happens.
-            if(isJoker || isVoucher)
+            if (FaceDown)
+            {
+                retStr += "FACE DOWN";
+            }
+            else if(isJoker || isVoucher)
             {
                 retStr += JokerData.JokerName + CardInfoDoubleDivider;
                 retStr += JokerData.DescriptionBuilder(context) + CardInfoDoubleDivider;
@@ -481,7 +486,7 @@ namespace ConsoleBalatro.Engine.Cards
                 retStr = "ERROR: Card unrecognized";
             }
 
-            if (!retStr.Contains("ERROR"))
+            if (!retStr.Contains("ERROR") && !FaceDown)
             {
                 retStr += CardInfoLineDivider + GetModifiersText().Replace("\n", CardInfoLineDivider);
             }

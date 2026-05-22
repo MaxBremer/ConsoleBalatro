@@ -1228,7 +1228,7 @@ namespace ConsoleBalatro.Tests
             var s = JokerSetup("POPCORN");
             for (int i = 0; i < 5; i++)
             {
-                FlowHandler.CurrentBossBlind = "NODISCARD";//Prevent the boss in the round we're going through from being something that could cause the hand to lose, like "must play 5 cards to score".
+                FlowHandler.CurrentBossBlind = "THE WATER";//Prevent the boss in the round we're going through from being something that could cause the hand to lose, like "must play 5 cards to score".
                 //doing it in the loop cause whatever, doesn't hurt anything, and makes doubly sure in weird cases.
                 var oldMult = s.jok.JokerData.DataDict["MULTAMOUNT"].DoubleData;
                 Globals.RequiredChipsForCurrentBlind = 1;
@@ -1356,7 +1356,7 @@ namespace ConsoleBalatro.Tests
             AddJoker("JIMBO");
             Globals.PerformSell(GetJoker(1), ZoneManager.JokerZone);
             Assert.Equal(1.25, s.jok.JokerData.DataDict["MULTMULTAMOUNT"].DoubleData, 2);
-            FlowHandler.CurrentBossBlind = "NODISCARD";
+            FlowHandler.CurrentBossBlind = "THE WATER";
             for (int i = 0; i < 2; i++)
             {
                 Globals.RequiredChipsForCurrentBlind = 1;

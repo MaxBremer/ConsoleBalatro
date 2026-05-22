@@ -220,7 +220,7 @@ namespace ConsoleBalatro.Tests
             ResetToBlindSelection();
             FlowHandler.CurSmallBlindTag = TagType.INVESTMENT;
             FlowHandler.CurBigBlindTag = TagType.COUPON;//Won't matter, we never go to market in this test, just need a known tag I can ignore.
-            FlowHandler.CurrentBossBlind = "NODISCARD";
+            FlowHandler.CurrentBossBlind = "THE WATER";
             var record = CaptureTagEvents();
             FlowHandler.DoSkip();
             Assert.Equal(1, record.TagAddEventCount);

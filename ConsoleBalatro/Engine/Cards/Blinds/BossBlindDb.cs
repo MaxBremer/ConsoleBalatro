@@ -9,11 +9,7 @@ namespace ConsoleBalatro.Engine.Cards.Blinds
 {
     public static class BossBlindDb
     {
-        public static List<string> BossBlindNames = new()
-        {
-            "PLAYONEHAND",
-            "NODISCARD",
-        };
+        public static List<string> BossBlindNames => BossBlindData.Keys.ToList();
 
         public static List<string> BossBlindsAlreadyUsed = new();
 
@@ -25,12 +21,12 @@ namespace ConsoleBalatro.Engine.Cards.Blinds
         public static Dictionary<string, Func<Card, JokerCardDataBlock>> BossBlindData = new()
         {
             {
-                "PLAYONEHAND",
+                "THE NEEDLE",
                 c =>
                 {
                     var ret = new JokerCardDataBlock();
-                    ret.JokerName = "PLAYONEHAND";
-                    ret.DBName = "PLAYONEHAND";
+                    ret.JokerName = "The Needle";
+                    ret.DBName = "THE NEEDLE";
                     ret.DescriptionBuilder = _ =>
                     {
                         var possPlural = ret.DataDict["INTAMOUNT"].IntData > 1 ? "s" : "";
@@ -50,12 +46,12 @@ namespace ConsoleBalatro.Engine.Cards.Blinds
                 }
             },
             {
-                "NODISCARD",
+                "THE WATER",
                 c =>
                 {
                     var ret = new JokerCardDataBlock();
-                    ret.JokerName = "NODISCARD";
-                    ret.DBName = "NODISCARD";
+                    ret.JokerName = "The Water";
+                    ret.DBName = "THE WATER";
                     ret.DescriptionBuilder = _ => "No discards this round.";
                     ret.Listeners.Add(new Events.EngineEventListener()
                     {

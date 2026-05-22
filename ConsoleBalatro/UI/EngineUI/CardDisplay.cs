@@ -88,7 +88,13 @@ namespace ConsoleBalatro.UI.EngineUI
                 tempDisplay = insertInto(tempDisplay, "$" + PriceDisplay.ToString(), 0);
             }
 
-            if(MyCard.isJoker || MyCard.isVoucher)
+            if (MyCard.FaceDown)//if face down, close out here.
+            {
+                ImportFromString(tempDisplay, CARD_SEP);
+                return;
+            }
+
+            if (MyCard.isJoker || MyCard.isVoucher)
             {
                 var dispName = MyCard.JokerData.JokerName;
                 if(dispName.Length > 3)

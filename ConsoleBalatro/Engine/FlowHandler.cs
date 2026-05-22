@@ -39,6 +39,13 @@ namespace ConsoleBalatro.Engine
             {BlindType.BOSS, 5 },
         };
 
+        public static Dictionary<string, double> BlindSpecificChipMults = new()
+        {
+            ["THE WALL"] = 4,
+            ["THE NEEDLE"] = 1,
+            ["VIOLET VESSEL"] = 6,
+        };
+
         public static int CurrentAnte = 0;
         public static int CurrentBaseChipAmount => BaseAnteChipAmounts[CurrentAnte];
         public static BlindType CurrentSelectedBlind = BlindType.SMALL;
@@ -109,7 +116,10 @@ namespace ConsoleBalatro.Engine
                     chipsMult = 1.5;
                     break;
                 case BlindType.BOSS:
-                    chipsMult = 2.0;
+                    if(CurrentBossBlind != null && BlindSpecificChipMults.ContainsKey(CurrentBossBlind))
+                        chipsMult = BlindSpecificChipMults[CurrentBossBlind];
+                    else
+                        chipsMult = 2.0;
                     break;
                 default:
                     break;

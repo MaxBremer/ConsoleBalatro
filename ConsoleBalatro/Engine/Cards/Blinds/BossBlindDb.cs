@@ -1,4 +1,6 @@
 ﻿using ConsoleBalatro.Engine.Cards.Jokers;
+using ConsoleBalatro.Engine.Events;
+using ConsoleBalatro.Engine.Events.Args;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -59,6 +61,87 @@ namespace ConsoleBalatro.Engine.Cards.Blinds
                         MyAction = args =>
                         {
                             Globals.CurDiscardsRemaining = 0;
+                        }
+                    });
+
+                    return ret;
+                }
+            },
+            {
+                "THE OX",
+                c =>
+                {
+                    var ret = new JokerCardDataBlock();
+                    ret.JokerName = "The Ox";
+                    ret.DBName = "THE OX";
+                    ret.DescriptionBuilder = _ => "Playing the most played hand this run sets money to $0";
+                    ret.Listeners.Add(new EngineEventListener()
+                    {
+                        MyContextType = EventContextType.HandPlayedCalculated,
+                        MyAction = args =>
+                        {
+                            if (args is EngineHandPlayArgs h)
+                            {
+                                var max = ScoreHandler.HandNumTimesPlayed.Values.Max();
+                                if (ScoreHandler.HandNumTimesPlayed[h.HandBeingPlayed] == max)
+                                {
+                                    Globals.EmitMoneyLoss(Globals.Money, c, false);
+                                    EngineEventHandler.TriggerEvent(new EngineEventArgs() {MyContext = new() { Context = EventContextType.BossAbilityTriggeredByHand}});
+                                }
+                            }
+                        }
+                    });
+
+                    return ret;
+                }
+            },
+            {
+                "THE WALL",
+                c =>
+                {
+                    var ret = new JokerCardDataBlock();
+                    ret.JokerName = "The Wall";
+                    ret.DBName = "THE WALL";
+                    ret.DescriptionBuilder = _ => "Extra large blind.";
+
+                    return ret;
+                }
+            },
+            {
+                "VIOLET VESSEL",
+                c =>
+                {
+                    var ret = new JokerCardDataBlock();
+                    ret.JokerName = "Violet Vessel";
+                    ret.DBName = "VIOLET VESSEL";
+                    ret.DescriptionBuilder = _ => "Very large blind.";
+
+                    return ret;
+                }
+            },
+            {
+                "THE HOOK",
+                c =>
+                {
+                    var ret = new JokerCardDataBlock();
+                    ret.JokerName = "The Hook";
+                    ret.DBName = "THE HOOK";
+                    ret.DescriptionBuilder = _ => "Discard 2 random cards in hand after each hand played.";
+                    ret.Listeners.Add(new EngineEventListener()
+                    {
+                        MyContextType = EventContextType.HandPlayDone,
+                        MyAction = args =>
+                        {
+                            if (args is EngineHandPlayDoneArgs h && h.CardsHeldInHand.Count > 0)
+                            {
+                                if(h.CardsHeldInHand.Count <= 2)
+                                    ZoneManager.DiscardZone.DrawTargetsFrom(ZoneManager.HandZone, h.CardsHeldInHand);
+                                else
+                                {
+                                    List<Card> toDisc = h.CardsHeldInHand.OrderBy(x => Globals.randomNext(int.MaxValue)).Take(2).ToList();
+                                    ZoneManager.DiscardZone.DrawTargetsFrom(ZoneManager.HandZone, toDisc);
+                                }
+                            }
                         }
                     });
 

@@ -472,7 +472,8 @@ namespace ConsoleBalatro.Engine.Cards
             {
                 retStr += ConsumableData.ConsumableName + CardInfoDoubleDivider;
                 retStr += ConsumableData.DescriptionBuilder(context);
-            }else if(isPack && ConsumableManager.PackBasicNums.ContainsKey(MyPackType))
+            }
+            else if(isPack && ConsumableManager.PackBasicNums.ContainsKey(MyPackType))
             {
                 var packData = ConsumableManager.PackBasicNums[MyPackType];
                 retStr += packData.PackName + CardInfoDoubleDivider;

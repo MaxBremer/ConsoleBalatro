@@ -3,6 +3,7 @@ using ConsoleBalatro.Engine;
 using ConsoleBalatro.Engine.Cards.Consumables;
 using ConsoleBalatro.Engine.Cards.Enums;
 using ConsoleBalatro.Engine.Cards.Jokers;
+using ConsoleBalatro.Engine.Cards.Tags;
 using ConsoleBalatro.Engine.Market;
 using ConsoleBalatro.UI;
 using ConsoleBalatro.UI.EngineUI;
@@ -33,8 +34,9 @@ class Program
 
         FlowHandler.StartNewAnte();
         FlowHandler.InitializeBlindSelectionRound();
-        FlowHandler.CurSmallBlindTag = ConsoleBalatro.Engine.Cards.Tags.TagType.ECONOMY;
-        FlowHandler.CurrentBossBlind = "THE HOUSE";
+        FlowHandler.CurSmallBlindTag = TagType.ECONOMY;
+        FlowHandler.CurBigBlindTag = TagType.ECONOMY;
+        FlowHandler.CurrentBossBlind = "THE FISH";
 
 
         //Test jokers

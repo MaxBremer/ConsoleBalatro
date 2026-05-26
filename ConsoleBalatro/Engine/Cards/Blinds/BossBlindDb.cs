@@ -258,6 +258,43 @@ namespace ConsoleBalatro.Engine.Cards.Blinds
                 }
             },
             {
+                "THE FISH",
+                c =>
+                {
+                    var ret = JokerDb.BasicDataBlock("The Fish", "Cards drawn facedown after each hand played.");
+                    ret.DataDict.Add("FLIPFLAG", new JokerData() {MyDataType = JokerDataType.INT, IntData = 0});
+                    ret.Listeners.Add(new EngineEventListener()
+                    {
+                        MyContextType = EventContextType.CardDrawnToZone,
+                        MyAction = args =>
+                        {
+                            if(args is EngineCardDrawnToZoneArgs drawArgs && drawArgs.ZoneDrawnTo == ZoneManager.HandZone && ret.DataDict["FLIPFLAG"].IntData == 1)
+                            {
+                                drawArgs.CardBeingDrawn.FaceDown = true;
+                            }
+                        },
+                    });
+                    ret.Listeners.Add(new EngineEventListener()
+                    {
+                        MyContextType = EventContextType.DrawHandfulDone,
+                        MyAction = args =>
+                        {
+                            ret.DataDict["FLIPFLAG"].IntData = 0;
+                        },
+                    });
+                    ret.Listeners.Add(new EngineEventListener()
+                    {
+                        MyContextType = EventContextType.HandPlayDone,
+                        MyAction = args =>
+                        {
+                            ret.DataDict["FLIPFLAG"].IntData = 1;
+                        },
+                    });
+
+                    return ret;
+                }
+            },
+            {
                 "VIOLET VESSEL",
                 c =>
                 {

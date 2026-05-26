@@ -25,6 +25,8 @@ namespace ConsoleBalatro.Engine
             EngineEventHandler.StartListening(new EngineEventListener() { MyAction = AddSealEffectForScoringCards });
 
             EngineEventHandler.StartListening(new EngineEventListener() { MyAction = RevealHiddenHand, MyContextType = EventContextType.HandPlayDone });
+
+            EngineEventHandler.StartListening(new EngineEventListener() { MyAction = RemoveDebuffsAndHidesAtUndraw, MyContextType = EventContextType.CardDrawnToZone });
         }
 
         public static void ChangeZoneSizeForNegative(EngineEventArgs args)
@@ -144,6 +146,15 @@ namespace ConsoleBalatro.Engine
             if(args is EngineHandPlayDoneArgs playArgs && MarketOptionsManager.IsHiddenPlanet(playArgs.HandTypeThatWasPlayed) && !MarketOptionsManager.HiddenPlanetsRevealed[playArgs.HandTypeThatWasPlayed])
             {
                 MarketOptionsManager.RevealHiddenPlanet(playArgs.HandTypeThatWasPlayed);
+            }
+        }
+
+        private static void RemoveDebuffsAndHidesAtUndraw(EngineEventArgs args)
+        {
+            if (args is EngineCardDrawnToZoneArgs drawArgs && (drawArgs.CardBeingDrawn.Debuffed || drawArgs.CardBeingDrawn.Flipped) && (drawArgs.ZoneDrawnTo == ZoneManager.DiscardZone || drawArgs.ZoneDrawnTo == ZoneManager.HiddenPlayZone || drawArgs.ZoneDrawnTo == ZoneManager.DeckZone))
+            {
+                drawArgs.CardBeingDrawn.Debuffed = false;
+                drawArgs.CardBeingDrawn.Flipped = false;
             }
         }
     }

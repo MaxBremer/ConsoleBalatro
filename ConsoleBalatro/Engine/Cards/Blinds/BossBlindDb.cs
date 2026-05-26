@@ -1,4 +1,5 @@
-﻿using ConsoleBalatro.Engine.Cards.Jokers;
+﻿using ConsoleBalatro.Engine.Cards.Enums;
+using ConsoleBalatro.Engine.Cards.Jokers;
 using ConsoleBalatro.Engine.Events;
 using ConsoleBalatro.Engine.Events.Args;
 using System;
@@ -127,6 +128,86 @@ namespace ConsoleBalatro.Engine.Cards.Blinds
                 }
             },
             {
+                "THE TOOTH",
+                c =>
+                {
+                    var ret = JokerDb.BasicDataBlock("The Tooth", "Lose $1 per card played.");
+
+                    ret.Listeners.Add(new EngineEventListener()
+                    {
+                        MyContextType = EventContextType.SelectedCardBeingConsideredForCalc,
+                        MyAction = args =>
+                        {
+                            if (args is EngineCardChosenForPlayedHandArgs playArgs)
+                            {
+                                Globals.EmitMoneyLoss(1, playArgs.CardBeingConsidered, false);
+                            }
+                        }
+                    });
+
+                    return ret;
+                }
+            },
+            {
+                "THE MANACLE",
+                c =>
+                {
+                    var ret = JokerDb.BasicDataBlock("The Manacle", "-1 Hand Size.");
+
+                    ret.OnJokerGainEffs.Add(() =>
+                    {
+                        Globals.HandSize -= 1;
+                    });
+                    ret.OnJokerRemovalEffs.Add(() =>
+                    {
+                        Globals.HandSize += 1;
+                    });
+
+                    return ret;
+                }
+            },
+            {
+                "THE WHEEL",
+                c =>
+                {
+                    var ret = JokerDb.BasicDataBlock("The Wheel", "1 in 7 cards get drawn face down during the round.");
+
+                    ret.Listeners.Add(new EngineEventListener()
+                    {
+                        MyContextType = EventContextType.CardDrawnToZone,
+                        MyAction = args =>
+                        {
+                            if(args is EngineCardDrawnToZoneArgs drawArgs && drawArgs.ZoneDrawnTo == ZoneManager.HandZone && Globals.RollRandom(1, 7, c))
+                            {
+                                drawArgs.CardBeingDrawn.Flipped = true;
+                            }
+                        },
+                    });
+
+                    return ret;
+                }
+            },
+            {
+                "THE PLANT",
+                c => { return BuildDebuffBlind("The Plant", "Face cards are debuffed", c => EngineUtils.isFace(c)); }
+            },
+            {
+                "THE CLUB",
+                c => { return BuildSuitDebuffBlind("The Club", "All Club cards are debuffed", Suit.CLUBS); }
+            },
+            {
+                "THE GOAD",
+                c => { return BuildSuitDebuffBlind("The Goad", "All Spade cards are debuffed", Suit.SPADES); }
+            },
+            {
+                "THE WINDOW",
+                c => { return BuildSuitDebuffBlind("The Window", "All Diamond cards are debuffed", Suit.DIAMONDS); }
+            },
+            {
+                "THE HEAD",
+                c => { return BuildSuitDebuffBlind("The Head", "All Heart cards are debuffed", Suit.HEARTS); }
+            },
+            {
                 "VIOLET VESSEL",
                 c =>
                 {
@@ -166,7 +247,7 @@ namespace ConsoleBalatro.Engine.Cards.Blinds
                                 foreach (var c in ZoneManager.HandZone.Cards)
                                 {
                                     c.Debuffed = false;
-	                            }
+                                }
                             }
                         }
                     });
@@ -193,6 +274,27 @@ namespace ConsoleBalatro.Engine.Cards.Blinds
             var c = new Card();
             MakeCardBlind(c, blindName);
             return c;
+        }
+
+        private static JokerCardDataBlock BuildSuitDebuffBlind(string name, string desc, Suit toDebuff) => BuildDebuffBlind(name, desc, c => c.IsSuit(toDebuff));
+
+        private static JokerCardDataBlock BuildDebuffBlind(string name, string desc, Func<Card, bool> isValidTarget)
+        {
+            var ret = JokerDb.BasicDataBlock(name, desc);
+
+            ret.Listeners.Add(new EngineEventListener()
+            {
+                MyContextType = EventContextType.CardDrawnToZone,
+                MyAction = args =>
+                {
+                    if (args is EngineCardDrawnToZoneArgs drawArgs && drawArgs.ZoneDrawnTo == ZoneManager.HandZone && isValidTarget(drawArgs.CardBeingDrawn))
+                    {
+                        drawArgs.CardBeingDrawn.Debuffed = true;
+                    }
+                },
+            });
+
+            return ret;
         }
     }
 }

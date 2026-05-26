@@ -203,7 +203,10 @@ namespace ConsoleBalatro.Engine.Cards
             if (!isSelected && ZoneManager.HandZone.Cards.Contains(this) && Globals.CurNumCardsSelected >= Globals.SelectionMax)
                 return;//SHOULD THIS ALSO BE HANDLED BY A LISTENER? EV THAT CHECKS FOR OBJECTIONS?
 
-            isSelected = !isSelected;
+            var args = new EngineSelectionTogglingArgs() { CardThatIsToggling = this, OldSelectionState = isSelected, MyContext = new() { Context = EventContextType.CardTogglingSelection} };
+
+            if(!args.CancelToggling)
+                isSelected = !isSelected;
         }
 
         public void ClearExtras()
@@ -284,6 +287,9 @@ namespace ConsoleBalatro.Engine.Cards
 
         public void TriggerInHandDuringScoring(ScoringContext context)
         {
+            if (Debuffed)//Todo: possible event? see above.
+                return;
+
             var preTriggerArgs = new EngineCardPreTriggerArgs()
             {
                 MyContext = new() { Context = EventContextType.CardPreTrigger, ScoringContext = context },

@@ -3030,7 +3030,7 @@ namespace ConsoleBalatro.Engine.Cards.Jokers
 
         public static Card GenerateDefaultJokerCard() => GenerateJokerCard(DEFAULT_JOKER_NAME);
 
-        private static JokerCardDataBlock BasicDataBlock(string name)
+        public static JokerCardDataBlock BasicDataBlock(string name)
         {
             var ret = new JokerCardDataBlock();
             ret.JokerName = name;
@@ -3038,14 +3038,14 @@ namespace ConsoleBalatro.Engine.Cards.Jokers
             return ret;
         }
 
-        private static JokerCardDataBlock BasicDataBlock(string name, string desc)
+        public static JokerCardDataBlock BasicDataBlock(string name, string desc)
         {
             var ret = BasicDataBlock(name);
             ret.DescriptionBuilder = _ => desc;
             return ret;
         }
 
-        private static JokerCardDataBlock BasicDataBlock(string name, Func<EventContext, string> descBuilder)
+        public static JokerCardDataBlock BasicDataBlock(string name, Func<EventContext, string> descBuilder)
         {
             var ret = BasicDataBlock(name);
             ret.DescriptionBuilder = descBuilder;

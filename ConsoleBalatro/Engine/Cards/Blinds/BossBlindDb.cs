@@ -26,9 +26,8 @@ namespace ConsoleBalatro.Engine.Cards.Blinds
                 "THE NEEDLE",
                 c =>
                 {
-                    var ret = new JokerCardDataBlock();
-                    ret.JokerName = "The Needle";
-                    ret.DBName = "THE NEEDLE";
+                    var ret = JokerDb.BasicDataBlock("The Needle");
+
                     ret.DescriptionBuilder = _ =>
                     {
                         var possPlural = ret.DataDict["INTAMOUNT"].IntData > 1 ? "s" : "";
@@ -51,10 +50,8 @@ namespace ConsoleBalatro.Engine.Cards.Blinds
                 "THE WATER",
                 c =>
                 {
-                    var ret = new JokerCardDataBlock();
-                    ret.JokerName = "The Water";
-                    ret.DBName = "THE WATER";
-                    ret.DescriptionBuilder = _ => "No discards this round.";
+                    var ret = JokerDb.BasicDataBlock("The Water", "No discards this round.");
+
                     ret.Listeners.Add(new Events.EngineEventListener()
                     {
                         MyContextType = Events.EventContextType.StartPlayRoundSetupOver,
@@ -71,10 +68,8 @@ namespace ConsoleBalatro.Engine.Cards.Blinds
                 "THE OX",
                 c =>
                 {
-                    var ret = new JokerCardDataBlock();
-                    ret.JokerName = "The Ox";
-                    ret.DBName = "THE OX";
-                    ret.DescriptionBuilder = _ => "Playing the most played hand this run sets money to $0";
+                    var ret = JokerDb.BasicDataBlock("The Ox", "Playing the most played hand this run sets money to $0");
+
                     ret.Listeners.Add(new EngineEventListener()
                     {
                         MyContextType = EventContextType.HandPlayedCalculated,
@@ -99,22 +94,7 @@ namespace ConsoleBalatro.Engine.Cards.Blinds
                 "THE WALL",
                 c =>
                 {
-                    var ret = new JokerCardDataBlock();
-                    ret.JokerName = "The Wall";
-                    ret.DBName = "THE WALL";
-                    ret.DescriptionBuilder = _ => "Extra large blind.";
-
-                    return ret;
-                }
-            },
-            {
-                "VIOLET VESSEL",
-                c =>
-                {
-                    var ret = new JokerCardDataBlock();
-                    ret.JokerName = "Violet Vessel";
-                    ret.DBName = "VIOLET VESSEL";
-                    ret.DescriptionBuilder = _ => "Very large blind.";
+                    var ret = JokerDb.BasicDataBlock("The Wall", "Extra large blind.");
 
                     return ret;
                 }
@@ -123,10 +103,8 @@ namespace ConsoleBalatro.Engine.Cards.Blinds
                 "THE HOOK",
                 c =>
                 {
-                    var ret = new JokerCardDataBlock();
-                    ret.JokerName = "The Hook";
-                    ret.DBName = "THE HOOK";
-                    ret.DescriptionBuilder = _ => "Discard 2 random cards in hand after each hand played.";
+                    var ret = JokerDb.BasicDataBlock("The Hook", "Discard 2 random cards in hand after each hand played.");
+
                     ret.Listeners.Add(new EngineEventListener()
                     {
                         MyContextType = EventContextType.HandPlayDone,
@@ -141,6 +119,54 @@ namespace ConsoleBalatro.Engine.Cards.Blinds
                                     List<Card> toDisc = h.CardsHeldInHand.OrderBy(x => Globals.randomNext(int.MaxValue)).Take(2).ToList();
                                     ZoneManager.DiscardZone.DrawTargetsFrom(ZoneManager.HandZone, toDisc);
                                 }
+                            }
+                        }
+                    });
+
+                    return ret;
+                }
+            },
+            {
+                "VIOLET VESSEL",
+                c =>
+                {
+                    var ret = JokerDb.BasicDataBlock("Violet Vessel", "Very large blind.");
+
+                    return ret;
+                }
+            },
+            {
+                "VERDANT LEAF",
+                c =>
+                {
+                    var ret = JokerDb.BasicDataBlock("Verdant Leaf", "All cards debuffed until 1 Joker sold.");
+
+                    ret.DataDict.Add("DEBUFFFLAG", new JokerData() {MyDataType = JokerDataType.INT, IntData = 1});
+
+                    ret.Listeners.Add(new EngineEventListener()
+                    {
+                        MyContextType = EventContextType.CardDrawnToZone,
+                        MyAction = args =>
+                        {
+                            if(args is EngineCardDrawnToZoneArgs drawArgs && drawArgs.ZoneDrawnTo == ZoneManager.HandZone && ret.DataDict["DEBUFFFLAG"].IntData == 1)
+                            {
+                                drawArgs.CardBeingDrawn.Debuffed = true;
+                            }
+                        },
+                    });
+
+                    ret.Listeners.Add(new EngineEventListener()
+                    {
+                        MyContextType = EventContextType.CardSell,
+                        MyAction = args =>
+                        {
+                            if(args is EngineCardSoldArgs sellArgs && sellArgs.CardBeingSold.isJoker)
+                            {
+                                ret.DataDict["DEBUFFFLAG"].IntData = 0;
+                                foreach (var c in ZoneManager.HandZone.Cards)
+                                {
+                                    c.Debuffed = false;
+	                            }
                             }
                         }
                     });

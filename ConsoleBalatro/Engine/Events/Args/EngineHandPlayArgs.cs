@@ -13,5 +13,7 @@ namespace ConsoleBalatro.Engine.Events.Args
         public PlayedHandType HandBeingPlayed;
         public List<Card> CardsSelected = new();
         public List<Card> CardsInScoringHand = new();
+
+        public bool CancelScoring = false;
     }
 }

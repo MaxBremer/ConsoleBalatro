@@ -31,6 +31,7 @@ namespace ConsoleBalatro.Engine.Events
         EndPlayRound,
 
         CardDetailsChange,
+        CardTogglingSelection,
 
         CardSuitPull,
 

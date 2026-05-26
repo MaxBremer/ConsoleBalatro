@@ -5,7 +5,7 @@ using Xunit;
 
 namespace ConsoleBalatro.Tests;
 
-public class BasicTests
+public class BasicTests : TestClassBase
 {
     [Fact]
     public void PlayingCardFromDefString_SetsRankSuitAndBaseChips()
@@ -42,5 +42,26 @@ public class BasicTests
         DataManager.ReorderCards(cards, reversedOrder);
 
         Assert.Equal(new[] { third.ID, second.ID, first.ID }, cards.Select(c => c.ID));
+    }
+
+    [Fact]
+    public void PlayCards_SomeCardsDebuffed_CorrectlyIgnoresDebuffed()
+    {
+        ResetToFirstBlindPlayRound();
+        BuildKnownHand("AS,AS,AS");
+        ZoneManager.HandZone.Cards[2].ToggleSelect();
+        ZoneManager.HandZone.Cards[1].Debuffed = true;
+        ZoneManager.HandZone.Cards[2].Debuffed = true;
+        var scorer = ZoneManager.HandZone.Cards[0];
+
+        ZoneManager.HandZone.Cards[2].SetEnhancementOfficial(Enhancement.STEEL);
+
+        var record = CaptureScoringContributions();
+        Globals.PlayCurrentlySelectedHand();
+        Assert.Equal(11, record.ChipsFromEmits);
+        var c = Assert.Single(record.ChipSources);
+        Assert.Equal(scorer, c);
+        Assert.Equal(1, record.MultMultFromEmits);
+        Assert.Empty(record.MultMultSources);
     }
 }

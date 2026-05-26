@@ -151,10 +151,10 @@ namespace ConsoleBalatro.Engine
 
         private static void RemoveDebuffsAndHidesAtUndraw(EngineEventArgs args)
         {
-            if (args is EngineCardDrawnToZoneArgs drawArgs && (drawArgs.CardBeingDrawn.Debuffed || drawArgs.CardBeingDrawn.Flipped) && (drawArgs.ZoneDrawnTo == ZoneManager.DiscardZone || drawArgs.ZoneDrawnTo == ZoneManager.HiddenPlayZone || drawArgs.ZoneDrawnTo == ZoneManager.DeckZone))
+            if (args is EngineCardDrawnToZoneArgs drawArgs && (drawArgs.CardBeingDrawn.Debuffed || drawArgs.CardBeingDrawn.FaceDown) && (drawArgs.ZoneDrawnTo == ZoneManager.DiscardZone || drawArgs.ZoneDrawnTo == ZoneManager.HiddenPlayZone || drawArgs.ZoneDrawnTo == ZoneManager.DeckZone))
             {
                 drawArgs.CardBeingDrawn.Debuffed = false;
-                drawArgs.CardBeingDrawn.Flipped = false;
+                drawArgs.CardBeingDrawn.FaceDown = false;
             }
         }
     }

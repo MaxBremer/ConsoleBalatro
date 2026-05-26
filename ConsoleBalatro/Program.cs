@@ -25,7 +25,6 @@ class Program
             {
                 c.Enhancement = Enhancement.STEEL;
                 c.Seal = Seal.RED;
-                c.FaceDown = true;
             }
         }
 
@@ -35,6 +34,7 @@ class Program
         FlowHandler.StartNewAnte();
         FlowHandler.InitializeBlindSelectionRound();
         FlowHandler.CurSmallBlindTag = ConsoleBalatro.Engine.Cards.Tags.TagType.ECONOMY;
+        FlowHandler.CurrentBossBlind = "THE HOUSE";
 
 
         //Test jokers

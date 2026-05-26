@@ -30,6 +30,8 @@ namespace ConsoleBalatro.Engine.Events
         StartPlayRoundSetupOver,
         EndPlayRound,
 
+        DrawHandfulDone,
+
         CardDetailsChange,
         CardTogglingSelection,
 

@@ -151,6 +151,7 @@ namespace ConsoleBalatro.Engine
         public static void DrawHandful()
         {
             HandZone.DrawUntilCapacityFrom(DeckZone);
+            EngineEventHandler.TriggerEvent(new EngineEventArgs() { MyContext = new() { Context = EventContextType.DrawHandfulDone } });
         }
 
         public static void DrawXCardsToHand(int x)

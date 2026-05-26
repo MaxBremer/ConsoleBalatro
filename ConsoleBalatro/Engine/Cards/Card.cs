@@ -37,7 +37,6 @@ namespace ConsoleBalatro.Engine.Cards
         public double MultBase = 0;
         public double MultMultBase = 0;
         public CardZone MyZone = null;
-        public bool Flipped = false;
         public bool Debuffed = false;
         public bool FaceDown = false;
         public bool IsDestructible = true;//TODO: Later things can prevent destruction, for now does nothing.

@@ -179,7 +179,7 @@ namespace ConsoleBalatro.Engine.Cards.Blinds
                         {
                             if(args is EngineCardDrawnToZoneArgs drawArgs && drawArgs.ZoneDrawnTo == ZoneManager.HandZone && Globals.RollRandom(1, 7, c))
                             {
-                                drawArgs.CardBeingDrawn.Flipped = true;
+                                drawArgs.CardBeingDrawn.FaceDown = true;
                             }
                         },
                     });
@@ -206,6 +206,56 @@ namespace ConsoleBalatro.Engine.Cards.Blinds
             {
                 "THE HEAD",
                 c => { return BuildSuitDebuffBlind("The Head", "All Heart cards are debuffed", Suit.HEARTS); }
+            },
+            {
+                "THE MARK",
+                c =>
+                {
+                    var ret = JokerDb.BasicDataBlock("The Mark", "All face cards are drawn face down.");
+
+                    ret.Listeners.Add(new EngineEventListener()
+                    {
+                        MyContextType = EventContextType.CardDrawnToZone,
+                        MyAction = args =>
+                        {
+                            if(args is EngineCardDrawnToZoneArgs drawArgs && drawArgs.ZoneDrawnTo == ZoneManager.HandZone && EngineUtils.isFace(drawArgs.CardBeingDrawn))
+                            {
+                                drawArgs.CardBeingDrawn.FaceDown = true;
+                            }
+                        },
+                    });
+
+                    return ret;
+                }
+            },
+            {
+                "THE HOUSE",
+                c =>
+                {
+                    var ret = JokerDb.BasicDataBlock("The House", "First hand is drawn face down.");
+                    ret.DataDict.Add("FLIPFLAG", new JokerData() {MyDataType = JokerDataType.INT, IntData = 1});
+                    ret.Listeners.Add(new EngineEventListener()
+                    {
+                        MyContextType = EventContextType.CardDrawnToZone,
+                        MyAction = args =>
+                        {
+                            if(args is EngineCardDrawnToZoneArgs drawArgs && drawArgs.ZoneDrawnTo == ZoneManager.HandZone && ret.DataDict["FLIPFLAG"].IntData == 1)
+                            {
+                                drawArgs.CardBeingDrawn.FaceDown = true;
+                            }
+                        },
+                    });
+                    ret.Listeners.Add(new EngineEventListener()
+                    {
+                        MyContextType = EventContextType.DrawHandfulDone,
+                        MyAction = args =>
+                        {
+                            ret.DataDict["FLIPFLAG"].IntData = 0;
+                        },
+                    });
+
+                    return ret;
+                }
             },
             {
                 "VIOLET VESSEL",

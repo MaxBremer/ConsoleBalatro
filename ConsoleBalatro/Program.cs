@@ -45,6 +45,7 @@ class Program
         ZoneManager.JokerZone.AddCard(JokerDb.GenerateJokerCard("WRATHFUL JOKER"));
         ZoneManager.JokerZone.AddCard(JokerDb.GenerateJokerCard("GOLDEN JOKER"));
         ZoneManager.JokerZone.AddCard(JokerDb.GenerateJokerCard("CREDIT CARD"));
+        ZoneManager.JokerZone.Shuffle();
 
         //Test consumables
         ZoneManager.ConsumableZone.AddCard(ConsumableManager.MakeTarotCard("EMPEROR"));

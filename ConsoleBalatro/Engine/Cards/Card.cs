@@ -22,6 +22,7 @@ namespace ConsoleBalatro.Engine.Cards
         public static string CardInfoDoubleDivider => CardInfoLineDivider + CardInfoLineDivider;
 
         private bool _isSelected = false;
+        private bool _debuffed = false;
         private Enhancement _enhancement = Enhancement.NONE;
         private Rank _rank = Rank.NONE;
         private Suit _suit = Suit.NONE;
@@ -37,7 +38,16 @@ namespace ConsoleBalatro.Engine.Cards
         public double MultBase = 0;
         public double MultMultBase = 0;
         public CardZone MyZone = null;
-        public bool Debuffed = false;
+        public bool Debuffed {  
+            get 
+            {
+                return _debuffed;
+            }
+            set
+            {
+                _debuffed = value;
+            } 
+        }
         public bool FaceDown = false;
         public bool IsDestructible = true;//TODO: Later things can prevent destruction, for now does nothing.
         public bool isJoker => JokerData != null && JokerData.isJoker;

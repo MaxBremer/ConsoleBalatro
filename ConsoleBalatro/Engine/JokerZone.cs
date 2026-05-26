@@ -43,12 +43,9 @@ namespace ConsoleBalatro.Engine
             });
         }
 
-        private void AddJokerEffs(Card jokerCard)
+        //Originally created these first two funcs for potential need in the future to enable/disable joker listeners without triggering full on addition/removal.
+        public void EnableJokerListeners(Card jokerCard)
         {
-            if (jokerCard.JokerData == null)
-            {
-                return;
-            }
             if (jokerCard.JokerData.Listeners != null && jokerCard.JokerData.Listeners.Count > 0)
             {
                 ActiveJokerEffects.Add(jokerCard, new List<EngineEventListener>());
@@ -58,6 +55,28 @@ namespace ConsoleBalatro.Engine
                     ActiveJokerEffects[jokerCard].Add(listener);
                 }
             }
+        }
+
+        public void DisableJokerListeners(Card jokerCard)
+        {
+            if (jokerCard.JokerData.Listeners != null && jokerCard.JokerData.Listeners.Count > 0 && ActiveJokerEffects.ContainsKey(jokerCard))
+            {
+                foreach (var listener in jokerCard.JokerData.Listeners)
+                {
+                    EngineEventHandler.StopListening(listener);
+                    ActiveJokerEffects[jokerCard].Remove(listener);
+                }
+                ActiveJokerEffects.Remove(jokerCard);
+            }
+        }
+
+        private void AddJokerEffs(Card jokerCard)
+        {
+            if (jokerCard.JokerData == null)
+            {
+                return;
+            }
+            EnableJokerListeners(jokerCard);
 
             if (jokerCard.JokerData.OnJokerGainEffs != null && jokerCard.JokerData.OnJokerGainEffs.Count > 0)
             {
@@ -75,15 +94,7 @@ namespace ConsoleBalatro.Engine
             {
                 return;
             }
-            if(jokerCard.JokerData.Listeners != null && jokerCard.JokerData.Listeners.Count > 0 && ActiveJokerEffects.ContainsKey(jokerCard))
-            {
-                foreach (var listener in jokerCard.JokerData.Listeners)
-                {
-                    EngineEventHandler.StopListening(listener);
-                    ActiveJokerEffects[jokerCard].Remove(listener);
-                }
-                ActiveJokerEffects.Remove(jokerCard);
-            }
+            DisableJokerListeners(jokerCard);
 
             if(jokerCard.JokerData.OnJokerRemovalEffs != null && jokerCard.JokerData.OnJokerRemovalEffs.Count > 0)
             {

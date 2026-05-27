@@ -46,6 +46,17 @@ namespace ConsoleBalatro.Engine.Cards
             set
             {
                 _debuffed = value;
+                if(isJoker && (MyZone == ZoneManager.JokerZone || MyZone == ZoneManager.ActiveVoucherZone || MyZone == ZoneManager.HiddenBlindAttributeZone) && MyZone is IJokerContainer jokZone)
+                {
+                    if (_debuffed)
+                    {
+                        jokZone.RemoveJokerEffs(this);
+                    }
+                    else
+                    {
+                        jokZone.AddJokerEffs(this);
+                    }
+                }
             } 
         }
         public bool FaceDown = false;

@@ -9,7 +9,7 @@ using System.Threading.Tasks;
 
 namespace ConsoleBalatro.Engine.Cards.Vouchers
 {
-    public class VoucherZone : CardZone
+    public class VoucherZone : CardZone, IJokerContainer
     {
         private Dictionary<Card, List<EngineEventListener>> ActiveVoucherEffects = new();
 
@@ -40,6 +40,16 @@ namespace ConsoleBalatro.Engine.Cards.Vouchers
                     }
                 }
             });
+        }
+
+        public void AddJokerEffs(Card jokerCard)
+        {
+            AddVoucherEffs(jokerCard);
+        }
+
+        public void RemoveJokerEffs(Card jokerCard)
+        {
+            RemoveVoucherEffs(jokerCard);
         }
 
         private void AddVoucherEffs(Card jokerCard)

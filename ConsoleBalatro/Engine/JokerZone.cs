@@ -9,7 +9,7 @@ using System.Threading.Tasks;
 
 namespace ConsoleBalatro.Engine
 {
-    public class JokerZone : CardZone
+    public class JokerZone : CardZone, IJokerContainer
     {
         private Dictionary<Card, List<EngineEventListener>> ActiveJokerEffects = new();
 
@@ -70,7 +70,7 @@ namespace ConsoleBalatro.Engine
             }
         }
 
-        private void AddJokerEffs(Card jokerCard)
+        public void AddJokerEffs(Card jokerCard)
         {
             if (jokerCard.JokerData == null)
             {
@@ -88,7 +88,7 @@ namespace ConsoleBalatro.Engine
         }
     
 
-        private void RemoveJokerEffs(Card jokerCard)
+        public void RemoveJokerEffs(Card jokerCard)
         {
             if(jokerCard.JokerData == null)
             {

@@ -190,7 +190,7 @@ namespace ConsoleBalatro.Engine
                 return;
             }
 
-            var selCards = ZoneManager.CardsSelectedInHand;
+            var selCards = ZoneManager.CardsSelectedInHand.ToList();
 
             var evArgs = new EngineHandPlayArgs()
             {
@@ -237,40 +237,50 @@ namespace ConsoleBalatro.Engine
             }
 
             var sContext = new ScoringContext() { HandBeingPlayed = handTypePlayed, };
-            EngineEventHandler.TriggerEvent(new EngineHandPlayArgs()
+            var calcedArgs = new EngineHandPlayArgs()
             {
                 MyContext = new EventContext() { Context = EventContextType.AllScoringCardsDecided },
                 CardsInScoringHand = cardsForScoringCalc,
                 HandBeingPlayed = handTypePlayed,
-            });
-            sContext.PlayingCardsBeingScored.AddRange(cardsInActualHandPlayed);//Uhhh shouldn't this be cardsForScoringCalc? TODO
-            //like honestly wtf did I write here?
-            sContext.AllPlayingCardsSubmittedForHand.AddRange(selCards);//See this one makes sense
-            foreach (var cardScored in cardsForScoringCalc)//see this makes sense
+                CardsSelected = selCards,
+            };
+            EngineEventHandler.TriggerEvent(calcedArgs);
+            
+            if(!calcedArgs.CancelScoring)
             {
-                cardScored.TriggerScoring(sContext);
-            }
+                sContext.PlayingCardsBeingScored.AddRange(cardsInActualHandPlayed);//Uhhh shouldn't this be cardsForScoringCalc? TODO
+                //like honestly wtf did I write here?
+                sContext.AllPlayingCardsSubmittedForHand.AddRange(selCards);//See this one makes sense
+                foreach (var cardScored in cardsForScoringCalc)//see this makes sense
+                {
+                    cardScored.TriggerScoring(sContext);
+                }
 
-            foreach (var cardInHand in ZoneManager.HandZone.Cards)
-            {
-                cardInHand.TriggerInHandDuringScoring(sContext);
-            }
+                foreach (var cardInHand in ZoneManager.HandZone.Cards)
+                {
+                    cardInHand.TriggerInHandDuringScoring(sContext);
+                }
 
-            foreach (var jokerCard in ZoneManager.JokerZone.Cards)
-            {
-                jokerCard.TriggerScoring(sContext);
-            }
+                foreach (var jokerCard in ZoneManager.JokerZone.Cards)
+                {
+                    jokerCard.TriggerScoring(sContext);
+                }
 
-            foreach (var voucherCard in ZoneManager.ActiveVoucherZone.Cards)
-            {
-                voucherCard.TriggerScoring(sContext);//TODO: Put all always-score cards (like jokers, vouchers, boss blind jokers) in one always-score list, then score that.
-            }
+                foreach (var voucherCard in ZoneManager.ActiveVoucherZone.Cards)
+                {
+                    voucherCard.TriggerScoring(sContext);//TODO: Put all always-score cards (like jokers, vouchers, boss blind jokers) in one always-score list, then score that.
+                }
 
-            ScoreHandler.FinalPlayChipsCalc();
-            EngineEventHandler.TriggerEvent(new EngineEventArgs()
+                ScoreHandler.FinalPlayChipsCalc();
+                EngineEventHandler.TriggerEvent(new EngineEventArgs()
+                {
+                    MyContext = new EventContext() { Context = EventContextType.HandPlayScoringDone },
+                });
+            }
+            else
             {
-                MyContext = new EventContext() { Context = EventContextType.HandPlayScoringDone },
-            });
+                //TODO: SCORING CANCELLED EVENT.
+            }
             ZoneManager.HiddenPlayZone.DrawUntilCapacityFrom(ZoneManager.CurrentlyBeingPlayedZone);
             CurHandsRemaining -= 1;
 

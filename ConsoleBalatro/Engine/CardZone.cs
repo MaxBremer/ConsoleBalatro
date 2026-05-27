@@ -120,20 +120,20 @@ namespace ConsoleBalatro.Engine
             return target;
         }
 
-        public void DrawFrom(CardZone zone)
+        public void DrawFrom(CardZone zone, bool ignoreSpaceLimits = false)
         {
-            if (!HasRoom || zone.Cards.Count == 0)
+            if (zone.Cards.Count == 0 || (!HasRoom && !ignoreSpaceLimits))
                 return;
             var target = zone.Cards.First();
-            DrawTargetFrom(zone, target);
+            DrawTargetFrom(zone, target, ignoreSpaceLimits: ignoreSpaceLimits);
         }
 
-        public void DrawXFrom(CardZone zone, int numDraw)
+        public void DrawXFrom(CardZone zone, int numDraw, bool ignoreSpaceLimits = false)
         {
             //No checks here because if no room or enough from zone, we want to draw as many as possible.
             for (int i = 0; i < numDraw; i++)
             {
-                DrawFrom(zone);
+                DrawFrom(zone, ignoreSpaceLimits: ignoreSpaceLimits);
             }
         }
 

@@ -150,7 +150,12 @@ namespace ConsoleBalatro.Engine
 
         public static void DrawHandful()
         {
-            HandZone.DrawUntilCapacityFrom(DeckZone);
+            var redrawStart = new EngineRedrawArgs() { MyContext = new() { Context = EventContextType.DrawHandfulStarted} };
+            EngineEventHandler.TriggerEvent(redrawStart);
+            if (redrawStart.ForcedRedrawAmount < 0)
+                HandZone.DrawUntilCapacityFrom(DeckZone);
+            else
+                HandZone.DrawXFrom(DeckZone, redrawStart.ForcedRedrawAmount, ignoreSpaceLimits: true);
             EngineEventHandler.TriggerEvent(new EngineEventArgs() { MyContext = new() { Context = EventContextType.DrawHandfulDone } });
         }
 

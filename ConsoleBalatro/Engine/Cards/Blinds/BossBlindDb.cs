@@ -342,6 +342,141 @@ namespace ConsoleBalatro.Engine.Cards.Blinds
                     return ret;
                 }
             },
+            {
+                "THE ARM",
+                c =>
+                {
+                    var ret = JokerDb.BasicDataBlock("The Arm", "Decrease level of played poker hand by 1");
+
+                    ret.Listeners.Add(new EngineEventListener()
+                    {
+                        MyContextType = EventContextType.HandPlayedCalculated,
+                        MyAction = args =>
+                        {
+                            if(args is EngineHandPlayArgs playArgs)
+                            {
+                                ScoreHandler.LevelDownHand(playArgs.HandBeingPlayed);
+                            }
+                        },
+                    });
+
+                    return ret;
+                }
+            },
+            {
+                "THE PSYCHIC",
+                c =>
+                {
+                    var ret = JokerDb.BasicDataBlock("The Psychic", "Must play 5 cards (not all cards need to score)");
+
+                    ret.Listeners.Add(new EngineEventListener()
+                    {
+                        MyContextType = EventContextType.AllScoringCardsDecided,
+                        MyAction = args =>
+                        {
+                            if(args is EngineHandPlayArgs playArgs && playArgs.CardsSelected.Count < 5)
+                            {
+                                playArgs.CancelScoring = true;
+                            }
+                        },
+                    });
+
+                    return ret;
+                }
+            },
+            {
+                "THE MOUTH",
+                c =>
+                {
+                    var ret = JokerDb.BasicDataBlock("The Mouth", "Only one hand type can be played this round");
+                    ret.DataDict.Add("PLAYEDFLAG", new JokerData() {MyDataType = JokerDataType.INT, IntData = 0});
+                    ret.DataDict.Add("CHOSENHAND", new JokerData() {MyDataType = JokerDataType.HANDTYPE, HandTypeData = PlayedHandType.HIGHCARD});
+
+                    ret.Listeners.Add(new EngineEventListener()
+                    {
+                        MyContextType = EventContextType.AllScoringCardsDecided,
+                        MyAction = args =>
+                        {
+                            if(args is EngineHandPlayArgs playArgs && ret.DataDict["PLAYEDFLAG"].IntData == 1 && playArgs.HandBeingPlayed == ret.DataDict["CHOSENHAND"].HandTypeData)
+                            {
+                                playArgs.CancelScoring = true;
+                            }
+                        },
+                    });
+
+                    ret.Listeners.Add(new EngineEventListener()
+                    {
+                        MyContextType = EventContextType.HandPlayDone,
+                        MyAction = args =>
+                        {
+                            if(args is EngineHandPlayDoneArgs playArgs && ret.DataDict["PLAYEDFLAG"].IntData == 0)
+                            {
+                                ret.DataDict["PLAYEDFLAG"].IntData = 1;
+                                ret.DataDict["CHOSENHAND"].HandTypeData = playArgs.HandTypeThatWasPlayed;
+                            }
+                        },
+                    });
+
+                    return ret;
+                }
+            },
+            {
+                "THE FLINT",
+                c =>
+                {
+                    var ret = JokerDb.BasicDataBlock("The Flint", "Base Chips and Mult for played poker hands are halved for the entire round");
+
+                    ret.Listeners.Add(new EngineEventListener()
+                    {
+                        MyContextType = EventContextType.SettingBaseChipsMult,
+                        MyAction = args =>
+                        {
+                            if(args is EngineSettingBaseHandScoreArgs scoreArgs)
+                            {
+                                scoreArgs.BaseChipAmount /= 2;
+                                scoreArgs.BaseMultAmount /= 2;
+                            }
+                        },
+                    });
+
+                    return ret;
+                }
+            },
+            {
+                "THE SERPENT",
+                c =>
+                {
+                    var ret = JokerDb.BasicDataBlock("The Serpent", "After Play or Discard, always draw 3 cards (ignores hand size)");
+                    ret.DataDict.Add("FIRSTDRAWDONE", new JokerData() { MyDataType = JokerDataType.INT, IntData = 0});
+                    ret.DataDict.Add("INTAMOUNT", new JokerData() { MyDataType = JokerDataType.INT, IntData = 3});
+
+                    ret.Listeners.Add(new EngineEventListener()
+                    {
+                        MyContextType = EventContextType.DrawHandfulStarted,
+                        MyAction = args =>
+                        {
+                            if(args is EngineRedrawArgs redrawArgs && ret.DataDict["FIRSTDRAWDONE"].IntData == 1)
+                            {
+                                redrawArgs.ForcedRedrawAmount = ret.DataDict["INTAMOUNT"].IntData;
+                            }
+                        },
+                    });
+                    ret.Listeners.Add(new EngineEventListener()
+                    {
+                        MyContextType = EventContextType.DrawHandfulDone,
+                        MyAction = args =>
+                        {
+                            if(ret.DataDict["FIRSTDRAWDONE"].IntData == 0)
+                            {
+                                ret.DataDict["FIRSTDRAWDONE"].IntData = 1;
+                            }
+                        },
+                        RemoveAfterTriggering = true,
+                    });
+
+                    return ret;
+                }
+            },
         };
 
         //Give the passed card the data necessary to make it the named blind (DB NAME)

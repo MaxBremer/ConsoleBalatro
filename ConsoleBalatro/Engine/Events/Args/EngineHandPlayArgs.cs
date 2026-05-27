@@ -14,6 +14,9 @@ namespace ConsoleBalatro.Engine.Events.Args
         public List<Card> CardsSelected = new();
         public List<Card> CardsInScoringHand = new();
 
+        public int BaseChipsForCalc;
+        public double BaseMultForCalc;
+
         public bool CancelScoring = false;
     }
 }

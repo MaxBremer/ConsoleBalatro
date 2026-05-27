@@ -122,11 +122,29 @@ namespace ConsoleBalatro.Engine
             HandLevels[handType] += 1;
         }
 
+        public static void LevelDownHand(PlayedHandType handType)
+        {
+            if (HandLevels[handType] == 1)
+                return;
+            var chipBuff = HandBuffAmounts[handType].Item1;
+            var multBuff = HandBuffAmounts[handType].Item2;
+            var finalChipVal = CurrentHandStats[handType].Item1 - chipBuff;
+            var finalMultVal = CurrentHandStats[handType].Item2 - multBuff;
+
+            //TODO: probably emit event
+            CurrentHandStats[handType] = (finalChipVal, finalMultVal);
+            HandLevels[handType] += 1;
+        }
+
         public static void SetBaseHandScore(PlayedHandType hand)
         {
             var targetScorePair = CurrentHandStats[hand];
-            Globals.CurrentChips = targetScorePair.Item1;
-            Globals.CurrentMult = targetScorePair.Item2;
+
+            var scoreArgs = new EngineSettingBaseHandScoreArgs() { MyContext = new() { Context = EventContextType.SettingBaseChipsMult}, BaseChipAmount = targetScorePair.Item1, BaseMultAmount = (double)targetScorePair.Item2 };
+            EngineEventHandler.TriggerEvent(scoreArgs);
+
+            Globals.CurrentChips = scoreArgs.BaseChipAmount;
+            Globals.CurrentMult = scoreArgs.BaseMultAmount;
         }
 
         public static void FinalPlayChipsCalc()

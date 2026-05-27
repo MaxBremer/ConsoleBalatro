@@ -30,6 +30,7 @@ namespace ConsoleBalatro.Engine.Events
         StartPlayRoundSetupOver,
         EndPlayRound,
 
+        DrawHandfulStarted,
         DrawHandfulDone,
 
         CardDetailsChange,
@@ -95,6 +96,8 @@ namespace ConsoleBalatro.Engine.Events
         LuckyCardSuccessfulTrigger,
 
         BossAbilityTriggeredByHand,
+
+        SettingBaseChipsMult,
     }
     public class EventContext
     {

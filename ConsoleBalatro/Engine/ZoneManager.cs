@@ -164,6 +164,17 @@ namespace ConsoleBalatro.Engine
             HandZone.DrawXFrom(DeckZone, x);
         }
 
+        public static void ClearOutPlayZone()
+        {
+            var cList = CurrentlyBeingPlayedZone.Cards.ToList();
+            foreach (var c in cList)
+            {
+                HiddenPlayZone.DrawTargetFrom(CurrentlyBeingPlayedZone, c);
+                c.ForcedSelect = false;
+                c.isSelected = false;
+            }
+        }
+
         public static void DiscardSelectedFromHand()
         {
             var selList = CardsSelectedInHand;
@@ -178,6 +189,7 @@ namespace ConsoleBalatro.Engine
                 EngineEventHandler.TriggerEvent(args);
 
                 DiscardZone.DrawTargetFrom(HandZone, c);
+                c.ForcedSelect = false;
                 c.ToggleSelect();
             }
         }

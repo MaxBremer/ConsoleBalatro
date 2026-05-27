@@ -281,7 +281,8 @@ namespace ConsoleBalatro.Engine
             {
                 //TODO: SCORING CANCELLED EVENT.
             }
-            ZoneManager.HiddenPlayZone.DrawUntilCapacityFrom(ZoneManager.CurrentlyBeingPlayedZone);
+            //ZoneManager.HiddenPlayZone.DrawUntilCapacityFrom(ZoneManager.CurrentlyBeingPlayedZone);
+            ZoneManager.ClearOutPlayZone();
             CurHandsRemaining -= 1;
 
             var handPlayDoneArgs = new EngineHandPlayDoneArgs()

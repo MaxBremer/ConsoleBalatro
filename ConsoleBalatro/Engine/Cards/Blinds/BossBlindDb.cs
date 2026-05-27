@@ -598,7 +598,43 @@ namespace ConsoleBalatro.Engine.Cards.Blinds
                     return ret;
                 }
             },
+            {
+                "CERULEAN BELL",
+                c =>
+                {
+                    var ret = JokerDb.BasicDataBlock("Cerulean Bell", "Forces 1 card in hand to always be selected.");
 
+                    ret.DataDict.Add("CARDTARGET", new JokerData() {MyDataType = JokerDataType.CARD});
+
+                    Func<Card?> GetSelected = () =>
+                    {
+                        var cardList = ZoneManager.HandZone.Cards.Where(x => !x.isSelected).ToList();
+                        if (!cardList.Any())
+                            return null;
+
+                        if(cardList.Count == 1)
+                            return cardList.Single();
+                        
+                        return cardList[Globals.randomNext(cardList.Count)];
+                    };
+
+                    ret.Listeners.Add(new EngineEventListener()
+                    {
+                        MyContextType = EventContextType.DrawHandfulDone,
+                        MyAction = _ =>
+                        {
+                            var target = GetSelected();
+                            if(target != null)
+                            {
+                                target.ToggleSelect();
+                                target.ForcedSelect = true;
+                            }
+                        },
+                    });
+
+                    return ret;
+                }
+            },
         };
 
         //Give the passed card the data necessary to make it the named blind (DB NAME)

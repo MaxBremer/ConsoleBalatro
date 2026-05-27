@@ -36,7 +36,7 @@ class Program
         FlowHandler.InitializeBlindSelectionRound();
         FlowHandler.CurSmallBlindTag = TagType.ECONOMY;
         FlowHandler.CurBigBlindTag = TagType.ECONOMY;
-        FlowHandler.CurrentBossBlind = "AMBER ACORN";
+        FlowHandler.CurrentBossBlind = "CERULEAN BELL";
 
 
         //Test jokers

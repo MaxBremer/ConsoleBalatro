@@ -39,6 +39,9 @@ namespace ConsoleBalatro.Engine.Cards
         public double MultBase = 0;
         public double MultMultBase = 0;
         public CardZone MyZone = null;
+
+        public bool ForcedSelect = false;
+
         public bool Debuffed {  
             get 
             {
@@ -100,6 +103,8 @@ namespace ConsoleBalatro.Engine.Cards
             get => _isSelected;
             set
             {
+                if (_isSelected && ForcedSelect)
+                    return;
                 var evContext = new EventContext() { Context = EventContextType.CardSelect };
                 var eventArgs = new EngineCardSelectedArgs() { MyContext = evContext, isNowSelected = value, wasPreviouslySelected = _isSelected, TargetedCard = this };
                 _isSelected = value;
@@ -231,7 +236,7 @@ namespace ConsoleBalatro.Engine.Cards
 
             var args = new EngineSelectionTogglingArgs() { CardThatIsToggling = this, OldSelectionState = isSelected, MyContext = new() { Context = EventContextType.CardTogglingSelection} };
 
-            if(!args.CancelToggling)
+            if(!args.CancelToggling && !(isSelected && ForcedSelect))
                 isSelected = !isSelected;
         }
 

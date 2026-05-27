@@ -13,5 +13,9 @@ namespace ConsoleBalatro.Engine.Events.Args
         public int numTriggersToDo = 1;
         public bool isInHandPostScoringTrigger = false;
         public bool isScoringPreTrigger => !isInHandPostScoringTrigger;
+
+        //Yeah yeah this is kinda stupid to include here for like one case.
+        //suck my nards.
+        public int CurrentAnte;
     }
 }

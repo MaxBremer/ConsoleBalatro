@@ -25,6 +25,7 @@ namespace ConsoleBalatro.UI.EngineUI
         public const int PLAYING_CARD_RANK_IND = 7;
 
         private EngineEventListener MyListener;
+        private EngineEventListener MyFlipListener;
         public CardDisplay(Card c) : base(CARD_HEIGHT, CARD_WIDTH)
         {
             MyCard = c;
@@ -41,10 +42,14 @@ namespace ConsoleBalatro.UI.EngineUI
 
         public int PriceDisplay = -1;
 
+        public bool isFlipped = false;
+
         public void AddListener()
         {
             MyListener = new EngineEventListener() { MyAction = OnCardDetailChange, MyContextType = EventContextType.CardDetailsChange };
             EngineEventHandler.StartListening(MyListener);
+            MyFlipListener = new EngineEventListener() { MyAction = OnCardFlip, MyContextType = EventContextType.CardDetailsChange };
+            EngineEventHandler.StartListening(MyFlipListener);
         }
 
         public void RemoveListener()
@@ -52,6 +57,10 @@ namespace ConsoleBalatro.UI.EngineUI
             if(MyListener != null)
             {
                 EngineEventHandler.StopListening(MyListener);
+            }
+            if (MyFlipListener != null)
+            {
+                EngineEventHandler.StopListening(MyFlipListener);
             }
         }
 
@@ -88,7 +97,7 @@ namespace ConsoleBalatro.UI.EngineUI
                 tempDisplay = insertInto(tempDisplay, "$" + PriceDisplay.ToString(), 0);
             }
 
-            if (MyCard.FaceDown)//if face down, close out here.
+            if (isFlipped)//if face down, close out here.
             {
                 ImportFromString(tempDisplay, CARD_SEP);
                 return;
@@ -174,9 +183,24 @@ namespace ConsoleBalatro.UI.EngineUI
 
         private void OnCardDetailChange(EngineEventArgs args)
         {
-            if(args is EngineCardDetailsChangeArgs changeArgs && changeArgs.CardBeingChanged == MyCard && changeArgs.isAfter)
+            if(args is EngineCardDetailsChangeArgs changeArgs && changeArgs.CardBeingChanged == MyCard && changeArgs.isAfter && !changeArgs.isFlip)
             {
-                PreDisplaySetup();
+                EngineDisplayGlobals.CacheAnimationAction(_ =>
+                {
+                    PreDisplaySetup();
+                }, 0);
+            }
+        }
+
+        private void OnCardFlip(EngineEventArgs args)
+        {
+            if (args is EngineCardDetailsChangeArgs changeArgs && changeArgs.CardBeingChanged == MyCard && changeArgs.isFlip && changeArgs.isAfter)
+            {
+                EngineDisplayGlobals.CacheAnimationAction(_ =>
+                {
+                    isFlipped = changeArgs.newFlipVal;
+                    PreDisplaySetup();
+                }, 0);
             }
         }
     }

@@ -24,6 +24,9 @@ namespace ConsoleBalatro.Engine.Events.Args
         public Suit OldSuit;
         public Suit NewSuit;
 
+        public bool isFlip = false;
+        public bool newFlipVal = false;
+
         public bool isAfter = false;
     }
 }

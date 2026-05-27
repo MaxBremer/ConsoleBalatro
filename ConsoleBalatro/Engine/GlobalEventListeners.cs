@@ -27,6 +27,7 @@ namespace ConsoleBalatro.Engine
             EngineEventHandler.StartListening(new EngineEventListener() { MyAction = RevealHiddenHand, MyContextType = EventContextType.HandPlayDone });
 
             EngineEventHandler.StartListening(new EngineEventListener() { MyAction = RemoveDebuffsAndHidesAtUndraw, MyContextType = EventContextType.CardDrawnToZone });
+            EngineEventHandler.StartListening(new EngineEventListener() { MyAction = ShowPlayedCards, MyContextType = EventContextType.CardDrawnToZone });
         }
 
         public static void ChangeZoneSizeForNegative(EngineEventArgs args)
@@ -154,6 +155,14 @@ namespace ConsoleBalatro.Engine
             if (args is EngineCardDrawnToZoneArgs drawArgs && (drawArgs.CardBeingDrawn.Debuffed || drawArgs.CardBeingDrawn.FaceDown) && (drawArgs.ZoneDrawnTo == ZoneManager.DiscardZone || drawArgs.ZoneDrawnTo == ZoneManager.HiddenPlayZone || drawArgs.ZoneDrawnTo == ZoneManager.DeckZone))
             {
                 drawArgs.CardBeingDrawn.Debuffed = false;
+                drawArgs.CardBeingDrawn.FaceDown = false;
+            }
+        }
+
+        private static void ShowPlayedCards(EngineEventArgs args)
+        {
+            if (args is EngineCardDrawnToZoneArgs drawArgs && drawArgs.CardBeingDrawn.FaceDown && drawArgs.ZoneDrawnTo == ZoneManager.CurrentlyBeingPlayedZone)
+            {
                 drawArgs.CardBeingDrawn.FaceDown = false;
             }
         }

@@ -21,6 +21,8 @@ namespace ConsoleBalatro.Engine
         {
             //TODO: test this. Changed from old shuffle method which was basically just doing random swaps.
             Cards = Cards.OrderBy(x => Globals.randomNext(Int32.MaxValue)).ToList();
+            var shuffleArgs = new EngineZoneShuffledArgs() { ZoneShuffling = this, MyContext = new() { Context = EventContextType.ZoneShuffling } };
+            EngineEventHandler.TriggerEvent(shuffleArgs);
         }
         //TODO: invisible add/remove causes so many fucking problems better to just remove... not even that useful.
         public virtual bool AddCard(Card card, bool invisibleAdd = false, bool overrideSpace = false, CardZone zoneDrawnFrom = null)

@@ -23,6 +23,7 @@ namespace ConsoleBalatro.Engine.Cards
 
         private bool _isSelected = false;
         private bool _debuffed = false;
+        private bool _facedown = false;
         private Enhancement _enhancement = Enhancement.NONE;
         private Rank _rank = Rank.NONE;
         private Suit _suit = Suit.NONE;
@@ -59,7 +60,12 @@ namespace ConsoleBalatro.Engine.Cards
                 }
             } 
         }
-        public bool FaceDown = false;
+        public bool FaceDown { get => _facedown;
+            set
+            {
+                _facedown = value;
+                EngineEventHandler.TriggerEvent(new EngineCardDetailsChangeArgs() { MyContext = new() { Context = EventContextType.CardDetailsChange }, CardBeingChanged = this, isFlip = true, newFlipVal = _facedown, isAfter = true });
+            } }
         public bool IsDestructible = true;//TODO: Later things can prevent destruction, for now does nothing.
         public bool isJoker => JokerData != null && JokerData.isJoker;
         public bool isVoucher => JokerData != null && JokerData.isVoucher;
@@ -274,7 +280,9 @@ namespace ConsoleBalatro.Engine.Cards
         {
             if (Debuffed)
             {
-                //TODO: prob some kind of event to show it tried to trigger but was debuffed? For the one joker that gives money?
+                //TODO: FOR NOW, THIS IS A CHEAP EASY WAY TO IMPLEMENT MATADOR MONEY GAIN
+                //LATER THIS SHOULD PROB BE CUSTOM, BUT IDK HOW TO DIFFERENTIATE BOSS DEBUFFS.
+                EngineEventHandler.TriggerEvent(new EngineEventArgs() { MyContext = new() { Context = EventContextType.BossAbilityTriggeredByHand } });
                 return;
             }
 
@@ -282,6 +290,7 @@ namespace ConsoleBalatro.Engine.Cards
             {
                 MyContext = new() { Context = EventContextType.CardPreTrigger, ScoringContext = context },
                 CardAboutToTrigger = this,
+                CurrentAnte = FlowHandler.CurrentAnte,
             };
             EngineEventHandler.TriggerEvent(preTriggerArgs);
             for (int i = 0; i < preTriggerArgs.numTriggersToDo; i++)

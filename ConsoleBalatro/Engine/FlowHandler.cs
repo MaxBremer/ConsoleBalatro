@@ -177,7 +177,7 @@ namespace ConsoleBalatro.Engine
 
             //BEFORE WE INCREMENT BLIND:
             //POSSIBLY CLEAR BLIND CARDS FROM HIDDEN BLIND ZONE.
-            ZoneManager.HiddenBlindAttributeZone.ClearCards(true);//TODO: PROBABLY TURN OFF INVISIBLE ADD HERE TOO CAUSE OF LISTENERS. FUCK.
+            ZoneManager.HiddenBlindAttributeZone.ClearCards();
 
             //BEFORE BLIND INCREMENT, CALC MONEY TO GIVE.
             var postRoundMoney = CalcPostRoundMoneyWithSources();

@@ -138,8 +138,8 @@ namespace ConsoleBalatro.UI.EngineUI
             }
             else if (args is EngineCardPositionsSwappingArgs posArgs && args.MyContext.Context == EventContextType.CardPositionsSwapping && posArgs.ZoneOfSwap == MyCardZone)
             {
-                
-                EngineDisplayGlobals.CacheAnimationAction(_ =>
+
+                /*EngineDisplayGlobals.CacheAnimationAction(_ =>
                 {
                     var firstInd = posArgs.Card1OldIndex;
                     var secondInd = posArgs.Card2OldIndex;
@@ -147,6 +147,17 @@ namespace ConsoleBalatro.UI.EngineUI
                     CardList[firstInd] = posArgs.Card2;
                     SetCardPositions();
                     PreDisplaySetup();
+                }, 100);*/
+                EngineDisplayGlobals.CacheAnimationAction(_ =>
+                {
+                    ResetFromZoneList();
+                }, 100);
+            }
+            else if (args.MyContext.Context == EventContextType.ZoneShuffling && args is EngineZoneShuffledArgs zoneArgs && zoneArgs.ZoneShuffling == MyCardZone)
+            {
+                EngineDisplayGlobals.CacheAnimationAction(_ =>
+                {
+                    ResetFromZoneList();
                 }, 100);
             }
         }

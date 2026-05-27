@@ -15,6 +15,7 @@ namespace ConsoleBalatro.Engine.Events
             EventContextType.HandPlayDone,
             EventContextType.HandDiscardDone,
             EventContextType.BlindSkip,
+            EventContextType.CardPreTrigger,
         };
 
         public static List<EngineEventArgs> SavedEvents = new();

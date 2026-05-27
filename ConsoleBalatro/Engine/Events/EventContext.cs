@@ -98,6 +98,8 @@ namespace ConsoleBalatro.Engine.Events
         BossAbilityTriggeredByHand,
 
         SettingBaseChipsMult,
+
+        ZoneShuffling,
     }
     public class EventContext
     {

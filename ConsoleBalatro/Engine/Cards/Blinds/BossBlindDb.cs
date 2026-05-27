@@ -512,8 +512,7 @@ namespace ConsoleBalatro.Engine.Cards.Blinds
                 c =>
                 {
                     var ret = JokerDb.BasicDataBlock("Amber Acorn", "Flips and shuffles all Joker cards");
-                    //TODO: Very minor glitch. On last hand of round, triggered jokers flip prematurely cause base card is flipped.
-                    //Doesn't actually change gameplay cause last hand, purely graphical. 
+                    
                     ret.OnJokerGainEffs.Add(() =>
                     {
                         foreach (var j in ZoneManager.JokerZone.Cards)
@@ -533,6 +532,73 @@ namespace ConsoleBalatro.Engine.Cards.Blinds
                     return ret;
                 }
             },
+            {
+                "CRIMSON HEART",
+                c =>
+                {
+                    var ret = JokerDb.BasicDataBlock("Crimson Heart", "One random Joker disabled every hand");
+
+                    ret.DataDict.Add("CARDTARGET", new JokerData() {MyDataType = JokerDataType.CARD});
+
+                    Func<Card?, Card?> GetJoker = curTarget =>
+                    {
+                        var cardList = ZoneManager.JokerZone.Cards.ToList();
+                        if (!cardList.Any())
+                            return null;
+
+                        if(cardList.Count == 1)
+                            return cardList.Single();
+
+                        if(curTarget != null && cardList.Contains(curTarget))
+                        {
+                            cardList.Remove(curTarget);
+                        }
+
+                        return cardList[Globals.randomNext(cardList.Count)];
+                    };
+
+                    ret.Listeners.Add(new EngineEventListener()
+                    {
+                        MyContextType = EventContextType.StartPlayRound,
+                        MyAction = _ =>
+                        {
+                            var target = GetJoker(null);
+                            if(target != null)
+                            {
+                                target.Debuffed = true;
+                                ret.DataDict["CARDTARGET"].CardData = target;
+                            }
+                        },
+                    });
+
+                    ret.Listeners.Add(new EngineEventListener()
+                    {
+                        MyContextType = EventContextType.HandPlayDone,
+                        MyAction = _ =>
+                        {
+                            if(ret.DataDict["CARDTARGET"].CardData != null)
+                            {
+                                ret.DataDict["CARDTARGET"].CardData.Debuffed = false;
+                            }
+                            var target = GetJoker(ret.DataDict["CARDTARGET"].CardData);
+                            if(target != null)
+                            {
+                                target.Debuffed = true;
+                                ret.DataDict["CARDTARGET"].CardData = target;
+                            }
+                        },
+                    });
+
+                    ret.OnJokerRemovalEffs.Add(() =>
+                    {
+                        if(ret.DataDict["CARDTARGET"].CardData != null)
+                            ret.DataDict["CARDTARGET"].CardData.Debuffed = false;
+                    });
+
+                    return ret;
+                }
+            },
+
         };
 
         //Give the passed card the data necessary to make it the named blind (DB NAME)

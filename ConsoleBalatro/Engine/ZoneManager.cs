@@ -82,6 +82,9 @@ namespace ConsoleBalatro.Engine
         public static CardZone CurrentlyActivatingConsumable; //Zone holding any consumable currently being activated.
 
         public static CardZone HiddenBlindAttributeZone; //Used for hidden "Jokers" used to implement effects of Boss blinds.
+        //NOTE: The following should only be used for PERMANENT effects, staying across the entire run after being added.
+        public static CardZone OtherHiddenJokerZone; //Used for other hidden effects; deck abilities, stake effects, challenge effects, etc.
+
 
         public static void InitializeMainGameZones()
         {
@@ -99,6 +102,8 @@ namespace ConsoleBalatro.Engine
             CurrentlyBeingPlayedZone = MakeZone("CurrentlyBeingPlayed");
             HiddenBlindAttributeZone = MakeJokerZone(1); //Has all the same attributes of jokers, blinds are effectively hidden jokers.
             HiddenBlindAttributeZone.Name = "Blinds";
+            OtherHiddenJokerZone = MakeJokerZone(-1);
+            OtherHiddenJokerZone.Name = "Permanent Effects";
 
             InitializePlayRoundZones();
             InitializeMarketRoundZones();

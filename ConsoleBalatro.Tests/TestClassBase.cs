@@ -43,7 +43,8 @@ namespace ConsoleBalatro.Tests
             Globals.SetStartOfRoundStats();
             Globals.RequiredChipsForCurrentBlind = -1;
 
-            ZoneManager.HiddenBlindAttributeZone.ClearCards(true);
+            ZoneManager.HiddenBlindAttributeZone.ClearCards(false);
+            ZoneManager.OtherHiddenJokerZone.ClearCards(false);
         }
 
         public void ResetToBlindSelection(bool returnVoucher = false)

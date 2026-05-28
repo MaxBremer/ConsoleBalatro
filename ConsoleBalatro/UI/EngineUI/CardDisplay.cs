@@ -108,7 +108,14 @@ namespace ConsoleBalatro.UI.EngineUI
                 var dispName = MyCard.JokerData.JokerName;
                 if(dispName.Length > 3)
                 {
-                    dispName = dispName.Substring(0, 3);
+                    if(dispName.StartsWith("The "))
+                    {
+                        dispName = dispName.Substring(4, 3);
+                    }
+                    else
+                    {
+                        dispName = dispName.Substring(0, 3);
+                    }
                 }
                 tempDisplay = insertInto(tempDisplay, dispName, 13);
                 tempDisplay = insertInto(tempDisplay, MyCard.isVoucher ? "V" : "J", 8);

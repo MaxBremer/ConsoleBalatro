@@ -223,12 +223,12 @@ namespace ConsoleBalatro.Engine
 
         public static void SortZoneByRank(CardZone zone)
         {
-            zone.Cards = zone.Cards.OrderByDescending(x => x.Rank).ThenBy(y => y.Suit).ToList();
+            zone.Cards = zone.Cards.OrderByDescending(x => x.Rank).ThenByDescending(y => y.Suit).ToList();
         }
 
         public static void SortZoneBySuit(CardZone zone)
         {
-            zone.Cards = zone.Cards.OrderByDescending(x => x.Suit).ThenBy(y => y.Rank).ToList();
+            zone.Cards = zone.Cards.OrderByDescending(x => x.Suit).ThenByDescending(y => y.Rank).ToList();
         }
 
         public static void DestroyCard(Card c, CardZone fromZone)

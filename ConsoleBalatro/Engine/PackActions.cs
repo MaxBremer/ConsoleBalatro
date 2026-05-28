@@ -113,6 +113,7 @@ namespace ConsoleBalatro.Engine
             var packOpenData = PackDataForOpenings[packInfo.RelevantBuyItemType];
             if (packOpenData.drawHandOnOpen)
             {
+                ZoneManager.ShuffleDeck();
                 ZoneManager.DrawHandful();
             }
         }

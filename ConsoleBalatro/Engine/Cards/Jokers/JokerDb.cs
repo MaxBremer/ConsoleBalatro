@@ -837,7 +837,7 @@ namespace ConsoleBalatro.Engine.Cards.Jokers
                     MyAction = args =>
                     {
                         ret.DataDict["DISCARDS_USED"].IntData = 0;
-                        ret.DataDict["DISCARDS_START"].IntData = Globals.CurDiscardsRemaining;
+                        ret.DataDict["DISCARDS_START"].IntData = Globals.MaxDiscardsPerRound;
                     },
                 });
                 ret.Listeners.Add(new EngineEventListener()

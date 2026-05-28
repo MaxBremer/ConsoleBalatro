@@ -98,6 +98,7 @@ namespace ConsoleBalatro.Engine.Pools
             Rules.Add(new JokerForcedRarityRule());
             Rules.Add(new JokerNoLegosRule());
             Rules.Add(new VoucherPoolRules());
+            Rules.Add(new PackRareReplacementRule());
         }
 
         public static RollableDefinition RollSingle(ContentRollRequest request)

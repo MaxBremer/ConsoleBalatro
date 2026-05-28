@@ -19,15 +19,15 @@ class Program
         Globals.InitializeMain();
         UIStateManager.InitializeUIStateManager();
         //test stuff
-        var ra = new Random();
+        /*var ra = new Random();
         foreach (var c in ZoneManager.DeckZone.Cards)
         {
-            if(ra.Next(1, 4) == 3)
+            if (ra.Next(1, 4) == 3)
             {
                 c.Enhancement = Enhancement.STEEL;
                 c.Seal = Seal.RED;
             }
-        }
+        }*/
 
         Console.Clear();
         EngineDisplayGlobals.InitializeDisplayAll(inte);

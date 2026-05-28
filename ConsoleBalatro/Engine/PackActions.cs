@@ -100,7 +100,7 @@ namespace ConsoleBalatro.Engine
             for (int i = 0; i < packInfo.NumOptionsPresented; i++)
             {
                 var type = MarketPullManager.ChooseRollItemByOdds(args.Odds);
-                MarketPullManager.DrawMarketItem(type, ZoneManager.PackOptionZone, source: Pools.GenerationSource.Pack, batchContext: batchInfo);
+                MarketPullManager.DrawMarketItem(type, ZoneManager.PackOptionZone, source: GenerationSource.Pack, batchContext: batchInfo);
             }
             //MarketOptionsManager.DrawItemsByOdds(packInfo.NumOptionsPresented, ZoneManager.PackOptionZone, args.Odds);
 

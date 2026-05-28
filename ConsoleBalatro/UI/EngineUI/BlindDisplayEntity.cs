@@ -55,7 +55,7 @@ namespace ConsoleBalatro.UI.EngineUI
                 ret.Add("");
                 ret.Add("");
                 ret.Add("TAG:");
-                //TODO: TAG IMPLEMENTATION
+                ret.Add(MyBlind == BlindType.SMALL ? FlowHandler.CurSmallBlindTag.ToString() : FlowHandler.CurBigBlindTag.ToString());
             }
 
             return ret;

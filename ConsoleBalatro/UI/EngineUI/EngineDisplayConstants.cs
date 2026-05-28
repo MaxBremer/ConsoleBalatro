@@ -11,17 +11,17 @@ namespace ConsoleBalatro.UI.EngineUI
         //height, width, xpos, ypos
         public const int MAIN_MARKET_HEIGHT = 7;
         public const int MAIN_MARKET_WIDTH = 50;
-        public const int MAIN_MARKET_XPOS = 20;
+        public const int MAIN_MARKET_XPOS = 25;
         public const int MAIN_MARKET_YPOS = 9;
 
         public const int VOUCH_MARKET_HEIGHT = 7;
         public const int VOUCH_MARKET_WIDTH = 12;
-        public const int VOUCH_MARKET_XPOS = 20;
+        public const int VOUCH_MARKET_XPOS = 25;
         public const int VOUCH_MARKET_YPOS = 19;
 
         public const int PACK_MARKET_HEIGHT = 7;
         public const int PACK_MARKET_WIDTH = 24;
-        public const int PACK_MARKET_XPOS = 33;
+        public const int PACK_MARKET_XPOS = 38;
         public const int PACK_MARKET_YPOS = 19;
 
         public const int TEXT_DISPLAY_MINWIDTH = 20;
@@ -30,8 +30,8 @@ namespace ConsoleBalatro.UI.EngineUI
 
         public const int PACK_OPTIONS_HEIGHT = 7;
         public const int PACK_OPTIONS_WIDTH = 37;
-        public const int PACK_OPTIONS_XPOS = 20;
-        public const int PACK_OPTIONS_YPOS = 6;
+        public const int PACK_OPTIONS_XPOS = 25;
+        public const int PACK_OPTIONS_YPOS = 8;
 
         public const int BLIND_PANEL1_XLOC = 20;
         public const int BLIND_PANEL2_XLOC = 40;

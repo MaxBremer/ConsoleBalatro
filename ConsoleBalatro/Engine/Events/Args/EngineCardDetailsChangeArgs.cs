@@ -24,6 +24,10 @@ namespace ConsoleBalatro.Engine.Events.Args
         public Suit OldSuit;
         public Suit NewSuit;
 
+        public bool isRankChange = false;
+        public Rank OldRank;
+        public Rank NewRank;
+
         public bool isFlip = false;
         public bool newFlipVal = false;
 

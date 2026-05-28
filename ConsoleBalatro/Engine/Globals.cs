@@ -95,6 +95,9 @@ namespace ConsoleBalatro.Engine
 
         public static int BaseBossBlindRerollsAllowed = 0;
         public static int CurBossBlindRerollsAllowed = 0;
+
+        public static HashSet<string> Flags = new();
+
         public static bool CanRerollBossBlind => CurBossBlindRerollsAllowed != 0;
 
         public static bool ShopPlayingCardsGetModifiers = false;//NOTE: TEMP. 
@@ -181,6 +184,7 @@ namespace ConsoleBalatro.Engine
             ShopPlayingCardsGetModifiers = false;
 
             EngineUtils.ResetUtilValues();
+            Flags.Clear();
         }
 
         public static void PlayCurrentlySelectedHand()
@@ -369,6 +373,12 @@ namespace ConsoleBalatro.Engine
             var emitArgs = new EngineGoldGainEmitArgs() { AmountGained = -1 * moneyAmt, MyContext = new EventContext() { Context = EventContextType.MoneyGainEmit }, SourceOfEmit = src };
             EngineEventHandler.TriggerEvent(emitArgs);
             Money += emitArgs.AmountGained;
+        }
+
+        public static void AddFlag(string flag)
+        {
+            if (!Flags.Contains(flag))
+                Flags.Add(flag);
         }
 
         public static bool CanAfford(int costToCheck)

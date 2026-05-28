@@ -16,6 +16,7 @@ namespace ConsoleBalatro.Engine.Pools.Rules
             [GenerationSource.SoulCard] = JokerRarity.LEGENDARY,
             [GenerationSource.WraithCard] = JokerRarity.RARE,
             [GenerationSource.TopUpTag] = JokerRarity.COMMON,
+            [GenerationSource.RiffRaffJoker] = JokerRarity.COMMON,
         };
 
         public int Priority => 10;

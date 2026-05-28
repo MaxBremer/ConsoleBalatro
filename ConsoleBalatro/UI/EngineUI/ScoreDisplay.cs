@@ -16,6 +16,7 @@ namespace ConsoleBalatro.UI.EngineUI
             ResetTextLines();
             EngineEventHandler.StartListening(new EngineEventListener() { MyAction = OnSelectAction, MyContextType = EventContextType.CardSelect });
             EngineEventHandler.StartListening(new EngineEventListener() { MyAction = OnTotalChipGainAction, MyContextType = EventContextType.TotalChipsGained });
+            EngineEventHandler.StartListening(new EngineEventListener() { MyAction = OnTotalChipResetAction, MyContextType = EventContextType.TotalChipsReset });
             EngineEventHandler.StartListening(new EngineEventListener() { MyAction = OnRequirementSet, MyContextType = EventContextType.RequiredChipsSet });
             EngineEventHandler.StartListening(new EngineEventListener() { MyAction = OnHandsChange, MyContextType = EventContextType.HandsChange });
             EngineEventHandler.StartListening(new EngineEventListener() { MyAction = OnDiscChange, MyContextType = EventContextType.DiscardsChange });
@@ -122,6 +123,17 @@ namespace ConsoleBalatro.UI.EngineUI
                 {
                     EngineDisplayGlobals.DisplayTotalCurrentChips += gainArgs.AmountBeingGained;
                     EngineDisplayGlobals.ResetPlayedHand();
+                });
+            }
+        }
+
+        private void OnTotalChipResetAction(EngineEventArgs args)
+        {
+            if (args.MyContext.Context == EventContextType.TotalChipsReset)
+            {
+                EngineDisplayGlobals.CacheAnimationAction(_ =>
+                {
+                    EngineDisplayGlobals.DisplayTotalCurrentChips = 0;
                 });
             }
         }

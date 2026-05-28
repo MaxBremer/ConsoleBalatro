@@ -52,6 +52,7 @@ namespace ConsoleBalatro.Engine.Events
         AllScoringCardsDecided,
 
         TotalChipsGained,
+        TotalChipsReset,
         RequiredChipsSet,
 
         GainEmit,

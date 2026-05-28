@@ -905,7 +905,10 @@ namespace ConsoleBalatro.Engine.Cards.Jokers
                     MyAction = _ =>
                     {
                         if (ZoneManager.JokerZone.Cards.Contains(c) && Globals.RollRandom(ret.DataDict["NUMERATOR"].IntData, ret.DataDict["DENOMINATOR"].IntData, c))
+                        {
                             ZoneManager.DestroyCard(c, ZoneManager.JokerZone);
+                            Globals.AddFlag("GROS_MICHEL_SELF_DESTROY");
+                        }
                     },
                 });
 
@@ -1321,7 +1324,7 @@ namespace ConsoleBalatro.Engine.Cards.Jokers
                 ret.DataDict.Add("MONEYAMOUNT", new JokerData() { IntData = 4, MyDataType = JokerDataType.INT });
                 var getRandomHand = new Func<PlayedHandType, PlayedHandType>(oldHand =>
                 {
-                    var handTypes = Enum.GetValues<PlayedHandType>().Where(x => x != oldHand).ToList();//Makes sure we never roll to the same hand.
+                    var handTypes = Enum.GetValues<PlayedHandType>().Where(x => x != oldHand && (ScoreHandler.HandNumTimesPlayed[x] > 0 || !PoolManager.SpecialHandTypes.Contains(x))).ToList();//Makes sure we never roll to the same hand.
                     return handTypes[Globals.randomNext(handTypes.Count)];
                 });
                 ret.DataDict.Add("HANDTYPE", new JokerData() { HandTypeData = getRandomHand(PlayedHandType.HIGHCARD), MyDataType = JokerDataType.HANDTYPE });
@@ -1498,13 +1501,14 @@ namespace ConsoleBalatro.Engine.Cards.Jokers
                 { 
                     MyContextType = EventContextType.StartPlayRoundSetupOver, 
                     MyAction = _ => 
-                    { 
+                    {
+                        ContentRollBatchContext context = new();
                         for (var i = 0; i < ret.DataDict["NUMAMOUNT"].IntData; i++) 
-                        { 
-                            var common = JokerDb.GetRandomJokerOfRarity(JokerRarity.COMMON); 
-                            if (ZoneManager.JokerZone.HasRoom && common != null) 
-                                ZoneManager.JokerZone.AddCard(JokerDb.GenerateJokerCard(common)); 
-                            //TODO: CHANGE TO MARKET PULL MANAGER CALLS
+                        {
+                            var commonJoker = MarketPullManager.PickMarketCard(BuyItemType.JOKER, source: GenerationSource.RiffRaffJoker, batchContext: context);
+                            if (commonJoker == null || !ZoneManager.JokerZone.HasRoom)
+                                break;
+                            ZoneManager.JokerZone.AddCard(commonJoker, invisibleAdd: false);
                         } 
                     } 
                 });

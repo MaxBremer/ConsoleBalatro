@@ -163,6 +163,7 @@ namespace ConsoleBalatro.Engine
             Globals.CurrentChips = 0;
             Globals.CurrentMult = 0;
             Globals.TotalCurrentChips = 0;
+            EngineEventHandler.TriggerEvent(new EngineEventArgs() { MyContext = new() { Context = EventContextType.TotalChipsReset } });
         }
     }
 }

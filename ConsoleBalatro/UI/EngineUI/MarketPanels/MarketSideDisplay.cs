@@ -23,6 +23,7 @@ namespace ConsoleBalatro.UI.EngineUI.MarketPanels
         {
             var ret = new List<string>
             {
+                "ANTE: " + FlowHandler.CurrentAnte,
                 "",
                 "",
                 "MONEY",

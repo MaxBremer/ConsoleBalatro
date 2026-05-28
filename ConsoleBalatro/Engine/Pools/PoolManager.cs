@@ -20,6 +20,13 @@ namespace ConsoleBalatro.Engine.Pools
             "Eris",
         };
 
+        public static readonly List<PlayedHandType> SpecialHandTypes = new()
+        {
+            PlayedHandType.FIVEOFAKIND,
+            PlayedHandType.FLUSHHOUSE,
+            PlayedHandType.FLUSHFIVE
+        };
+
         //Joker master pool is the normal JokerMetadata pool from JokerDb
         //These are the immutable master pools
         public static Dictionary<string, RollableDefinition> TarotCardPool = new Dictionary<string, RollableDefinition>();

@@ -47,12 +47,12 @@ class Program
         ZoneManager.JokerZone.AddCard(JokerDb.GenerateJokerCard("CREDIT CARD"));
 
         //Test consumables
-        ZoneManager.ConsumableZone.AddCard(ConsumableManager.MakeTarotCard("EMPEROR"));
+        ZoneManager.ConsumableZone.AddCard(ConsumableManager.MakeTarotCard("STRENGTH"));
         ZoneManager.ConsumableZone.AddCard(ConsumableManager.MakeTarotCard("WORLD"));
-        ZoneManager.ConsumableZone.Cards[0].Edition = Edition.HOLOGRAPHIC;
 
         Globals.EmitMoneyGain(999, null);*/
         Globals.EmitMoneyGain(4, null);//Temp starting money command
+        Globals.MaxHandsPerRound += 1;
         EngineDisplayGlobals.PlayCachedAnimations();
 
         while (!Globals.QUIT)

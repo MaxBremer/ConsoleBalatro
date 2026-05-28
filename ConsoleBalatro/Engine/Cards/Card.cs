@@ -207,8 +207,21 @@ namespace ConsoleBalatro.Engine.Cards
 
         public void SetRankOfficial(Rank newRank)
         {
+            var oldRank = Rank;
+            var evArgs = new EngineCardDetailsChangeArgs()
+            {
+                CardBeingChanged = this,
+                isRankChange = true,
+                OldRank = oldRank,
+                NewRank = newRank,
+                MyContext = new() { Context = EventContextType.CardDetailsChange },
+            };
+            EngineEventHandler.TriggerEvent(evArgs);
             Rank = newRank;//TODO: event??
             ChipsBase = EngineUtils.RankBaseChipAmounts[Rank];
+
+            evArgs.isAfter = true;
+            EngineEventHandler.TriggerEvent(evArgs);
         }
 
         public void SetSuitOfficial(Suit newSuit)

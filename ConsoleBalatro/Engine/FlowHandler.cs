@@ -359,7 +359,8 @@ namespace ConsoleBalatro.Engine
                 BossBlindDb.BossBlindsAlreadyUsed.Clear();
             }
             var oldBossBlind = CurrentBossBlind;
-            targetBossBlindName = BossBlindDb.AvailableBossBlinds[Globals.randomNext(BossBlindDb.AvailableBossBlinds.Count)];
+            var availableBosses = BossBlindDb.AvailableBossBlinds.ToList();
+            targetBossBlindName = availableBosses[Globals.randomNext(availableBosses.Count)];
             BossBlindDb.BossBlindsAlreadyUsed.Add(targetBossBlindName);
             if (isPlayerReroll)
             {

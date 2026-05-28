@@ -16,11 +16,57 @@ namespace ConsoleBalatro.Engine.Cards.Blinds
 
         public static List<string> BossBlindsAlreadyUsed = new();
 
-        public static List<string> AvailableBossBlinds => BossBlindNames.Where(x => !BossBlindsAlreadyUsed.Contains(x)).ToList();
+        public static List<string> BigBossBlinds = new()
+        {
+            "AMBER ACORN",
+            "VERDANT LEAF",
+            "VIOLET VESSEL",
+            "CRIMSON HEART",
+            "CERULEAN BELL",
+        };
+
+        public static Dictionary<string, int> BossBlindMinimumAntes = new()
+        {
+            ["THE OX"] = 6,
+            ["THE HOUSE"] = 2,
+            ["THE WALL"] = 2,
+            ["THE WHEEL"] = 2,
+            ["THE ARM"] = 2,
+            ["THE FISH"] = 2,
+            ["THE WATER"] = 2,
+            ["THE EYE"] = 3,
+            ["THE MOUTH"] = 2,
+            ["THE PLANT"] = 4,
+            ["THE SERPENT"] = 5,
+            ["THE NEEDLE"] = 2,
+            ["THE TOOTH"] = 3,
+            ["THE FLINT"] = 2,
+            ["THE MARK"] = 2,
+        };
+
+        public static List<string> AvailableBossBlinds 
+        { 
+            get 
+            {
+                List<string> validOpts = new List<string>();
+                if(FlowHandler.CurrentAnte % 8 == 0)
+                {
+                    validOpts.AddRange(BigBossBlinds);
+                }
+                else
+                {
+                    validOpts.AddRange(BossBlindNames);
+                    validOpts.RemoveAll(x => BossBlindMinimumAntes.ContainsKey(x) && BossBlindMinimumAntes[x] > FlowHandler.CurrentAnte);
+                }
+
+                return validOpts.Where(x => !BossBlindsAlreadyUsed.Contains(x)).ToList(); 
+            } 
+        }
 
         //NOTE!!!!!
         //ALL BOSS BLINDS need an OnJokerRemove that undoes their effect, such as adding hands to play if blind sets to one at start of round, etc.
         //This is for jokers Luchador and that one legendary that disable bosses.
+        //This was kind of a stupid comment in retrospect... I mean regular jokers need that too lol.
         public static Dictionary<string, Func<Card, JokerCardDataBlock>> BossBlindData = new()
         {
             {

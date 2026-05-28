@@ -34,12 +34,12 @@ class Program
 
         FlowHandler.StartNewAnte();
         FlowHandler.InitializeBlindSelectionRound();
-        FlowHandler.CurSmallBlindTag = TagType.ECONOMY;
+        /*FlowHandler.CurSmallBlindTag = TagType.ECONOMY;
         FlowHandler.CurBigBlindTag = TagType.ECONOMY;
-        FlowHandler.CurrentBossBlind = "CERULEAN BELL";
+        FlowHandler.CurrentBossBlind = "THE SERPENT";*/
 
 
-        //Test jokers
+        /*//Test jokers
         ZoneManager.JokerZone.AddCard(JokerDb.GenerateJokerCard("MIME"));
         ZoneManager.JokerZone.AddCard(JokerDb.GenerateJokerCard("JOLLY JOKER"));
         ZoneManager.JokerZone.AddCard(JokerDb.GenerateJokerCard("WRATHFUL JOKER"));
@@ -51,7 +51,8 @@ class Program
         ZoneManager.ConsumableZone.AddCard(ConsumableManager.MakeTarotCard("WORLD"));
         ZoneManager.ConsumableZone.Cards[0].Edition = Edition.HOLOGRAPHIC;
 
-        Globals.EmitMoneyGain(999, null);
+        Globals.EmitMoneyGain(999, null);*/
+        Globals.EmitMoneyGain(4, null);//Temp starting money command
         EngineDisplayGlobals.PlayCachedAnimations();
 
         while (!Globals.QUIT)

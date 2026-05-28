@@ -514,7 +514,7 @@ namespace ConsoleBalatro.Engine.Cards.Vouchers
                 {
                     var ret = VoucherDatablock("Director's Cut", nextVoucher: "RETCON");
                     ret.DataDict.Add("INTAMOUNT", new JokerData() {IntData = 1, MyDataType = JokerDataType.INT});
-                    ret.DescriptionBuilder = _ => "Reroll Boss Blind " + ret.DataDict["INTDATA"].IntData + " time per Ante. $10 per roll.";
+                    ret.DescriptionBuilder = _ => "Reroll Boss Blind " + ret.DataDict["INTAMOUNT"].IntData + " time per Ante. $10 per roll.";
                     //NOTE: Lying description, blah blah blah, look above.
                     ret.OnJokerGainEffs.Add(() =>
                     {

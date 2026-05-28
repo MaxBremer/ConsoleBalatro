@@ -55,7 +55,7 @@ namespace ConsoleBalatro.Engine.Cards.Blinds
                 }
                 else
                 {
-                    validOpts.AddRange(BossBlindNames);
+                    validOpts.AddRange(BossBlindNames.Where(x => !BigBossBlinds.Contains(x)));
                     validOpts.RemoveAll(x => BossBlindMinimumAntes.ContainsKey(x) && BossBlindMinimumAntes[x] > FlowHandler.CurrentAnte);
                 }
 

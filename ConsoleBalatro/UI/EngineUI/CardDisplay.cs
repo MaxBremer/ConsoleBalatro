@@ -169,6 +169,10 @@ namespace ConsoleBalatro.UI.EngineUI
                     tempDisplay = EngineDisplayGlobals.StickerModifiers[s](tempDisplay);
                 }
             }
+            if (MyCard.Debuffed)
+            {
+                tempDisplay = tempDisplay.Replace(CARD_WALL, "X");
+            }
             ImportFromString(tempDisplay, CARD_SEP);
         }
 

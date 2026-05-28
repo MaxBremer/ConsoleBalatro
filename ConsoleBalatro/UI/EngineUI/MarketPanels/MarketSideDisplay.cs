@@ -25,9 +25,6 @@ namespace ConsoleBalatro.UI.EngineUI.MarketPanels
             {
                 "",
                 "",
-                "",
-                "",
-                "",
                 "MONEY",
                 EngineDisplayGlobals.DisplayMoney.ToString() + "$"
             };

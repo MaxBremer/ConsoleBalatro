@@ -329,15 +329,15 @@ namespace ConsoleBalatro.Engine
             //Refresh/Reroll Voucher
             MarketGeneralManager.ResetVoucher();
 
+            //Increment the current ante
+            CurrentAnte += 1;
+
             //Roll a new boss blind
             //TODO: final boss blinds
             RerollBossBlind();
 
             //Set up new skip tags
             InitNewTags(Globals.GUARANTEE_UNIQUE_TAGS);
-
-            //Increment the current ante
-            CurrentAnte += 1;
 
             //and set current blind to small.
             CurrentSelectedBlind = BlindType.SMALL;

@@ -68,5 +68,7 @@ namespace ConsoleBalatro.UI.EngineUI
         public const int PLAYED_DISPLAY_WIDTH = 37;
         public const int PLAYED_DISPLAY_XLOC = 25;
         public const int PLAYED_DISPLAY_YLOC = 6;
+
+        public const int HAND_DISPLAY_XLOC = 25;
     }
 }

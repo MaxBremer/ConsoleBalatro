@@ -1,6 +1,9 @@
 ﻿using ConsoleBalatro.Engine.Cards.Consumables;
 using ConsoleBalatro.Engine.Cards.Jokers;
 using ConsoleBalatro.Engine.Cards.Vouchers;
+using ConsoleBalatro.Engine.Events;
+using ConsoleBalatro.Engine.Events.Args;
+using ConsoleBalatro.Engine.Market;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -90,6 +93,30 @@ namespace ConsoleBalatro.Engine.Cards.Decks
                     {
                         ZoneManager.ConsumableZone.MaxCapacity -= 1;
                         ZoneManager.ActiveVoucherZone.AddCard(VoucherDb.MakeVoucherCard("TELESCOPE"));
+                    });
+
+                    return ret;
+                }
+            },
+            {
+                "GHOST",
+                c =>
+                {
+                    var ret = JokerDb.BasicDataBlock("Ghost", "Spectral cards may appear in the shop, start with a Hex card.");
+                    ret.OnJokerGainEffs.Add(() =>
+                    {
+                        ZoneManager.ConsumableZone.AddCard(ConsumableManager.MakeSpectralCard("HEX"));
+                    });
+                    ret.Listeners.Add(new EngineEventListener()
+                    {
+                        MyContextType = EventContextType.MarketTypeBeingChosen,
+                        MyAction = args =>
+                        {
+                            if(args is EngineMarketTypeBeingChosenArgs mArgs && !mArgs.WeightsBeingRolled.ContainsKey(BuyItemType.SPECTRAL_CARD))
+                            {
+                                mArgs.WeightsBeingRolled.Add(BuyItemType.SPECTRAL_CARD, 2);
+                            }
+                        }
                     });
 
                     return ret;

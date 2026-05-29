@@ -18,7 +18,7 @@ namespace ConsoleBalatro.UI.EngineUI
         public CardZoneHandDisplay(CardZone zone) : base(zone, CardDisplay.CARD_HEIGHT + CARD_Y_OFFSET_POS + 1, Interface.Display_Width)
         {
             yLoc = Interface.Display_Height - (CardDisplay.CARD_HEIGHT + CARD_Y_OFFSET_POS + 1);
-            xLoc = 0;
+            xLoc = EngineDisplayConstants.HAND_DISPLAY_XLOC;
 
             EngineEventHandler.StartListening(new EngineEventListener() { MyAction = OnSelectAction, MyContextType = EventContextType.CardSelect });
         }

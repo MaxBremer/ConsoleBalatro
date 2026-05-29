@@ -34,9 +34,9 @@ class Program
 
         FlowHandler.StartNewAnte();
         FlowHandler.InitializeBlindSelectionRound();
-        /*FlowHandler.CurSmallBlindTag = TagType.ECONOMY;
+        FlowHandler.CurSmallBlindTag = TagType.TOP_UP;
         FlowHandler.CurBigBlindTag = TagType.ECONOMY;
-        FlowHandler.CurrentBossBlind = "THE WINDOW";*/
+        FlowHandler.CurrentBossBlind = "THE WINDOW";
 
 
         /*//Test jokers

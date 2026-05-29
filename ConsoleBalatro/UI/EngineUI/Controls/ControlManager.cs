@@ -14,14 +14,6 @@ namespace ConsoleBalatro.UI.EngineUI.Controls
     {
         private static List<ConsoleKey> numKeyList = new List<ConsoleKey>() { ConsoleKey.D1, ConsoleKey.D2, ConsoleKey.D3, ConsoleKey.D4, ConsoleKey.D5, ConsoleKey.D6, ConsoleKey.D7, ConsoleKey.D8, ConsoleKey.D9, ConsoleKey.D0 };
 
-        private static Dictionary<ConsoleKey, string> keyStrings = new()//TODO: Used to clean up look action setup.
-        {
-            {ConsoleKey.C, "C" },
-            {ConsoleKey.J, "J" },
-            {ConsoleKey.H, "H" },
-            {ConsoleKey.P, "P" },
-        };
-
         public static Dictionary<string, ControlOptionset> AvailableControlSets = new();
 
         public static ControlOptionset CurrentOptions;
@@ -36,16 +28,6 @@ namespace ConsoleBalatro.UI.EngineUI.Controls
             AvailableControlSets.Add("PACK", BuildPackOptionSelectionOptions());
             AvailableControlSets.Add("POSTROUND", BuildPostRoundOptions());
             AvailableControlSets.Add("BLIND", BuildBlindOptions());
-        }
-
-        public static void KeyPressed(ConsoleKey key)
-        {
-            //TODO: do we even use this????
-            var curOpts = CurrentOptions;
-            if (curOpts.AvailableActions.ContainsKey(key))
-            {
-                curOpts.AvailableActions[key](CurrentContext);
-            }
         }
 
         public static void EngageControlset(ControlOptionset options, ControlContext context)
@@ -100,6 +82,8 @@ namespace ConsoleBalatro.UI.EngineUI.Controls
         private static ControlOptionset BuildPlayRoundOptions()
         {
             var ret = new ControlOptionset();
+            ret.SchemaName = "PlayRound";
+
             ret.AvailableActions.Add(ConsoleKey.Backspace, _ =>
             {
                 if (Globals.CanDiscard)
@@ -117,6 +101,7 @@ namespace ConsoleBalatro.UI.EngineUI.Controls
                 ConsumablesAvailable = true,
             };
             ret.AvailableActions.Add(ConsoleKey.L, BuildLookAction(lookZones));
+            ret.ZonesAvailable = lookZones;
 
             ret.AvailableActions.Add(ConsoleKey.S, _ =>
             {
@@ -136,6 +121,10 @@ namespace ConsoleBalatro.UI.EngineUI.Controls
             {
                 Globals.RequiredChipsForCurrentBlind = 1;//debug button
             });
+            ret.AvailableActions.Add(EzLook.EZ_LOOK_KEY, _ =>
+            {
+                EzLook.EngageEzLook(ret);
+            });
 
             foreach (var n in numKeyList)
             {
@@ -148,6 +137,7 @@ namespace ConsoleBalatro.UI.EngineUI.Controls
         private static ControlOptionset BuildMarketRoundOptions()
         {
             var ret = new ControlOptionset();
+            ret.SchemaName = "Market";
 
             var lookZones = new LookZonesAvailable()
             {
@@ -158,6 +148,7 @@ namespace ConsoleBalatro.UI.EngineUI.Controls
                 VoucherMarketAvailable = true,
             };
             ret.AvailableActions.Add(ConsoleKey.L, BuildLookAction(lookZones));
+            ret.ZonesAvailable = lookZones;
             ret.AvailableActions.Add(ConsoleKey.R, _ =>
             {
                 MarketGeneralManager.RerollMainMarket();
@@ -170,6 +161,10 @@ namespace ConsoleBalatro.UI.EngineUI.Controls
             {
                 FlowHandler.CloseMarketRound();
             });
+            ret.AvailableActions.Add(EzLook.EZ_LOOK_KEY, _ =>
+            {
+                EzLook.EngageEzLook(ret);
+            });
 
             return ret;
         }
@@ -177,6 +172,7 @@ namespace ConsoleBalatro.UI.EngineUI.Controls
         private static ControlOptionset BuildPackOptionSelectionOptions()
         {
             var ret = new ControlOptionset();
+            ret.SchemaName = "PackOptionSelection";
 
             var lookZones = new LookZonesAvailable()
             {
@@ -186,6 +182,7 @@ namespace ConsoleBalatro.UI.EngineUI.Controls
                 PackOptionsAvailable = true,
             };
             ret.AvailableActions.Add(ConsoleKey.L, BuildLookAction(lookZones));
+            ret.ZonesAvailable = lookZones;
             foreach (var n in numKeyList)
             {
                 ret.AvailableActions.Add(n, BuildActionForNumKey(n));
@@ -194,6 +191,10 @@ namespace ConsoleBalatro.UI.EngineUI.Controls
             {
                 PackActions.SkipCurrentPack();
             });
+            ret.AvailableActions.Add(EzLook.EZ_LOOK_KEY, _ =>
+            {
+                EzLook.EngageEzLook(ret);
+            });
 
             return ret;
         }
@@ -201,6 +202,7 @@ namespace ConsoleBalatro.UI.EngineUI.Controls
         private static ControlOptionset BuildPostRoundOptions()
         {
             var ret = new ControlOptionset();
+            ret.SchemaName = "PostRoundScreen";
 
             var lookZones = new LookZonesAvailable()
             {
@@ -208,10 +210,15 @@ namespace ConsoleBalatro.UI.EngineUI.Controls
                 ConsumablesAvailable = true,
             };
             ret.AvailableActions.Add(ConsoleKey.L, BuildLookAction(lookZones));
+            ret.ZonesAvailable = lookZones;
 
             ret.AvailableActions.Add(ConsoleKey.C, _ =>
             {
                 FlowHandler.ClosePostRound();
+            });
+            ret.AvailableActions.Add(EzLook.EZ_LOOK_KEY, _ =>
+            {
+                EzLook.EngageEzLook(ret);
             });
 
             return ret;
@@ -220,6 +227,7 @@ namespace ConsoleBalatro.UI.EngineUI.Controls
         private static ControlOptionset BuildBlindOptions()
         {
             var ret = new ControlOptionset();
+            ret.SchemaName = "BlindSelection";
 
             var lookZones = new LookZonesAvailable()
             {
@@ -227,6 +235,7 @@ namespace ConsoleBalatro.UI.EngineUI.Controls
                 ConsumablesAvailable = true,
             };
             ret.AvailableActions.Add(ConsoleKey.L, BuildLookAction(lookZones));
+            ret.ZonesAvailable = lookZones;
 
             ret.AvailableActions.Add(ConsoleKey.S, _ =>
             {
@@ -236,6 +245,10 @@ namespace ConsoleBalatro.UI.EngineUI.Controls
             ret.AvailableActions.Add(ConsoleKey.B, _ =>
             {
                 FlowHandler.StartSelectedBlind();
+            });
+            ret.AvailableActions.Add(EzLook.EZ_LOOK_KEY, _ =>
+            {
+                EzLook.EngageEzLook(ret);
             });
 
             return ret;
@@ -395,7 +408,7 @@ namespace ConsoleBalatro.UI.EngineUI.Controls
             return ret;
         }
 
-        private class LookZonesAvailable
+        public class LookZonesAvailable
         {
             public bool HandAvailable = false;
             public bool JokersAvailable = false;

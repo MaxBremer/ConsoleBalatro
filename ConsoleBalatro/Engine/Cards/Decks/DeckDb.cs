@@ -57,6 +57,30 @@ namespace ConsoleBalatro.Engine.Cards.Decks
                 }
             },
             {
+                "GREEN",
+                c =>
+                {
+                    var ret = JokerDb.BasicDataBlock("Green", "At end of each Round: $2 per remaining Hand, $1 per remaining Discard, earn no interest.");
+                    ret.Listeners.Add(new EngineEventListener()
+                    {
+                        MyContextType = EventContextType.GatherPostRoundMoney,
+                        MyAction = args =>
+                        {
+                            if(args is EngineGatherPostRoundMoneyArgs mArgs)
+                            {
+                                mArgs.ExistingSources.RemoveAll(x => x.Item1 == "Interest");
+                                var oldHandsAmt = mArgs.ExistingSources.FirstOrDefault(x => x.Item1 == "Hands Remaining").Item2;
+                                mArgs.ExistingSources.RemoveAll(x => x.Item1 == "Hands Remaining");
+                                mArgs.ExistingSources.Add(("Hands Remaining", oldHandsAmt * 2));
+                                mArgs.ExistingSources.Add(("Discards Remaining", Globals.CurDiscardsRemaining));
+                            }
+                        }
+                    });
+
+                    return ret;
+                }
+            },
+            {
                 "BLACK",
                 c =>
                 {

@@ -9,7 +9,7 @@ namespace ConsoleBalatro.Engine.Events.Args
 {
     public class EngineGatherPostRoundMoneyArgs : EngineEventArgs
     {
-        public int TotalAmount = 0;
         public List<(JokerCardDataBlock, int)> JokersContributed = new();
+        public List<(string, int)> ExistingSources = new();
     }
 }

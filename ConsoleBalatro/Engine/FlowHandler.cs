@@ -314,7 +314,7 @@ namespace ConsoleBalatro.Engine
                 ret.Add(("Hands Remaining", Globals.CurHandsRemaining));
             }
 
-            var gatherArgs = new EngineGatherPostRoundMoneyArgs();
+            var gatherArgs = new EngineGatherPostRoundMoneyArgs() { ExistingSources = ret };
             gatherArgs.MyContext = new EventContext() { Context = EventContextType.GatherPostRoundMoney };
             EngineEventHandler.TriggerEvent(gatherArgs);
 

@@ -149,8 +149,10 @@ namespace ConsoleBalatro.Engine
 
         public static void FinalPlayChipsCalc()
         {
-            int amountBeingAdded = (int)(Globals.CurrentChips * Globals.CurrentMult);
-            var gainArgs = new EngineTotalChipsGainArgs() { AmountBeingGained = amountBeingAdded, MyContext = new Events.EventContext() { Context = Events.EventContextType.TotalChipsGained } };
+            var preCalcArgs = new EnginePreFinalGainArgs() { MyContext = new EventContext() { Context = EventContextType.PreFinalGainCheck }, FinalChips = Globals.CurrentChips, FinalMult = Globals.CurrentMult };
+            EngineEventHandler.TriggerEvent(preCalcArgs);
+            int amountBeingAdded = (int)(preCalcArgs.FinalChips * preCalcArgs.FinalMult);
+            var gainArgs = new EngineTotalChipsGainArgs() { AmountBeingGained = amountBeingAdded, MyContext = new EventContext() { Context = EventContextType.TotalChipsGained } };
             EngineEventHandler.TriggerEvent(gainArgs);
             Globals.TotalCurrentChips += gainArgs.AmountBeingGained;
 

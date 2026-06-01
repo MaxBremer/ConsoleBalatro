@@ -124,8 +124,12 @@ namespace ConsoleBalatro.Engine
                 default:
                     break;
             }
+            
+            var retAmt = (int)(CurrentBaseChipAmount * chipsMult);
+            var args = new EngineGetBlindReqArgs() { MyContext = new EventContext() { Context = EventContextType.GetBlindChips }, ChipRequirementAmount = retAmt };
+            EngineEventHandler.TriggerEvent(args);
 
-            return (int)(CurrentBaseChipAmount * chipsMult);
+            return args.ChipRequirementAmount;
         }
 
         public static void InitializePlayRound(BlindType blindType)

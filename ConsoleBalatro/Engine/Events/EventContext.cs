@@ -51,6 +51,8 @@ namespace ConsoleBalatro.Engine.Events
         CardInHandAfterScoring,
         AllScoringCardsDecided,
 
+        GetBlindChips,
+        PreFinalGainCheck,
         TotalChipsGained,
         TotalChipsReset,
         RequiredChipsSet,

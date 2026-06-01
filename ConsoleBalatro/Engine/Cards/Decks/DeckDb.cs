@@ -1,5 +1,6 @@
 ﻿using ConsoleBalatro.Engine.Cards.Consumables;
 using ConsoleBalatro.Engine.Cards.Jokers;
+using ConsoleBalatro.Engine.Cards.Tags;
 using ConsoleBalatro.Engine.Cards.Vouchers;
 using ConsoleBalatro.Engine.Events;
 using ConsoleBalatro.Engine.Events.Args;
@@ -181,6 +182,58 @@ namespace ConsoleBalatro.Engine.Cards.Decks
                     {
                         Globals.HandSize += 2;
                         ZoneManager.JokerZone.MaxCapacity -= 1;
+                    });
+
+                    return ret;
+                }
+            },
+            {
+                "ANAGLYPH",
+                c =>
+                {
+                    var ret = JokerDb.BasicDataBlock("Anaglyph", "After defeating each Boss Blind, gain a Double Tag");
+                    ret.Listeners.Add(new EngineEventListener()
+                    {
+                        MyContextType = EventContextType.EndPlayRound,
+                        MyAction = args =>
+                        {
+                            if(FlowHandler.CurrentSelectedBlind == BlindType.BOSS)
+                            {
+                                TagDb.AddTagOfType(TagType.DOUBLE_TAG);
+                            }
+                        }
+                    });
+
+                    return ret;
+                }
+            },
+            {
+                "PLASMA",
+                c =>
+                {
+                    var ret = JokerDb.BasicDataBlock("Plasma", "Balance Chips and Mult when calculating score for played hand, X2 base Blind size");
+                    ret.Listeners.Add(new EngineEventListener()
+                    {
+                        MyContextType = EventContextType.PreFinalGainCheck,
+                        MyAction = args =>
+                        {
+                            if(args is EnginePreFinalGainArgs preCalcArgs)
+                            {
+                                preCalcArgs.FinalChips = (int)((preCalcArgs.FinalChips + preCalcArgs.FinalMult) / 2);
+                                preCalcArgs.FinalMult = (double)((preCalcArgs.FinalChips + preCalcArgs.FinalMult) / 2);
+                            }
+                        }
+                    });
+                    ret.Listeners.Add(new EngineEventListener()
+                    {
+                        MyContextType = EventContextType.GetBlindChips,
+                        MyAction = args =>
+                        {
+                            if(args is EngineGetBlindReqArgs blindArgs)
+                            {
+                                blindArgs.ChipRequirementAmount *= 2;
+                            }
+                        }
                     });
 
                     return ret;

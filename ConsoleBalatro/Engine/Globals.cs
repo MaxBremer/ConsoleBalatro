@@ -395,11 +395,11 @@ namespace ConsoleBalatro.Engine
         {
             if (c.isJoker)
             {
-                return CanAfford(c) && ZoneManager.JokerZone.HasRoom;
+                return CanAfford(c) && ZoneManager.JokerZone.HasRoomFor(c);
             }
             if (c.isConsumable)
             {
-                return CanAfford(c) && ZoneManager.ConsumableZone.HasRoom;
+                return CanAfford(c) && ZoneManager.ConsumableZone.HasRoomFor(c);
             }
             return CanAfford(c);
         }

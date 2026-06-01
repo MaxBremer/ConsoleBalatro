@@ -477,7 +477,7 @@ namespace ConsoleBalatro.Engine.Cards.Consumables
                     }
                     return retStr;
                 };
-                ret.IsActivatable = _ => EngineEventHandler.LastSavedOfTypeConditional(EventContextType.ConsumableUsed, EvaluateCardForFool) != null;
+                ret.IsActivatable = _ => EngineEventHandler.LastSavedOfTypeConditional(EventContextType.ConsumableUsed, EvaluateCardForFool) != null && ZoneManager.ConsumableZone.HasRoomFor(-1);
                 ret.Use = _ =>
                 {
                     var lastEv = EngineEventHandler.LastSavedOfTypeConditional(EventContextType.ConsumableUsed, EvaluateCardForFool);
@@ -1056,6 +1056,12 @@ namespace ConsoleBalatro.Engine.Cards.Consumables
             var ret = new Card();
             MakeCardPlanetCard(hand, ret);
             return ret;
+        }
+
+        public static Card MakePlanetCard(string planetName)
+        {
+            var handType = PlanetsToHandType[planetName];
+            return MakePlanetCard(handType);
         }
 
         //Generate and return a card that is a pack of the passed type

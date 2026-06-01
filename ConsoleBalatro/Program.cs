@@ -37,7 +37,7 @@ class Program
         FlowHandler.CurSmallBlindTag = TagType.TOP_UP;
         FlowHandler.CurBigBlindTag = TagType.ECONOMY;
         FlowHandler.CurrentBossBlind = "THE WINDOW";
-
+        ZoneManager.ConsumableZone.AddCard(ConsumableManager.MakeTarotCard("HIGHPRIESTESS"));
 
         /*//Test jokers
         ZoneManager.JokerZone.AddCard(JokerDb.GenerateJokerCard("MIME"));

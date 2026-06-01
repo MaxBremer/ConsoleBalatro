@@ -2990,7 +2990,7 @@ namespace ConsoleBalatro.Engine.Cards.Jokers
                     MyContextType = EventContextType.EndMarket, 
                     MyAction = _ => 
                     { 
-                        if (!ZoneManager.ConsumableZone.HasRoom || !ZoneManager.ConsumableZone.Cards.Any()) 
+                        if ((!ZoneManager.ConsumableZone.HasRoom && ZoneManager.ConsumableZone.Cards.Count > ZoneManager.ConsumableZone.MaxCapacity) || !ZoneManager.ConsumableZone.Cards.Any()) 
                             return; 
                         var chosen = ZoneManager.ConsumableZone.Cards[Globals.randomNext(ZoneManager.ConsumableZone.Cards.Count)]; 
                         var copy = chosen.MakeCopy(); 

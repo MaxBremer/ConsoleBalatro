@@ -149,7 +149,7 @@ namespace ConsoleBalatro.Engine
                     //TODO: pass args here? So far none need them.
                     return optionAttempted.ConsumableData.IsActivatable(null);
                 case BuyItemType.JOKER:
-                    return ZoneManager.JokerZone.HasRoom;
+                    return ZoneManager.JokerZone.HasRoomFor(optionAttempted);
                 case BuyItemType.VOUCHER:
                 case BuyItemType.NONE:
                 default:

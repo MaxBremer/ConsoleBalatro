@@ -97,6 +97,13 @@ namespace ConsoleBalatro.UI.EngineUI.Controls
                 EngineDisplayGlobals.HandStatsMenu.Visible = false;
                 EngineDisplayGlobals.Redraw();
             });
+
+            ret.AvailableActions.Add(ConsoleKey.Oem3, _ =>
+            {
+                Console.Clear();
+                DebugManager.RunDebugCmdLine();
+                EngineDisplayGlobals.Redraw();
+            });
         }
 
         private static ControlOptionset BuildPlayRoundOptions()

@@ -50,6 +50,10 @@ namespace ConsoleBalatro.UI.EngineUI.MarketPanels
                 ret.Add("");
                 ret.Add("START BLIND");
                 ret.Add("[B]");
+
+                ret.Add("");
+                ret.Add("HAND STATS");
+                ret.Add("[T]");
             }
             else
             {

@@ -79,10 +79,38 @@ namespace ConsoleBalatro.UI.EngineUI.Controls
             return toRet;
         }
 
+        private static void AddStandardControls(ControlOptionset ret, LookZonesAvailable lookZones)
+        {
+            ret.AvailableActions.Add(ConsoleKey.L, BuildLookAction(lookZones));
+            ret.ZonesAvailable = lookZones;
+
+            ret.AvailableActions.Add(EzLook.EZ_LOOK_KEY, _ =>
+            {
+                EzLook.EngageEzLook(ret);
+            });
+
+            ret.AvailableActions.Add(ConsoleKey.T, _ =>
+            {
+                EngineDisplayGlobals.HandStatsMenu.Visible = true;
+                EngineDisplayGlobals.Redraw();
+                var x = Console.ReadKey();
+                EngineDisplayGlobals.HandStatsMenu.Visible = false;
+                EngineDisplayGlobals.Redraw();
+            });
+        }
+
         private static ControlOptionset BuildPlayRoundOptions()
         {
             var ret = new ControlOptionset();
             ret.SchemaName = "PlayRound";
+
+            var lookZones = new LookZonesAvailable()
+            {
+                HandAvailable = true,
+                JokersAvailable = true,
+                ConsumablesAvailable = true,
+            };
+            AddStandardControls(ret, lookZones);
 
             ret.AvailableActions.Add(ConsoleKey.Backspace, _ =>
             {
@@ -93,16 +121,6 @@ namespace ConsoleBalatro.UI.EngineUI.Controls
             {
                 Globals.PlayCurrentlySelectedHand();
             });
-
-            var lookZones = new LookZonesAvailable()
-            {
-                HandAvailable = true,
-                JokersAvailable = true,
-                ConsumablesAvailable = true,
-            };
-            ret.AvailableActions.Add(ConsoleKey.L, BuildLookAction(lookZones));
-            ret.ZonesAvailable = lookZones;
-
             ret.AvailableActions.Add(ConsoleKey.S, _ =>
             {
                 ZoneManager.SortZoneBySuit(ZoneManager.HandZone);
@@ -115,15 +133,6 @@ namespace ConsoleBalatro.UI.EngineUI.Controls
                 ZoneManager.SortZoneByRank(ZoneManager.HandZone);
                 EngineDisplayGlobals.HandDisplay.ResetFromZoneList();
                 EngineDisplayGlobals.Redraw();
-            });
-
-            ret.AvailableActions.Add(ConsoleKey.G, _ =>
-            {
-                Globals.RequiredChipsForCurrentBlind = 1;//debug button
-            });
-            ret.AvailableActions.Add(EzLook.EZ_LOOK_KEY, _ =>
-            {
-                EzLook.EngageEzLook(ret);
             });
 
             foreach (var n in numKeyList)
@@ -147,8 +156,8 @@ namespace ConsoleBalatro.UI.EngineUI.Controls
                 MainMarketAvailable = true,
                 VoucherMarketAvailable = true,
             };
-            ret.AvailableActions.Add(ConsoleKey.L, BuildLookAction(lookZones));
-            ret.ZonesAvailable = lookZones;
+            AddStandardControls(ret, lookZones);
+
             ret.AvailableActions.Add(ConsoleKey.R, _ =>
             {
                 MarketGeneralManager.RerollMainMarket();
@@ -160,10 +169,6 @@ namespace ConsoleBalatro.UI.EngineUI.Controls
             ret.AvailableActions.Add(ConsoleKey.E, _ =>
             {
                 FlowHandler.CloseMarketRound();
-            });
-            ret.AvailableActions.Add(EzLook.EZ_LOOK_KEY, _ =>
-            {
-                EzLook.EngageEzLook(ret);
             });
 
             return ret;
@@ -181,8 +186,8 @@ namespace ConsoleBalatro.UI.EngineUI.Controls
                 HandAvailable = true,
                 PackOptionsAvailable = true,
             };
-            ret.AvailableActions.Add(ConsoleKey.L, BuildLookAction(lookZones));
-            ret.ZonesAvailable = lookZones;
+            AddStandardControls(ret, lookZones);
+
             foreach (var n in numKeyList)
             {
                 ret.AvailableActions.Add(n, BuildActionForNumKey(n));
@@ -190,10 +195,6 @@ namespace ConsoleBalatro.UI.EngineUI.Controls
             ret.AvailableActions.Add(ConsoleKey.S, _ =>
             {
                 PackActions.SkipCurrentPack();
-            });
-            ret.AvailableActions.Add(EzLook.EZ_LOOK_KEY, _ =>
-            {
-                EzLook.EngageEzLook(ret);
             });
 
             return ret;
@@ -209,16 +210,12 @@ namespace ConsoleBalatro.UI.EngineUI.Controls
                 JokersAvailable = true,
                 ConsumablesAvailable = true,
             };
-            ret.AvailableActions.Add(ConsoleKey.L, BuildLookAction(lookZones));
-            ret.ZonesAvailable = lookZones;
+            AddStandardControls(ret, lookZones);
+
 
             ret.AvailableActions.Add(ConsoleKey.C, _ =>
             {
                 FlowHandler.ClosePostRound();
-            });
-            ret.AvailableActions.Add(EzLook.EZ_LOOK_KEY, _ =>
-            {
-                EzLook.EngageEzLook(ret);
             });
 
             return ret;
@@ -234,8 +231,7 @@ namespace ConsoleBalatro.UI.EngineUI.Controls
                 JokersAvailable = true,
                 ConsumablesAvailable = true,
             };
-            ret.AvailableActions.Add(ConsoleKey.L, BuildLookAction(lookZones));
-            ret.ZonesAvailable = lookZones;
+            AddStandardControls(ret, lookZones);
 
             ret.AvailableActions.Add(ConsoleKey.S, _ =>
             {
@@ -245,10 +241,6 @@ namespace ConsoleBalatro.UI.EngineUI.Controls
             ret.AvailableActions.Add(ConsoleKey.B, _ =>
             {
                 FlowHandler.StartSelectedBlind();
-            });
-            ret.AvailableActions.Add(EzLook.EZ_LOOK_KEY, _ =>
-            {
-                EzLook.EngageEzLook(ret);
             });
 
             return ret;
@@ -468,6 +460,10 @@ namespace ConsoleBalatro.UI.EngineUI.Controls
                 {
                     OptsToPickFrom.Add(ConsoleKey.O, ZoneManager.PackOptionZone);
                     EngineDisplayGlobals.PackOptionsDisplay.DisplayBeneath = "O";
+                }
+                if(OptsToPickFrom.Count == 0)
+                {
+                    return null;
                 }
                 EngineDisplayGlobals.Redraw();
                 ConsoleKey sel = Console.ReadKey().Key;

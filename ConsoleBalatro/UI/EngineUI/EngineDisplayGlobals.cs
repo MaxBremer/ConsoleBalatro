@@ -7,9 +7,11 @@ using ConsoleBalatro.Engine.Events.Args;
 using ConsoleBalatro.UI.EngineUI.Animation;
 using ConsoleBalatro.UI.EngineUI.Controls;
 using ConsoleBalatro.UI.EngineUI.MarketPanels;
+using ConsoleBalatro.UI.Tables;
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Net.NetworkInformation;
 using System.Text;
 using System.Threading.Tasks;
 
@@ -74,6 +76,8 @@ namespace ConsoleBalatro.UI.EngineUI
         public static BlindDisplayEntity FirstBlindPanel;
         public static BlindDisplayEntity SecondBlindPanel;
         public static BlindDisplayEntity ThirdBlindPanel;
+
+        public static HandStatsDisplay HandStatsMenu;
 
         public static int DisplayRequiredChipsForBlind;
         public static int DisplayTotalCurrentChips;
@@ -193,6 +197,9 @@ namespace ConsoleBalatro.UI.EngineUI
 
             ThirdBlindPanel = new BlindDisplayEntity(BlindType.BOSS, EngineDisplayConstants.BLIND_PANEL3_XLOC, EngineDisplayConstants.BLIND_PANEL_YLOC);
             EngineDisplays.Add(ThirdBlindPanel);
+
+            HandStatsMenu = new HandStatsDisplay(EngineDisplayConstants.HAND_STATS_DISPLAY_XLOC, EngineDisplayConstants.HAND_STATS_DISPLAY_YLOC);
+            EngineDisplays.Add(HandStatsMenu);
 
             foreach (var dispEnt in EngineDisplays)
             {

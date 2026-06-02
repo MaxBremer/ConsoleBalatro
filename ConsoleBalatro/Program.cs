@@ -1,6 +1,7 @@
 ﻿// See https://aka.ms/new-console-template for more information
 using ConsoleBalatro.Engine;
 using ConsoleBalatro.Engine.Cards.Consumables;
+using ConsoleBalatro.Engine.Cards.Decks;
 using ConsoleBalatro.Engine.Cards.Enums;
 using ConsoleBalatro.Engine.Cards.Jokers;
 using ConsoleBalatro.Engine.Cards.Tags;
@@ -31,12 +32,12 @@ class Program
 
         Console.Clear();
         EngineDisplayGlobals.InitializeDisplayAll(inte);
-
+        DeckDb.BecomeDeck("YELLOW");
         FlowHandler.StartNewAnte();
         FlowHandler.InitializeBlindSelectionRound();
-        FlowHandler.CurSmallBlindTag = TagType.TOP_UP;
+        FlowHandler.CurSmallBlindTag = TagType.ECONOMY;
         FlowHandler.CurBigBlindTag = TagType.ECONOMY;
-        FlowHandler.CurrentBossBlind = "THE WINDOW";
+        FlowHandler.CurrentBossBlind = "VERDANT LEAF";
 
         /*//Test jokers
         ZoneManager.JokerZone.AddCard(JokerDb.GenerateJokerCard("MIME"));

@@ -252,6 +252,11 @@ namespace ConsoleBalatro.Engine
             if (c.MyZone != null)
                 c.MyZone.RemoveCard(c);
         }
+
+        public static void AddHiddenEffect(Card c)
+        {
+            OtherHiddenJokerZone.AddCard(c);
+        }
         public static List<Card> GetFullDeckCards()
         {
             var ret = new List<Card>();

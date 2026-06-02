@@ -2772,10 +2772,10 @@ namespace ConsoleBalatro.Engine.Cards.Jokers
                     .Where(x => x.MyContext.Context == EventContextType.ConsumableUsed)
                     .OfType<EngineConsumableUseArgs>()
                     .Where(x => x.TypeUsed == ConsumableType.PLANET)
-                    .Select(x => x.ConsumableDBName)
+                    .Select(x => x.ConsumableName)
                     .Distinct()
                     .Count();
-                ret.DescriptionBuilder = _ => "Earn $1 at end of round per unique Planet card used this run (" + amt() + " total)";
+                ret.DescriptionBuilder = _ => "Earn $1 at end of round per unique Planet card used this run ($" + amt() + " total)";
                 ret.Listeners.Add(new EngineEventListener()
                 {
                     MyContextType = EventContextType.GatherPostRoundMoney,

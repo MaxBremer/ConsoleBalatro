@@ -280,5 +280,15 @@ namespace ConsoleBalatro.Engine.Cards.Decks
                 }
             },
         };
+
+        public static void BecomeDeck(string deckDbName)
+        {
+            if (!DeckData.ContainsKey(deckDbName))
+                return;
+            var c = new Card();
+            var jokerData = DeckData[deckDbName](c);
+            c.JokerData = jokerData;
+            ZoneManager.AddHiddenEffect(c);
+        }
     }
 }

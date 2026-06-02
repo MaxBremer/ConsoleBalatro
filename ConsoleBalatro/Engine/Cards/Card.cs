@@ -50,7 +50,9 @@ namespace ConsoleBalatro.Engine.Cards
             set
             {
                 _debuffed = value;
-                if(isJoker && (MyZone == ZoneManager.JokerZone || MyZone == ZoneManager.ActiveVoucherZone || MyZone == ZoneManager.HiddenBlindAttributeZone || MyZone == ZoneManager.OtherHiddenJokerZone) && MyZone is IJokerContainer jokZone)
+                var args = new EngineCardDetailsChangeArgs() { MyContext = new() { Context = EventContextType.CardDetailsChange }, CardBeingChanged = this, isDebuff = true };
+                EngineEventHandler.TriggerEvent(args);
+                if (isJoker && (MyZone == ZoneManager.JokerZone || MyZone == ZoneManager.ActiveVoucherZone || MyZone == ZoneManager.HiddenBlindAttributeZone || MyZone == ZoneManager.OtherHiddenJokerZone) && MyZone is IJokerContainer jokZone)
                 {
                     if (_debuffed)
                     {

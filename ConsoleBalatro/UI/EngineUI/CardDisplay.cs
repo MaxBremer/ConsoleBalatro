@@ -26,9 +26,11 @@ namespace ConsoleBalatro.UI.EngineUI
 
         private EngineEventListener MyListener;
         private EngineEventListener MyFlipListener;
+        private EngineEventListener MyDebuffListener;
         public CardDisplay(Card c) : base(CARD_HEIGHT, CARD_WIDTH)
         {
             MyCard = c;
+            isFlipped = MyCard.FaceDown;//TODO: idk this is gross that its set here
         }
 
         public Card MyCard;
@@ -50,6 +52,8 @@ namespace ConsoleBalatro.UI.EngineUI
             EngineEventHandler.StartListening(MyListener);
             MyFlipListener = new EngineEventListener() { MyAction = OnCardFlip, MyContextType = EventContextType.CardDetailsChange };
             EngineEventHandler.StartListening(MyFlipListener);
+            MyDebuffListener = new EngineEventListener() { MyAction = UpdateTrigger, MyContextType = EventContextType.CardDetailsChange };
+            EngineEventHandler.StartListening(MyDebuffListener);
         }
 
         public void RemoveListener()
@@ -61,6 +65,10 @@ namespace ConsoleBalatro.UI.EngineUI
             if (MyFlipListener != null)
             {
                 EngineEventHandler.StopListening(MyFlipListener);
+            }
+            if (MyDebuffListener != null)
+            {
+                EngineEventHandler.StopListening(MyDebuffListener);
             }
         }
 
@@ -210,6 +218,17 @@ namespace ConsoleBalatro.UI.EngineUI
                 EngineDisplayGlobals.CacheAnimationAction(_ =>
                 {
                     isFlipped = changeArgs.newFlipVal;
+                    PreDisplaySetup();
+                }, 0);
+            }
+        }
+
+        private void UpdateTrigger(EngineEventArgs args)
+        {
+            if (args is EngineCardDetailsChangeArgs changeArgs && changeArgs.CardBeingChanged == MyCard && changeArgs.isDebuff)
+            {
+                EngineDisplayGlobals.CacheAnimationAction(_ =>
+                {
                     PreDisplaySetup();
                 }, 0);
             }

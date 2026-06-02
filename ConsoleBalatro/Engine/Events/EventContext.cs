@@ -57,6 +57,8 @@ namespace ConsoleBalatro.Engine.Events
         TotalChipsReset,
         RequiredChipsSet,
 
+        HandLevelChange,
+
         GainEmit,
         MoneyGainEmit,
 

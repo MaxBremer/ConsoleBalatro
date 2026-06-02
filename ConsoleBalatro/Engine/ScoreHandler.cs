@@ -3,6 +3,7 @@ using ConsoleBalatro.Engine.Events.Args;
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Security.Cryptography.X509Certificates;
 using System.Text;
 using System.Threading.Tasks;
 
@@ -114,12 +115,32 @@ namespace ConsoleBalatro.Engine
         {
             var chipBuff = HandBuffAmounts[handType].Item1;
             var multBuff = HandBuffAmounts[handType].Item2;
+            var oldChips = CurrentHandStats[handType].Item1;
+            var oldMult = CurrentHandStats[handType].Item2;
             var finalChipVal = CurrentHandStats[handType].Item1 + chipBuff;
             var finalMultVal = CurrentHandStats[handType].Item2 + multBuff;
 
             //TODO: probably emit event
             CurrentHandStats[handType] = (finalChipVal, finalMultVal);
+            var oldLevel = HandLevels[handType];
             HandLevels[handType] += 1;
+            var newLevel = HandLevels[handType];
+
+            var args = new EngineHandLevelChangeArgs
+            {
+                MyContext = new() { Context = EventContextType.HandLevelChange },
+                HandTypeLevelling = handType,
+                isLevelUp = true,
+                oldChipAmount = oldChips,
+                newChipAmount = finalChipVal,
+                chipChangeAmount = chipBuff,
+                oldMultAmount = oldMult,
+                newMultAmount = finalMultVal,
+                multChangeAmount = multBuff,
+                oldLevel = oldLevel,
+                newLevel = newLevel,
+            };
+            EngineEventHandler.TriggerEvent(args);
         }
 
         public static void LevelDownHand(PlayedHandType handType)
@@ -128,12 +149,32 @@ namespace ConsoleBalatro.Engine
                 return;
             var chipBuff = HandBuffAmounts[handType].Item1;
             var multBuff = HandBuffAmounts[handType].Item2;
+            var oldChips = CurrentHandStats[handType].Item1;
+            var oldMult = CurrentHandStats[handType].Item2;
             var finalChipVal = CurrentHandStats[handType].Item1 - chipBuff;
             var finalMultVal = CurrentHandStats[handType].Item2 - multBuff;
 
             //TODO: probably emit event
             CurrentHandStats[handType] = (finalChipVal, finalMultVal);
-            HandLevels[handType] += 1;
+            var oldLevel = HandLevels[handType];
+            HandLevels[handType] -= 1;
+            var newLevel = HandLevels[handType];
+
+            var args = new EngineHandLevelChangeArgs
+            {
+                MyContext = new() { Context = EventContextType.HandLevelChange },
+                HandTypeLevelling = handType,
+                isLevelUp = false,
+                oldChipAmount = oldChips,
+                newChipAmount = finalChipVal,
+                chipChangeAmount = chipBuff,
+                oldMultAmount = oldMult,
+                newMultAmount = finalMultVal,
+                multChangeAmount = multBuff,
+                oldLevel = oldLevel,
+                newLevel = newLevel,
+            };
+            EngineEventHandler.TriggerEvent(args);
         }
 
         public static void SetBaseHandScore(PlayedHandType hand)

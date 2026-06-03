@@ -177,6 +177,7 @@ namespace ConsoleBalatro.Tests
         {
             ResetToBlindSelection();
             FlowHandler.CurBigBlindTag = TagType.JUGGLE;
+            FlowHandler.CurrentBossBlind = "THE WINDOW"; //ensure its nothing that messes with hand size
             var record = CaptureTagEvents();
             FlowHandler.StartSelectedBlind();
             var initialHandSize = Globals.HandSize;

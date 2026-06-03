@@ -70,7 +70,7 @@ namespace ConsoleBalatro.Engine
 
         public static int TotalCurrentChips = 0;
 
-        public static int Money = 0;
+        public static int Money = 4;
         public static int MinimumMoneyAllowed = 0;
         public static int BaseRerollCost = 5;
         public static int CurrentRerollCost = BaseRerollCost;
@@ -165,7 +165,7 @@ namespace ConsoleBalatro.Engine
         public static void ResetGlobalValues()
         {
             TotalCurrentChips = 0;
-            Money = 0;
+            Money = 4;//starting money is base 4
             MinimumMoneyAllowed = 0;
             BaseRerollCost = 5;
             CurrentRerollCost = BaseRerollCost;

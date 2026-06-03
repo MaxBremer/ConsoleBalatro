@@ -48,7 +48,6 @@ class Program
         ZoneManager.ConsumableZone.AddCard(ConsumableManager.MakeTarotCard("WORLD"));
 
         Globals.EmitMoneyGain(999, null);*/
-        Globals.EmitMoneyGain(4, null);//Temp starting money command
         EngineDisplayGlobals.PlayCachedAnimations();
 
         while (!Globals.QUIT)

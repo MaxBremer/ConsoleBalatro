@@ -1632,7 +1632,19 @@ namespace ConsoleBalatro.Tests
         [Fact]
         public void PlayHand_ThatTriggersBossAbilityWithMatador_CorrectlyGivesMoney()
         {
-            //TODO: IMPLEMENT AFTER BOSS BLINDS EXIST THAT TRIGGER MATADOR.
+            var s = JokerSetup("MATADOR");
+            var baseMoney = Globals.Money;
+            FlowHandler.CurSmallBlindTag = TagType.JUGGLE;
+            FlowHandler.CurBigBlindTag = TagType.JUGGLE;
+            FlowHandler.CurrentBossBlind = "THE WINDOW";
+
+            FlowHandler.DoSkip();
+            FlowHandler.DoSkip();
+            FlowHandler.StartSelectedBlind();
+            PlayHand("AS,AD");
+            Assert.Equal(baseMoney + 8, Globals.Money);
+            PlayHand("AD,AD");
+            Assert.Equal(baseMoney + 24, Globals.Money);
         }
 
         [Theory]

@@ -13,7 +13,7 @@ namespace ConsoleBalatro.Engine.Pools.Rules
 
         public void ModifyCandidates(MarketPoolContext context)
         {
-            if(context != null && context.Source == GenerationSource.Pack && (context.Pool == ItemPool.Tarot || context.Pool == ItemPool.Planet))
+            if(context != null && context.Source == GenerationSource.Pack && (context.Pool == ItemPool.Tarot || context.Pool == ItemPool.Planet || context.Pool == ItemPool.Spectral))
             {
                 if(context.Pool == ItemPool.Tarot && !ZoneManager.ConsumableZone.Cards.Any(c => c.isConsumable && c.ConsumableData.DBName == "SOUL") && !ZoneManager.PackOptionZone.Cards.Any(c => c.isConsumable && c.ConsumableData.DBName == "SOUL") && !ContextContainsCandidate(context, "SOUL") && Globals.randomNext(0, 1000) <= 3)
                 {
@@ -23,6 +23,18 @@ namespace ConsoleBalatro.Engine.Pools.Rules
                 {
                     context.Candidates.Clear();
                     context.Candidates.Add(new WeightedCandidate { Weight = 1, Definition = new SpectralRollableDefinition("BLACK HOLE") });
+                }else if(context.Pool == ItemPool.Spectral)
+                {
+                    if (!ZoneManager.ConsumableZone.Cards.Any(c => c.isConsumable && c.ConsumableData.DBName == "SOUL") && !ZoneManager.PackOptionZone.Cards.Any(c => c.isConsumable && c.ConsumableData.DBName == "SOUL") && !ContextContainsCandidate(context, "SOUL") && Globals.randomNext(0, 1000) <= 3)
+                    {
+                        context.Candidates.Clear();
+                        context.Candidates.Add(new WeightedCandidate { Weight = 1, Definition = new SpectralRollableDefinition("SOUL") });
+                    }
+                    if (!ZoneManager.ConsumableZone.Cards.Any(c => c.isConsumable && c.ConsumableData.DBName == "BLACK HOLE") && !ZoneManager.PackOptionZone.Cards.Any(c => c.isConsumable && c.ConsumableData.DBName == "BLACK HOLE") && !ContextContainsCandidate(context, "BLACK HOLE") && Globals.randomNext(0, 1000) <= 3)
+                    {
+                        context.Candidates.Clear();
+                        context.Candidates.Add(new WeightedCandidate { Weight = 1, Definition = new SpectralRollableDefinition("BLACK HOLE") });
+                    }
                 }
             }
         }

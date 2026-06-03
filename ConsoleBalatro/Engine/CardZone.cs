@@ -15,6 +15,7 @@ namespace ConsoleBalatro.Engine
         public List<Card> Cards = new List<Card>();
         public int MaxCapacity = -1;//-1 for infinite
         public bool HasRoom => MaxCapacity == -1 || Cards.Count < MaxCapacity;
+        public bool HasRoomIgnoreNegative => MaxCapacity == -1 || Cards.Count < (MaxCapacity - Cards.Count(x => x.Edition == Engine.Cards.Enums.Edition.NEGATIVE));
         public bool HasRoomFor(Card c) => HasRoom || (Cards.Count == MaxCapacity && c.Edition == Engine.Cards.Enums.Edition.NEGATIVE);
         public bool HasRoomFor(int numCards) => MaxCapacity == -1 || MaxCapacity - Cards.Count > numCards;
 

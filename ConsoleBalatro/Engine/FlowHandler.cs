@@ -219,14 +219,13 @@ namespace ConsoleBalatro.Engine
             EngineEventHandler.TriggerEvent(new EngineEventArgs() { MyContext = new() { Context = EventContextType.EndPostRound } });
             Globals.PopCurrGameState();
             InitializeMarketRound();
-            //AttemptRoundInitialize(InitializeMarketRound);
         }
 
         public static void InitializeMarketRound()
         {
             EngineEventHandler.TriggerEvent(new EngineEventArgs() { MyContext = new() { Context = EventContextType.StartMarket } });
             Globals.PushGameState(new GameStateObj() { GameState = GameState.ShopMenu });
-            //No need to initialize zones I think?
+            
             MarketGeneralManager.FillFreshMarket();
         }
 
@@ -237,7 +236,6 @@ namespace ConsoleBalatro.Engine
             Globals.PopCurrGameState();
 
             InitializeBlindSelectionRound();
-            //AttemptRoundInitialize(InitializeBlindSelectionRound);
         }
 
         public static void InitializeBlindSelectionRound()

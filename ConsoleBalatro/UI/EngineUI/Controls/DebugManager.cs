@@ -3,6 +3,7 @@ using ConsoleBalatro.Engine.Cards;
 using ConsoleBalatro.Engine.Cards.Consumables;
 using ConsoleBalatro.Engine.Cards.Enums;
 using ConsoleBalatro.Engine.Cards.Jokers;
+using ConsoleBalatro.Engine.Cards.Vouchers;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -21,6 +22,7 @@ namespace ConsoleBalatro.UI.EngineUI.Controls
             { "TEST", TestCommand },
             { "ADDCON", AddConsumable },
             { "ADDJOKER", AddJoker },
+            { "ADDVOUCHER", AddVoucher },
             { "PRINT", PrintList },
             { "SETREQ", SetReq },
             { "HELP", Help },
@@ -43,7 +45,7 @@ namespace ConsoleBalatro.UI.EngineUI.Controls
 
         private static Dictionary<string, List<string>> GameStringLists = new()
         {
-            {  "TAROT", ConsumableManager.TarotNames },
+            { "TAROT", ConsumableManager.TarotNames },
             { "SPECTRAL", ConsumableManager.SpectralNames },
             { "PLANET", ConsumableManager.PlanetsToHandType.Keys.ToList() },
             { "JOKER", JokerDb.JokerDbNames },
@@ -265,6 +267,25 @@ namespace ConsoleBalatro.UI.EngineUI.Controls
             }
 
             ZoneManager.JokerZone.AddCard(JokerDb.GenerateJokerCard(jokerName), overrideSpace: flags.Contains("IGNORESPACE"));
+        }
+
+        private static void AddVoucher(List<string> parameters, List<string> flags)
+        {
+            if (parameters.Count != 1)
+            {
+                Console.WriteLine("Invalid number of parameters. Usage: addvoucher <voucherName>");
+                return;
+            }
+
+            //NOTE: IF ADDING VOUCHER WITH SPACES, USE AMPERSAND INSTEAD OF SPACE IN THE NAME, E.G. "5% OFF" WOULD BE "5%&OFF"
+            var voucherName = parameters[0].Replace("&", " ");
+            if (!VoucherDb.VoucherDBNames.Contains(voucherName))
+            {
+                Console.WriteLine($"Unknown voucher name: {voucherName}");
+                return;
+            }
+
+            ZoneManager.ActiveVoucherZone.AddCard(VoucherDb.MakeVoucherCard(voucherName), overrideSpace: flags.Contains("IGNORESPACE"));
         }
 
         private static void AddConsumable(List<string> parameters, List<string> flags)

@@ -97,7 +97,7 @@ namespace ConsoleBalatro.Engine
             EngineEventHandler.TriggerEvent(args);
             //MarketOptionsManager.DrawNumMarketItems(packInfo.RelevantBuyItemType, packInfo.NumOptionsPresented, ZoneManager.PackOptionZone);
             var batchInfo = new ContentRollBatchContext();
-            for (int i = 0; i < packInfo.NumOptionsPresented; i++)
+            for (int i = ZoneManager.PackOptionZone.Cards.Count; i < packInfo.NumOptionsPresented; i++) //lookit my pretty lil hack i got here :)
             {
                 var type = MarketPullManager.ChooseRollItemByOdds(args.Odds);
                 MarketPullManager.DrawMarketItem(type, ZoneManager.PackOptionZone, source: GenerationSource.Pack, batchContext: batchInfo);

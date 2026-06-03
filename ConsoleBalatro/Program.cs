@@ -35,7 +35,7 @@ class Program
         DeckDb.BecomeDeck("YELLOW");
         FlowHandler.StartNewAnte();
         FlowHandler.InitializeBlindSelectionRound();
-        FlowHandler.CurSmallBlindTag = TagType.ECONOMY;
+        FlowHandler.CurSmallBlindTag = TagType.NEGATIVE;
         FlowHandler.CurBigBlindTag = TagType.ECONOMY;
         FlowHandler.CurrentBossBlind = "VERDANT LEAF";
 

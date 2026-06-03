@@ -35,7 +35,7 @@ namespace ConsoleBalatro.Engine.Market
         public static void FillMainMarket()
         {
             var batch = new ContentRollBatchContext();
-            while (ZoneManager.MainMarketZone.HasRoom)
+            while (ZoneManager.MainMarketZone.HasRoomIgnoreNegative)
             {
                 var type = ChooseMarketRollType();
                 DrawMarketItem(type, ZoneManager.MainMarketZone, batchContext: batch);

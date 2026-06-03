@@ -49,7 +49,6 @@ class Program
 
         Globals.EmitMoneyGain(999, null);*/
         Globals.EmitMoneyGain(4, null);//Temp starting money command
-        Globals.MaxHandsPerRound += 1;
         EngineDisplayGlobals.PlayCachedAnimations();
 
         while (!Globals.QUIT)

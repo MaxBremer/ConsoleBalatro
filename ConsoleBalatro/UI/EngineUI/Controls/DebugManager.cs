@@ -253,7 +253,8 @@ namespace ConsoleBalatro.UI.EngineUI.Controls
                 Console.WriteLine("Invalid number of parameters. Usage: addjoker <jokerName>");
                 return;
             }
-            var jokerName = parameters[0];
+            //NOTE: IF ADDING JOKER WITH SPACES, USE AMPERSAND INSTEAD OF SPACE IN THE NAME, E.G. "THE TRIBE" WOULD BE "THE&TRIBE"
+            var jokerName = parameters[0].Replace("&", " ");
             if(!JokerDb.JokerDbNames.Contains(jokerName))
             {
                 Console.WriteLine($"Unknown joker name: {jokerName}");

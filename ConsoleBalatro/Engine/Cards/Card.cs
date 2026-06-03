@@ -207,6 +207,11 @@ namespace ConsoleBalatro.Engine.Cards
             EngineEventHandler.TriggerEvent(evArgs);
         }
 
+        public void SetSealOfficial(Seal newSeal)
+        {
+            Seal = newSeal;
+        }
+
         public void SetRankOfficial(Rank newRank)
         {
             var oldRank = Rank;
@@ -372,7 +377,7 @@ namespace ConsoleBalatro.Engine.Cards
             target.Stickers.AddRange(Stickers);
 
             target.SetEditionOfficial(Edition);
-            target.Seal = Seal;
+            target.SetSealOfficial(Seal);
             target.SetEnhancementOfficial(Enhancement);
 
             //NOTE: Deciding here and now that joker, voucher, and tag are exclusive. A card can only be 0 to 1 of these things, not multiple.

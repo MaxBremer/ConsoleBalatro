@@ -329,7 +329,7 @@ namespace ConsoleBalatro.Engine.Market
                     }
                     if (doSeal)
                     {
-                        cardDrawn.Seal = validSeals[Globals.randomNext(validSeals.Count)];
+                        cardDrawn.SetSealOfficial(validSeals[Globals.randomNext(validSeals.Count)]);
                     }
                 }
             }

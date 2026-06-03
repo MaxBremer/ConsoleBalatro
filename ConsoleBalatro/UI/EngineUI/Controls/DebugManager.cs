@@ -162,7 +162,7 @@ namespace ConsoleBalatro.UI.EngineUI.Controls
                 case "SETSEAL":
                     if(Enum.TryParse(operationParams[0], out Seal newSeal))
                     {
-                        c.Seal = newSeal;
+                        c.SetSealOfficial(newSeal);
                     }
                     else
                     {

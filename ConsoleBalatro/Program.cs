@@ -35,9 +35,6 @@ class Program
         DeckDb.BecomeDeck("YELLOW");
         FlowHandler.StartNewAnte();
         FlowHandler.InitializeBlindSelectionRound();
-        FlowHandler.CurSmallBlindTag = TagType.NEGATIVE;
-        FlowHandler.CurBigBlindTag = TagType.ECONOMY;
-        FlowHandler.CurrentBossBlind = "VERDANT LEAF";
 
         /*//Test jokers
         ZoneManager.JokerZone.AddCard(JokerDb.GenerateJokerCard("MIME"));

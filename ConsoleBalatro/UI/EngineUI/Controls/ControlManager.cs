@@ -98,12 +98,15 @@ namespace ConsoleBalatro.UI.EngineUI.Controls
                 EngineDisplayGlobals.Redraw();
             });
 
-            ret.AvailableActions.Add(ConsoleKey.Oem3, _ =>
+            if (Globals.ALLOW_DEBUG_COMMANDS)
             {
-                Console.Clear();
-                DebugManager.RunDebugCmdLine();
-                EngineDisplayGlobals.Redraw();
-            });
+                ret.AvailableActions.Add(ConsoleKey.Oem3, _ =>
+                {
+                    Console.Clear();
+                    DebugManager.RunDebugCmdLine();
+                    EngineDisplayGlobals.Redraw();
+                });
+            }
         }
 
         private static ControlOptionset BuildPlayRoundOptions()
@@ -169,10 +172,13 @@ namespace ConsoleBalatro.UI.EngineUI.Controls
             {
                 MarketGeneralManager.RerollMainMarket();
             });
-            ret.AvailableActions.Add(ConsoleKey.D, _ =>
+            if (Globals.ALLOW_DEBUG_COMMANDS)
             {
-                MarketGeneralManager.DebugRefreshPackMarket();
-            });
+                ret.AvailableActions.Add(ConsoleKey.D, _ =>
+                {
+                    MarketGeneralManager.DebugRefreshPackMarket();
+                });
+            }
             ret.AvailableActions.Add(ConsoleKey.E, _ =>
             {
                 FlowHandler.CloseMarketRound();
@@ -248,6 +254,14 @@ namespace ConsoleBalatro.UI.EngineUI.Controls
             ret.AvailableActions.Add(ConsoleKey.B, _ =>
             {
                 FlowHandler.StartSelectedBlind();
+            });
+
+            ret.AvailableActions.Add(ConsoleKey.R, _ =>
+            {
+                if (Globals.CanRerollBossBlind)
+                {
+                    FlowHandler.RerollBossBlind(isPlayerReroll: true);
+                }
             });
 
             return ret;

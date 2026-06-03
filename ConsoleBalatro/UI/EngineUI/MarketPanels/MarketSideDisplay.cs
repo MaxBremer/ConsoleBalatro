@@ -54,6 +54,13 @@ namespace ConsoleBalatro.UI.EngineUI.MarketPanels
                 ret.Add("");
                 ret.Add("HAND STATS");
                 ret.Add("[T]");
+
+                if(Globals.CurBossBlindRerollsAllowed != 0)
+                {
+                    ret.Add("");
+                    ret.Add("REROLL BOSS BLIND (" + Globals.CurrentBossBlindRerollCost + ")");
+                    ret.Add("[R]");
+                }
             }
             else
             {

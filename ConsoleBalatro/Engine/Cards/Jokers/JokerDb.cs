@@ -2419,7 +2419,7 @@ namespace ConsoleBalatro.Engine.Cards.Jokers
                     {
                         var created = EngineUtils.GenerateRandomPlayingCard();
                         var possibleSeals = Enum.GetValues<Seal>().Where(x => x != Seal.NONE).ToList();
-                        created.Seal = possibleSeals[Globals.randomNext(possibleSeals.Count)];
+                        created.SetSealOfficial(possibleSeals[Globals.randomNext(possibleSeals.Count)]);
                         ZoneManager.HandZone.AddCard(created, overrideSpace: true);
                     }
                 });

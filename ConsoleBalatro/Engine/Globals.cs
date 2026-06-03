@@ -26,6 +26,7 @@ namespace ConsoleBalatro.Engine
         public const bool GUARANTEE_UNIQUE_TAGS = false;
         public const bool USE_DEFAULT_JOKER_IF_POOL_EMPTY = true;
         public const bool MIRROR_ILLUSION_SEAL_GLITCH = false;
+        public const bool ALLOW_DEBUG_COMMANDS = true;
         private static int _reqChipsBlind = -1;
 
         public static Dictionary<Rank, int> RankChipVals = new()
@@ -93,12 +94,14 @@ namespace ConsoleBalatro.Engine
 
         public static int CurMaxInterest = 5;
 
+        public static int CurrentBossBlindRerollCost = 10;
+
         public static int BaseBossBlindRerollsAllowed = 0;
         public static int CurBossBlindRerollsAllowed = 0;
 
         public static HashSet<string> Flags = new();
 
-        public static bool CanRerollBossBlind => CurBossBlindRerollsAllowed != 0;
+        public static bool CanRerollBossBlind => CurBossBlindRerollsAllowed != 0 && CanAfford(CurrentBossBlindRerollCost);
 
         public static bool ShopPlayingCardsGetModifiers = false;//NOTE: TEMP. 
 

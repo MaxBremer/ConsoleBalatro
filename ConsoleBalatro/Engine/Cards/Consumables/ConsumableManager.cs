@@ -1133,7 +1133,7 @@ namespace ConsoleBalatro.Engine.Cards.Consumables
             {
                 foreach (var card in ZoneManager.CardsSelectedInHand)
                 {
-                    card.Seal = sealType;
+                    card.SetSealOfficial(sealType);
                 }
             };
 

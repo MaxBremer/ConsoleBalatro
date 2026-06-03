@@ -1,5 +1,6 @@
 ﻿using ConsoleBalatro.Engine.Cards;
 using ConsoleBalatro.Engine.Cards.Blinds;
+using ConsoleBalatro.Engine.Cards.Decks;
 using ConsoleBalatro.Engine.Cards.Tags;
 using ConsoleBalatro.Engine.Events;
 using ConsoleBalatro.Engine.Events.Args;
@@ -250,6 +251,18 @@ namespace ConsoleBalatro.Engine
             Globals.PopCurrGameState();
         }
 
+        public static void InitializeDeckSelectionRound()
+        {
+            EngineEventHandler.TriggerEvent(new EngineEventArgs() { MyContext = new() { Context = EventContextType.StartDeckSelection } });
+            Globals.PushGameState(new GameStateObj() { GameState = GameState.DeckSelectMenu }); //TODO: context??
+        }
+
+        public static void CloseDeckSelectionRound()
+        {
+            EngineEventHandler.TriggerEvent(new EngineEventArgs() { MyContext = new() { Context = EventContextType.EndDeckSelection } });
+            Globals.PopCurrGameState();
+        }
+
         public static void OpenPackSelectionRound(Card beingOpened)
         {
             var gsObj = new GameStateObj();
@@ -409,6 +422,16 @@ namespace ConsoleBalatro.Engine
             CloseBlindSelectionRound();
             InitializePlayRound(CurrentSelectedBlind);
             //AttemptRoundInitialize(InitializePlayRound, CurrentSelectedBlind);
+        }
+
+        public static void DeckChosen(string deckDBName)
+        {
+            //Should only happen at the very start of a run.
+            //So once a deck is chosen, initialize ante and move into blind selection.
+            DeckDb.BecomeDeck(deckDBName);
+            CloseDeckSelectionRound();
+            StartNewAnte();
+            InitializeBlindSelectionRound();
         }
     }
 }

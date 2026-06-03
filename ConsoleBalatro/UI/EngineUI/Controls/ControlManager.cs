@@ -145,6 +145,19 @@ namespace ConsoleBalatro.UI.EngineUI.Controls
                 EngineDisplayGlobals.Redraw();
             });
 
+            
+            ret.AvailableActions.Add(ConsoleKey.D, _ =>
+            {
+                if (FlowHandler.CurrentSelectedBlind != BlindType.BOSS || ZoneManager.HiddenBlindAttributeZone.Cards.Count == 0)
+                    return;
+                EngineDisplayGlobals.ShowInfoDisplay(FlowHandler.CurrentBossBlind + "&!&!" + ZoneManager.HiddenBlindAttributeZone.Cards[0].JokerData.DescriptionBuilder(null) + "&!&!(PRESS ANY KEY TO CLOSE)", "&!");
+                EngineDisplayGlobals.Redraw();
+                var x = Console.ReadKey();
+                EngineDisplayGlobals.HideInfoDisplay();
+                EngineDisplayGlobals.Redraw();
+            });
+            
+
             foreach (var n in numKeyList)
             {
                 ret.AvailableActions.Add(n, BuildActionForNumKey(n));
@@ -255,6 +268,15 @@ namespace ConsoleBalatro.UI.EngineUI.Controls
             {
                 FlowHandler.StartSelectedBlind();
             });
+
+            if (Globals.ALLOW_DEBUG_COMMANDS)
+            {
+                ret.AvailableActions.Add(ConsoleKey.D, _ =>
+                {
+                    FlowHandler.RerollBossBlind(isPlayerReroll: false);
+                    EngineDisplayGlobals.Redraw();
+                });
+            }
 
             ret.AvailableActions.Add(ConsoleKey.R, _ =>
             {

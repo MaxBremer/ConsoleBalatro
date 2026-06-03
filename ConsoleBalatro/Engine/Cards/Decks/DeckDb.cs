@@ -15,6 +15,8 @@ namespace ConsoleBalatro.Engine.Cards.Decks
 {
     public static class DeckDb
     {
+        public static List<string> DeckDBNames => DeckData.Keys.ToList();
+
         public static Dictionary<string, Func<Card, JokerCardDataBlock>> DeckData = new()
         {
             {

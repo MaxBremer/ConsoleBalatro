@@ -65,6 +65,15 @@ namespace ConsoleBalatro.UI.EngineUI
             ret.Add("SORT BY [R]ANK");
             ret.Add("SORT BY [S]UIT");
 
+            if(FlowHandler.CurrentSelectedBlind == BlindType.BOSS && ZoneManager.HiddenBlindAttributeZone.Cards.Count > 0)
+            {
+                ret.Add("");
+                ret.Add("BOSS BLIND: ");
+                ret.Add(FlowHandler.CurrentBossBlind);
+                ret.Add("VIEW [D]ETAILS");
+                //EngineDisplayGlobals.AddButDontExpand(ret, ZoneManager.HiddenBlindAttributeZone.Cards[0].JokerData.DescriptionBuilder(null));
+            }
+
             return ret;
         }
 

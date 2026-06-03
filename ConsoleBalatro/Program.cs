@@ -19,35 +19,14 @@ class Program
         Console.CursorVisible = false;
         Globals.InitializeMain();
         UIStateManager.InitializeUIStateManager();
-        //test stuff
-        /*var ra = new Random();
-        foreach (var c in ZoneManager.DeckZone.Cards)
-        {
-            if (ra.Next(1, 4) == 3)
-            {
-                c.Enhancement = Enhancement.STEEL;
-                c.Seal = Seal.RED;
-            }
-        }*/
 
         Console.Clear();
         EngineDisplayGlobals.InitializeDisplayAll(inte);
-        DeckDb.BecomeDeck("YELLOW");
+        DeckDb.BecomeDeck("BLACK");
         FlowHandler.StartNewAnte();
         FlowHandler.InitializeBlindSelectionRound();
+        //FlowHandler.InitializeDeckSelectionRound();
 
-        /*//Test jokers
-        ZoneManager.JokerZone.AddCard(JokerDb.GenerateJokerCard("MIME"));
-        ZoneManager.JokerZone.AddCard(JokerDb.GenerateJokerCard("JOLLY JOKER"));
-        ZoneManager.JokerZone.AddCard(JokerDb.GenerateJokerCard("WRATHFUL JOKER"));
-        ZoneManager.JokerZone.AddCard(JokerDb.GenerateJokerCard("GOLDEN JOKER"));
-        ZoneManager.JokerZone.AddCard(JokerDb.GenerateJokerCard("CREDIT CARD"));
-
-        //Test consumables
-        ZoneManager.ConsumableZone.AddCard(ConsumableManager.MakeTarotCard("STRENGTH"));
-        ZoneManager.ConsumableZone.AddCard(ConsumableManager.MakeTarotCard("WORLD"));
-
-        Globals.EmitMoneyGain(999, null);*/
         EngineDisplayGlobals.PlayCachedAnimations();
 
         while (!Globals.QUIT)

@@ -77,6 +77,9 @@ namespace ConsoleBalatro.Engine.Events
         StartBlindSelection,
         EndBlindSelection,
 
+        StartDeckSelection,
+        EndDeckSelection,
+
         StartSelectedBlind,
 
         BlindChange,

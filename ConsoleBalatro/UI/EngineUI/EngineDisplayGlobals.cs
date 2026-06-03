@@ -14,6 +14,7 @@ using System.Linq;
 using System.Net.NetworkInformation;
 using System.Text;
 using System.Threading.Tasks;
+using static System.Net.Mime.MediaTypeNames;
 
 namespace ConsoleBalatro.UI.EngineUI
 {
@@ -145,6 +146,13 @@ namespace ConsoleBalatro.UI.EngineUI
             InfoDisplayPanel.AdjustLinesByWrapWidth(EngineDisplayConstants.INFO_PANEL_WIDTH);
             InfoDisplayPanel.Visible = true;
             //Also not this funcs responsibility to redraw.
+        }
+
+        public static void ShowInfoDisplay(string infoToDisplay, int maxLen = 15)
+        {
+            InfoDisplayPanel.SetLines(infoToDisplay, "$%^&");
+            InfoDisplayPanel.AdjustLinesByWrapWidth(maxLen);
+            InfoDisplayPanel.Visible = true;
         }
 
         public static void DisplayDetailInfoForCardDisplay(CardDisplay cd)
@@ -609,6 +617,44 @@ namespace ConsoleBalatro.UI.EngineUI
         public static string setCharsAt(string baseS, int startInd, string charsInsert)
         {
             return setCharsAt(baseS, startInd, charsInsert.ToCharArray().ToList());
+        }
+
+        public static void AddButDontExpand(List<string> lines, string text)
+        {
+            if (lines == null)
+                throw new ArgumentNullException(nameof(lines));
+
+            if (string.IsNullOrWhiteSpace(text))
+                return;
+
+            int maxLength = lines.Count > 0
+                ? lines.Max(x => x.Length)
+                : text.Length;
+
+            string remaining = text.Trim();
+
+            while (remaining.Length > 0)
+            {
+                if (remaining.Length <= maxLength)
+                {
+                    lines.Add(remaining);
+                    break;
+                }
+
+                int splitIndex = remaining.LastIndexOf(' ', maxLength);
+
+                // No suitable space found, force split
+                if (splitIndex <= 0)
+                {
+                    lines.Add(remaining[..maxLength]);
+                    remaining = remaining[maxLength..].TrimStart();
+                }
+                else
+                {
+                    lines.Add(remaining[..splitIndex]);
+                    remaining = remaining[(splitIndex + 1)..].TrimStart();
+                }
+            }
         }
     }
 }

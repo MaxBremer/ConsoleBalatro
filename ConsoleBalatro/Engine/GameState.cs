@@ -11,6 +11,7 @@ namespace ConsoleBalatro.Engine
         BASE,
 
         MainMenu,
+        DeckSelectMenu,
         PlayRound,
         PostRoundRewardsMenu,
         BlindsMenu,

@@ -1,4 +1,5 @@
-﻿using System;
+﻿using ConsoleBalatro.UI.EngineUI;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -95,6 +96,16 @@ namespace ConsoleBalatro.UI
         {
             _textLines.Clear();
             _textLines.AddRange(wholeString.Split(divider));
+            Sprite = new string[_textLines.Count + 4, GetWidthByLines()];
+        }
+
+        public void SetLinesMaxWidth(string wholeString, int maxWidth)
+        {
+            _textLines.Clear();
+            _textLines.Add(new string('x', maxWidth));//XTREME JANK. But this way I don't have to write another func :)
+            //the longer this project goes on, the greater the jank I will accept.
+            EngineDisplayGlobals.AddButDontExpand(_textLines, wholeString);
+            _textLines.RemoveAt(0);
             Sprite = new string[_textLines.Count + 4, GetWidthByLines()];
         }
 

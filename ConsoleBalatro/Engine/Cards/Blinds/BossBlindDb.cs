@@ -397,7 +397,7 @@ namespace ConsoleBalatro.Engine.Cards.Blinds
                         MyContextType = EventContextType.AllScoringCardsDecided,
                         MyAction = args =>
                         {
-                            if(args is EngineHandPlayArgs playArgs && ret.DataDict["PLAYEDFLAG"].IntData == 1 && playArgs.HandBeingPlayed == ret.DataDict["CHOSENHAND"].HandTypeData)
+                            if(args is EngineHandPlayArgs playArgs && ret.DataDict["PLAYEDFLAG"].IntData == 1 && playArgs.HandBeingPlayed != ret.DataDict["CHOSENHAND"].HandTypeData)
                             {
                                 playArgs.CancelScoring = true;
                                 EngineEventHandler.TriggerEvent(new EngineEventArgs() {MyContext = new() { Context = EventContextType.BossAbilityTriggeredByHand}});

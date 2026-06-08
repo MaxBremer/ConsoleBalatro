@@ -1,6 +1,8 @@
 ﻿using ConsoleBalatro.Engine;
+using ConsoleBalatro.Engine.Cards;
 using ConsoleBalatro.Engine.Cards.Decks;
 using ConsoleBalatro.Engine.Events;
+using ConsoleBalatro.Engine.Events.Args;
 using Xunit;
 
 namespace ConsoleBalatro.Tests;
@@ -69,6 +71,51 @@ public class UnlockManagerTests : TestClassBase
 
             Assert.True(UnlockManager.IsAchievementAchieved("PLAY_A_HAND"));
             Assert.Equal(1, conditionChecks);
+        }
+        finally
+        {
+            UnlockManager.SaveFilePath = originalPath;
+            UnlockManager.ResetProgressToDefaults(clearAchievementDefinitions: true);
+            EngineEventHandler.ResetFullEventHandler();
+            DeleteTempSave(savePath);
+        }
+    }
+
+
+    [Fact]
+    public void BuiltInAchievements_TriggerFromDifferentEvents()
+    {
+        var savePath = BuildTempSavePath();
+        var originalPath = UnlockManager.SaveFilePath;
+        try
+        {
+            UnlockManager.SaveFilePath = savePath;
+            EngineEventHandler.ResetFullEventHandler();
+            UnlockManager.ResetProgressToDefaults();
+            EngineEventHandler.ResetSavedEvents();
+
+            for (var i = 0; i < 9; i++)
+            {
+                EngineEventHandler.TriggerEvent(new EngineHandPlayDoneArgs { MyContext = new EventContext { Context = EventContextType.HandPlayDone } });
+            }
+            Assert.False(UnlockManager.IsAchievementAchieved(UnlockManager.TenHandsPlayedAchievementId));
+
+            EngineEventHandler.TriggerEvent(new EngineHandPlayDoneArgs { MyContext = new EventContext { Context = EventContextType.HandPlayDone } });
+            Assert.True(UnlockManager.IsAchievementAchieved(UnlockManager.TenHandsPlayedAchievementId));
+
+            EngineEventHandler.TriggerEvent(new EngineHandPlayDoneArgs
+            {
+                MyContext = new EventContext { Context = EventContextType.HandPlayDone },
+                CurrentTotalChips = 10000,
+            });
+            Assert.True(UnlockManager.IsAchievementAchieved(UnlockManager.ScoreTenThousandAchievementId));
+
+            EngineEventHandler.TriggerEvent(new EngineDiscardDoneArgs
+            {
+                MyContext = new EventContext { Context = EventContextType.HandDiscardDone },
+                BeingDiscarded = CardFactory.CardListFromDefString("AS,KS,QS,JS,1S", ","),
+            });
+            Assert.True(UnlockManager.IsAchievementAchieved(UnlockManager.DiscardRoyalFlushAchievementId));
         }
         finally
         {

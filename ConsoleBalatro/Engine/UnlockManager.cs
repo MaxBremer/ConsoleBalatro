@@ -1,5 +1,8 @@
-﻿using ConsoleBalatro.Engine.Cards.Decks;
+﻿using ConsoleBalatro.Engine.Cards;
+using ConsoleBalatro.Engine.Cards.Decks;
+using ConsoleBalatro.Engine.Cards.Enums;
 using ConsoleBalatro.Engine.Events;
+using ConsoleBalatro.Engine.Events.Args;
 using System.Text.Json;
 using System.Text.Json.Serialization;
 
@@ -12,6 +15,10 @@ namespace ConsoleBalatro.Engine
         private static readonly Dictionary<string, EngineEventListener> AchievementListeners = new(StringComparer.OrdinalIgnoreCase);
         private static HashSet<string> UnlockedDecks = new(StringComparer.OrdinalIgnoreCase);
         private static HashSet<string> AchievedAchievements = new(StringComparer.OrdinalIgnoreCase);
+
+        public const string TenHandsPlayedAchievementId = "TEN_HANDS_PLAYED";
+        public const string ScoreTenThousandAchievementId = "SCORE_10000_HAND";
+        public const string DiscardRoyalFlushAchievementId = "DISCARD_ROYAL_FLUSH";
 
         private static readonly JsonSerializerOptions SaveJsonOptions = new()
         {
@@ -30,6 +37,7 @@ namespace ConsoleBalatro.Engine
 
         static UnlockManager()
         {
+            RegisterBuiltInAchievements();
             ResetProgressToDefaults();
         }
 
@@ -50,8 +58,28 @@ namespace ConsoleBalatro.Engine
             }
             else
             {
+                RegisterBuiltInAchievements();
                 StartUnachievedAchievementListeners();
             }
+        }
+
+
+        public static void RegisterBuiltInAchievements()
+        {
+            RegisterAchievementListener(
+                TenHandsPlayedAchievementId,
+                EventContextType.HandPlayDone,
+                _ => EngineEventHandler.CountOfSaved(EventContextType.HandPlayDone) >= 10);
+
+            RegisterAchievementListener(
+                ScoreTenThousandAchievementId,
+                EventContextType.HandPlayDone,
+                args => args is EngineHandPlayDoneArgs playArgs && playArgs.CurrentTotalChips >= 10000);
+
+            RegisterAchievementListener(
+                DiscardRoyalFlushAchievementId,
+                EventContextType.HandDiscardDone,
+                args => args is EngineDiscardDoneArgs discardArgs && IsRoyalFlush(discardArgs.BeingDiscarded));
         }
 
         public static bool IsDeckUnlocked(string deckDbName) => UnlockedDecks.Contains(deckDbName);
@@ -230,6 +258,21 @@ namespace ConsoleBalatro.Engine
                 EngineEventHandler.StopListening(listener);
                 AchievementListeners.Remove(achievementId);
             }
+        }
+
+
+        private static bool IsRoyalFlush(List<Card>? cards)
+        {
+            if (cards == null || cards.Count < 5)
+            {
+                return false;
+            }
+
+            var royalRanks = new HashSet<Rank> { Rank.TEN, Rank.JACK, Rank.QUEEN, Rank.KING, Rank.ACE };
+            return cards
+                .Where(card => royalRanks.Contains(card.Rank))
+                .GroupBy(card => card.Suit)
+                .Any(group => group.Key != Suit.NONE && royalRanks.All(rank => group.Any(card => card.Rank == rank)));
         }
 
         private sealed record UnlockAchievementDefinition(string Id, EventContextType ContextType, Func<EngineEventArgs, bool> Condition, bool StartListening);

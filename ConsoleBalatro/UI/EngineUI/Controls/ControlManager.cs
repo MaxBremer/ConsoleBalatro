@@ -29,6 +29,7 @@ namespace ConsoleBalatro.UI.EngineUI.Controls
             AvailableControlSets.Add("POSTROUND", BuildPostRoundOptions());
             AvailableControlSets.Add("BLIND", BuildBlindOptions());
             AvailableControlSets.Add("GAMEOVER", BuildEmptyOptions());
+            AvailableControlSets.Add("DECKCHOICE", BuildEmptyOptions());
         }
 
         public static void EngageControlset(ControlOptionset options, ControlContext context)

@@ -80,6 +80,8 @@ namespace ConsoleBalatro.UI.EngineUI
 
         public static HandStatsDisplay HandStatsMenu;
 
+        public static DeckChoicesDisplay DeckChoiceMenu;
+
         public static int DisplayRequiredChipsForBlind;
         public static int DisplayTotalCurrentChips;
 
@@ -211,6 +213,9 @@ namespace ConsoleBalatro.UI.EngineUI
             HandStatsMenu = new HandStatsDisplay(EngineDisplayConstants.HAND_STATS_DISPLAY_XLOC, EngineDisplayConstants.HAND_STATS_DISPLAY_YLOC);
             EngineDisplays.Add(HandStatsMenu);
 
+            DeckChoiceMenu = new DeckChoicesDisplay(EngineDisplayConstants.DECK_CHOICE_DISPLAY_XLOC, EngineDisplayConstants.DECK_CHOICE_DISPLAY_YLOC);
+            EngineDisplays.Add(DeckChoiceMenu);
+
             foreach (var dispEnt in EngineDisplays)
             {
                 dispEnt.Visible = false;
@@ -237,6 +242,13 @@ namespace ConsoleBalatro.UI.EngineUI
                 PackMarketDisplay.DisplayBeneath = "";
             if (PackOptionsDisplay != null)
                 PackOptionsDisplay.DisplayBeneath = "";
+        }
+
+        public static void SetupDeckChoiceState()
+        {
+            ClearEngineEntities();
+
+            DeckChoiceMenu.Visible = true;
         }
 
         public static void SetupPlayRoundState()
@@ -319,6 +331,7 @@ namespace ConsoleBalatro.UI.EngineUI
 
             StartMenuListener(TriggerMarketSetup);
             StartMenuListener(TriggerPlayRoundSetup);
+            StartMenuListener(TriggerDeckChoiceSetup);
             StartMenuListener(TriggerPackOptionSetup);
             StartMenuListener(TriggerPostRoundSetup);
             StartMenuListener(TriggerBlindsSetup);
@@ -348,6 +361,19 @@ namespace ConsoleBalatro.UI.EngineUI
                 {
                     SetupMarketState();
                     ControlManager.CurrentControlset = "MARKET";
+                    Redraw();
+                });
+            }
+        }
+
+        private static void TriggerDeckChoiceSetup(EngineEventArgs args)
+        {
+            if (args is EngineGameStateChangeArgs chgArgs && IsValidRoundOfState(chgArgs, GameState.DeckSelectMenu))
+            {
+                CacheAnimationAction(_ =>
+                {
+                    SetupDeckChoiceState();
+                    ControlManager.CurrentControlset = "DECKCHOICE";
                     Redraw();
                 });
             }

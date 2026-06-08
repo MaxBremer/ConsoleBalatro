@@ -62,7 +62,7 @@ namespace ConsoleBalatro.Engine.Cards.Decks
                 "GREEN",
                 c =>
                 {
-                    var ret = JokerDb.BasicDataBlock("Green", "At end of each Round: $2 per remaining Hand, $1 per remaining Discard, earn no interest.");
+                    var ret = JokerDb.BasicDataBlock("Green", "At end of each Round: $2 per remaining Hand, $1 per remaining Discard, no interest.");
                     ret.Listeners.Add(new EngineEventListener()
                     {
                         MyContextType = EventContextType.GatherPostRoundMoney,

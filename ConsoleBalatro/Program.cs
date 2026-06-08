@@ -24,8 +24,8 @@ class Program
         EngineDisplayGlobals.InitializeDisplayAll(inte);
         DeckDb.BecomeDeck("YELLOW");
         FlowHandler.StartNewAnte();
-        FlowHandler.InitializeBlindSelectionRound();
-        //FlowHandler.InitializeDeckSelectionRound();
+        //FlowHandler.InitializeBlindSelectionRound();
+        FlowHandler.InitializeDeckSelectionRound();
 
         EngineDisplayGlobals.PlayCachedAnimations();
 

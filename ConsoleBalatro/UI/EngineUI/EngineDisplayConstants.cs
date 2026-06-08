@@ -73,5 +73,10 @@ namespace ConsoleBalatro.UI.EngineUI
 
         public const int HAND_STATS_DISPLAY_XLOC = 25;
         public const int HAND_STATS_DISPLAY_YLOC = 6;
+
+        public const int DECK_CHOICE_DISPLAY_XLOC = 1;
+        public const int DECK_CHOICE_DISPLAY_YLOC = 1;
+
+        public const int DECK_CHOICE_DISPLAY_WIDTH = 116;
     }
 }

@@ -28,6 +28,7 @@ namespace ConsoleBalatro.UI.EngineUI.Controls
             AvailableControlSets.Add("PACK", BuildPackOptionSelectionOptions());
             AvailableControlSets.Add("POSTROUND", BuildPostRoundOptions());
             AvailableControlSets.Add("BLIND", BuildBlindOptions());
+            AvailableControlSets.Add("GAMEOVER", BuildEmptyOptions());
         }
 
         public static void EngageControlset(ControlOptionset options, ControlContext context)
@@ -286,6 +287,13 @@ namespace ConsoleBalatro.UI.EngineUI.Controls
                 }
             });
 
+            return ret;
+        }
+
+        private static ControlOptionset BuildEmptyOptions()
+        {
+            var ret = new ControlOptionset();
+            ret.SchemaName = "TEST OPTIONS IGNORE";
             return ret;
         }
 

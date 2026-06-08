@@ -252,6 +252,9 @@ namespace ConsoleBalatro.Engine
                 CardsSelected = selCards,
             };
             EngineEventHandler.TriggerEvent(calcedArgs);
+            //Yeah, we trigger a lot of different events during hand scoring. Yeah, some of them are probably redundant and could be merged into others.
+            //But you know what? Huh? You know what? huh?
+            //huh?
             
             if(!calcedArgs.CancelScoring)
             {
@@ -277,6 +280,10 @@ namespace ConsoleBalatro.Engine
                 {
                     voucherCard.TriggerScoring(sContext);//TODO: Put all always-score cards (like jokers, vouchers, boss blind jokers) in one always-score list, then score that.
                 }
+
+                //TODO: Other hidden effects should score correct? Otherwise only listeners from challenges/decks/boss blinds/other hiddens will trigger, not scoring effects.
+                //BUT maybe we don't want them to trigger scoring... idk man.
+                //Onadds/onremoves will also trigger in either case since hidden zone is a jokerzone.
 
                 ScoreHandler.FinalPlayChipsCalc();
                 EngineEventHandler.TriggerEvent(new EngineEventArgs()
@@ -458,7 +465,7 @@ namespace ConsoleBalatro.Engine
         {
             if (zoneFrom == null)
                 zoneFrom = beingPurchased.MyZone;
-            //noZone purchases can occur, such as a buyAndUse, which will handle its own discard.
+            //no-Zone purchases can occur, such as a buyAndUse, which will handle its own discard.
             if (zoneGoingTo != null && zoneFrom != null)
                 zoneGoingTo.DrawTargetFrom(zoneFrom, beingPurchased);
             EmitMoneyLoss(beingPurchased.BuyCost, beingPurchased, true);

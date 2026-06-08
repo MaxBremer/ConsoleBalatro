@@ -189,8 +189,10 @@ namespace ConsoleBalatro.UI.EngineUI
             EngineDisplays.Add(PackMarketDisplay);
             ScoreDisplay = new ScoreDisplay();
             EngineDisplays.Add(ScoreDisplay);
-            InfoDisplayPanel = new TextDisplayPanel(new List<string>() { "INFO" }, EngineDisplayConstants.TEXT_DISPLAY_MINWIDTH, EngineDisplayConstants.TEXT_DISPLAY_MINHEIGHT);
-            InfoDisplayPanel.xLoc = EngineDisplayConstants.TEXT_DISPLAY_XLOC;
+            InfoDisplayPanel = new TextDisplayPanel(new List<string>() { "INFO" }, EngineDisplayConstants.TEXT_DISPLAY_MINWIDTH, EngineDisplayConstants.TEXT_DISPLAY_MINHEIGHT)
+            {
+                xLoc = EngineDisplayConstants.TEXT_DISPLAY_XLOC
+            };
             EngineDisplays.Add(InfoDisplayPanel);
             PackOptionsDisplay = new CardZoneTemplateDisplay(ZoneManager.PackOptionZone, EngineDisplayConstants.PACK_OPTIONS_HEIGHT, EngineDisplayConstants.PACK_OPTIONS_WIDTH, EngineDisplayConstants.PACK_OPTIONS_XPOS, EngineDisplayConstants.PACK_OPTIONS_YPOS, false);
             EngineDisplays.Add(PackOptionsDisplay);
@@ -246,7 +248,6 @@ namespace ConsoleBalatro.UI.EngineUI
             ConsumableDisplay.Visible = true;
             BeingPlayedDisplay.Visible = true;
             ScoreDisplay.Visible = true;
-            //ShowInfoDisplay("Num consumables " + ConsumableManager.TarotNames.Count, "&");
         }
 
         public static void SetupMarketState()
@@ -412,6 +413,7 @@ namespace ConsoleBalatro.UI.EngineUI
                 {
                     ClearEngineEntities();
                     ShowInfoDisplay("GAME OVER", "*");
+                    ControlManager.CurrentControlset = "GAMEOVER";
                     Redraw();
                 });
             }

@@ -224,7 +224,7 @@ namespace ConsoleBalatro.Engine.Cards
                 MyContext = new() { Context = EventContextType.CardDetailsChange },
             };
             EngineEventHandler.TriggerEvent(evArgs);
-            Rank = newRank;//TODO: event??
+            Rank = newRank;
             ChipsBase = EngineUtils.RankBaseChipAmounts[Rank];
 
             evArgs.isAfter = true;
@@ -306,7 +306,9 @@ namespace ConsoleBalatro.Engine.Cards
             if (Debuffed)
             {
                 //TODO: FOR NOW, THIS IS A CHEAP EASY WAY TO IMPLEMENT MATADOR MONEY GAIN
-                //LATER THIS SHOULD PROB BE CUSTOM, BUT IDK HOW TO DIFFERENTIATE BOSS DEBUFFS.
+                //LATER THIS SHOULD PROB BE CUSTOM, BUT IDK HOW TO DIFFERENTIATE BOSS DEBUFFS FROM OTHER DEBUFFS.
+                //EXAMPLE GLITCH: MATADOR WILL MAKE U A BILLION MONEY IN ANY CHALLENGE THAT DEBUFFS UR CARDS.
+                //IDK MAN FIX IT FUTURE ME.
                 EngineEventHandler.TriggerEvent(new EngineEventArgs() { MyContext = new() { Context = EventContextType.BossAbilityTriggeredByHand } });
                 return;
             }

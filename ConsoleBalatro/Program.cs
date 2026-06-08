@@ -22,7 +22,7 @@ class Program
 
         Console.Clear();
         EngineDisplayGlobals.InitializeDisplayAll(inte);
-        DeckDb.BecomeDeck("BLACK");
+        DeckDb.BecomeDeck("YELLOW");
         FlowHandler.StartNewAnte();
         FlowHandler.InitializeBlindSelectionRound();
         //FlowHandler.InitializeDeckSelectionRound();

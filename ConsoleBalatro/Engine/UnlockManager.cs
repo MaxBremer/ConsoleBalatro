@@ -20,6 +20,13 @@ namespace ConsoleBalatro.Engine
         public const string ScoreTenThousandAchievementId = "SCORE_10000_HAND";
         public const string DiscardRoyalFlushAchievementId = "DISCARD_ROYAL_FLUSH";
 
+        private static readonly Dictionary<string, AchievementDisplayData> AchievementDisplayDataById = new(StringComparer.OrdinalIgnoreCase)
+        {
+            { TenHandsPlayedAchievementId, new AchievementDisplayData("Practiced Hand", "Played 10 hands.") },
+            { ScoreTenThousandAchievementId, new AchievementDisplayData("Big Score", "Played a hand that scored 10,000 or more total chips.") },
+            { DiscardRoyalFlushAchievementId, new AchievementDisplayData("Royal Mistake", "Discarded a royal flush instead of playing it.") },
+        };
+
         private static readonly JsonSerializerOptions SaveJsonOptions = new()
         {
             WriteIndented = true,
@@ -30,6 +37,8 @@ namespace ConsoleBalatro.Engine
             Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData),
             "ConsoleBalatro",
             "unlocks.json");
+
+        public static event Action<AchievementUnlockedEventArgs>? AchievementUnlocked;
 
         public static IReadOnlyCollection<string> UnlockedDeckNames => UnlockedDecks.OrderBy(x => x).ToList();
         public static IReadOnlyCollection<string> AchievedAchievementIds => AchievedAchievements.OrderBy(x => x).ToList();
@@ -128,6 +137,7 @@ namespace ConsoleBalatro.Engine
             }
 
             StopAchievementListener(achievementId);
+            AchievementUnlocked?.Invoke(BuildAchievementUnlockedEventArgs(achievementId));
 
             if (saveImmediately)
             {
@@ -178,6 +188,15 @@ namespace ConsoleBalatro.Engine
                 ApplySaveData(saveData);
                 return true;
             }
+        }
+
+
+        private static AchievementUnlockedEventArgs BuildAchievementUnlockedEventArgs(string achievementId)
+        {
+            var displayData = AchievementDisplayDataById.GetValueOrDefault(achievementId)
+                ?? new AchievementDisplayData(achievementId, "Unlocked an achievement.");
+
+            return new AchievementUnlockedEventArgs(achievementId, displayData.Name, displayData.Details);
         }
 
         private static bool RegisterAchievementListener(string achievementId, EventContextType contextType, Func<EngineEventArgs, bool> condition, bool startListening)
@@ -275,6 +294,8 @@ namespace ConsoleBalatro.Engine
                 .Any(group => group.Key != Suit.NONE && royalRanks.All(rank => group.Any(card => card.Rank == rank)));
         }
 
+        private sealed record AchievementDisplayData(string Name, string Details);
+
         private sealed record UnlockAchievementDefinition(string Id, EventContextType ContextType, Func<EngineEventArgs, bool> Condition, bool StartListening);
 
         private sealed class UnlockSaveData
@@ -308,5 +329,19 @@ namespace ConsoleBalatro.Engine
         {
             public List<string> Achieved { get; set; } = new();
         }
+    }
+
+    public sealed class AchievementUnlockedEventArgs : EventArgs
+    {
+        public AchievementUnlockedEventArgs(string achievementId, string achievementName, string achievementDetails)
+        {
+            AchievementId = achievementId;
+            AchievementName = achievementName;
+            AchievementDetails = achievementDetails;
+        }
+
+        public string AchievementId { get; }
+        public string AchievementName { get; }
+        public string AchievementDetails { get; }
     }
 }

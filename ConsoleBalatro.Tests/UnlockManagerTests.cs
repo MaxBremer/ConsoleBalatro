@@ -87,8 +87,11 @@ public class UnlockManagerTests : TestClassBase
     {
         var savePath = BuildTempSavePath();
         var originalPath = UnlockManager.SaveFilePath;
+        var unlockedPopups = new List<AchievementUnlockedEventArgs>();
+        void CaptureUnlock(AchievementUnlockedEventArgs args) => unlockedPopups.Add(args);
         try
         {
+            UnlockManager.AchievementUnlocked += CaptureUnlock;
             UnlockManager.SaveFilePath = savePath;
             EngineEventHandler.ResetFullEventHandler();
             UnlockManager.ResetProgressToDefaults();
@@ -116,9 +119,14 @@ public class UnlockManagerTests : TestClassBase
                 BeingDiscarded = CardFactory.CardListFromDefString("AS,KS,QS,JS,1S", ","),
             });
             Assert.True(UnlockManager.IsAchievementAchieved(UnlockManager.DiscardRoyalFlushAchievementId));
+
+            Assert.Contains(unlockedPopups, args => args.AchievementName == "Practiced Hand" && args.AchievementDetails == "Played 10 hands.");
+            Assert.Contains(unlockedPopups, args => args.AchievementName == "Big Score" && args.AchievementDetails.Contains("10,000"));
+            Assert.Contains(unlockedPopups, args => args.AchievementName == "Royal Mistake" && args.AchievementDetails.Contains("royal flush"));
         }
         finally
         {
+            UnlockManager.AchievementUnlocked -= CaptureUnlock;
             UnlockManager.SaveFilePath = originalPath;
             UnlockManager.ResetProgressToDefaults(clearAchievementDefinitions: true);
             EngineEventHandler.ResetFullEventHandler();

@@ -1,4 +1,5 @@
-﻿using ConsoleBalatro.Engine.Cards.Consumables;
+﻿using ConsoleBalatro.Engine;
+using ConsoleBalatro.Engine.Cards.Consumables;
 using ConsoleBalatro.Engine.Cards.Jokers;
 using ConsoleBalatro.Engine.Cards.Tags;
 using ConsoleBalatro.Engine.Cards.Vouchers;
@@ -16,6 +17,8 @@ namespace ConsoleBalatro.Engine.Cards.Decks
     public static class DeckDb
     {
         public static List<string> DeckDBNames => DeckData.Keys.ToList();
+        public static IReadOnlyCollection<string> DefaultUnlockedDeckNames { get; } = new HashSet<string>(StringComparer.OrdinalIgnoreCase) { "RED" };
+        public static List<string> UnlockedDeckDBNames => DeckDBNames.Where(UnlockManager.IsDeckUnlocked).ToList();
 
         public static Dictionary<string, Func<Card, JokerCardDataBlock>> DeckData = new()
         {
@@ -282,6 +285,10 @@ namespace ConsoleBalatro.Engine.Cards.Decks
                 }
             },
         };
+
+        public static bool IsDeckUnlocked(string deckDbName) => UnlockManager.IsDeckUnlocked(deckDbName);
+
+        public static bool UnlockDeck(string deckDbName, bool saveImmediately = true) => UnlockManager.UnlockDeck(deckDbName, saveImmediately);
 
         public static void BecomeDeck(string deckDbName)
         {

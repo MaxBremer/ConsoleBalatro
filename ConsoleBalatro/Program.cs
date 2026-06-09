@@ -22,6 +22,7 @@ class Program
 
         //For now, always reset achievement progress to default.
         UnlockManager.ResetProgressToDefaults();
+        UnlockManager.SaveProgress();
 
         Console.Clear();
         EngineDisplayGlobals.InitializeDisplayAll(inte);

@@ -24,24 +24,30 @@ namespace ConsoleBalatro.Engine
 
         public static void RegisterDefaultAchievements()
         {
-            RegisterAchievementDisplayData(TenHandsPlayedAchievementId, "Practiced Hand", "Played 10 hands.");
-            RegisterAchievementDisplayData(ScoreTenThousandAchievementId, "Big Score", "Played a hand that scored 10,000 or more total chips.");
-            RegisterAchievementDisplayData(DiscardRoyalFlushAchievementId, "Royal Mistake", "Discarded a royal flush instead of playing it.");
-
-            RegisterAchievementListener(
-                TenHandsPlayedAchievementId,
-                EventContextType.HandPlayDone,
+            RegisterAllAchievementData(
+                TenHandsPlayedAchievementId, 
+                "Practiced Hand", 
+                "Played 10 hands.", 
+                EventContextType.HandPlayDone, 
                 _ => EngineEventHandler.CountOfSaved(EventContextType.HandPlayDone) >= 10);
-
-            RegisterAchievementListener(
-                ScoreTenThousandAchievementId,
-                EventContextType.HandPlayDone,
-                args => args is EngineHandPlayDoneArgs playArgs && playArgs.CurrentTotalChips >= 10000);
-
-            RegisterAchievementListener(
-                DiscardRoyalFlushAchievementId,
-                EventContextType.HandDiscardDone,
+            RegisterAllAchievementData(
+                ScoreTenThousandAchievementId, 
+                "Big Score", 
+                "Played a hand that scored 10,000 or more total chips.", 
+                EventContextType.HandPlayDone, 
+                args => args is EngineHandPlayDoneArgs playArgs && playArgs.CurrentTotalChips >= 100);
+            RegisterAllAchievementData(
+                DiscardRoyalFlushAchievementId, 
+                "Royal Mistake", 
+                "Discarded a royal flush instead of playing it.", 
+                EventContextType.HandDiscardDone, 
                 args => args is EngineDiscardDoneArgs discardArgs && IsRoyalFlush(discardArgs.BeingDiscarded));
+        }
+
+        private static void RegisterAllAchievementData(string id, string name, string desc, EventContextType contextType, Func<EngineEventArgs, bool> condition)
+        {
+            RegisterAchievementDisplayData(id, name, desc);
+            RegisterAchievementListener(id, contextType, condition);
         }
 
         public static void ClearAchievementDefinitions()
@@ -52,12 +58,12 @@ namespace ConsoleBalatro.Engine
 
         public static bool RegisterAchievement(string achievementId)
         {
-            return RegisterAchievementDefinition(new AchievementDefinition(achievementId, EventContextType.NONE, _ => true, startListening: false));
+            return RegisterAchievementDefinition(new AchievementDefinition(achievementId, EventContextType.NONE, _ => true, StartListening: false));
         }
 
         public static bool RegisterAchievementListener(string achievementId, EventContextType contextType, Func<EngineEventArgs, bool> condition)
         {
-            return RegisterAchievementDefinition(new AchievementDefinition(achievementId, contextType, condition, startListening: true));
+            return RegisterAchievementDefinition(new AchievementDefinition(achievementId, contextType, condition, StartListening: true));
         }
 
         public static bool RegisterAchievementDisplayData(string achievementId, string name, string details)

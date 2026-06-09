@@ -20,7 +20,7 @@ namespace ConsoleBalatro.UI.EngineUI
 {
     public static class EngineDisplayGlobals
     {
-        public const bool OVERRIDE_ANIMATIONS = true;
+        public const bool OVERRIDE_ANIMATIONS = false;
 
         public static Dictionary<Edition, string> EditionBorderChars = new()
         {

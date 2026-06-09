@@ -111,24 +111,24 @@ public class UnlockManagerTests : TestClassBase
             {
                 EngineEventHandler.TriggerEvent(new EngineHandPlayDoneArgs { MyContext = new EventContext { Context = EventContextType.HandPlayDone } });
             }
-            Assert.False(UnlockManager.IsAchievementAchieved(UnlockManager.TenHandsPlayedAchievementId));
+            Assert.False(UnlockManager.IsAchievementAchieved(AchievementDb.TenHandsPlayedAchievementId));
 
             EngineEventHandler.TriggerEvent(new EngineHandPlayDoneArgs { MyContext = new EventContext { Context = EventContextType.HandPlayDone } });
-            Assert.True(UnlockManager.IsAchievementAchieved(UnlockManager.TenHandsPlayedAchievementId));
+            Assert.True(UnlockManager.IsAchievementAchieved(AchievementDb.TenHandsPlayedAchievementId));
 
             EngineEventHandler.TriggerEvent(new EngineHandPlayDoneArgs
             {
                 MyContext = new EventContext { Context = EventContextType.HandPlayDone },
                 CurrentTotalChips = 10000,
             });
-            Assert.True(UnlockManager.IsAchievementAchieved(UnlockManager.ScoreTenThousandAchievementId));
+            Assert.True(UnlockManager.IsAchievementAchieved(AchievementDb.ScoreTenThousandAchievementId));
 
             EngineEventHandler.TriggerEvent(new EngineDiscardDoneArgs
             {
                 MyContext = new EventContext { Context = EventContextType.HandDiscardDone },
                 BeingDiscarded = CardFactory.CardListFromDefString("AS,KS,QS,JS,1S", ","),
             });
-            Assert.True(UnlockManager.IsAchievementAchieved(UnlockManager.DiscardRoyalFlushAchievementId));
+            Assert.True(UnlockManager.IsAchievementAchieved(AchievementDb.DiscardRoyalFlushAchievementId));
 
             Assert.Contains(unlockedPopups, args => args.AchievementName == "Practiced Hand" && args.AchievementDesc == "Played 10 hands.");
             Assert.Contains(unlockedPopups, args => args.AchievementName == "Big Score" && args.AchievementDesc.Contains("10,000"));

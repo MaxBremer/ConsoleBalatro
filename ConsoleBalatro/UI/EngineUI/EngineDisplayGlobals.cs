@@ -326,6 +326,7 @@ namespace ConsoleBalatro.UI.EngineUI
 
         public static void InitializeGlobalListeners()
         {
+            EngineEventHandler.StartListening(new EngineEventListener() { MyAction = DisplayAchievementUnlocked, MyContextType = EventContextType.AchievementUnlocked});
             EngineEventHandler.StartListening(new EngineEventListener() { MyAction = DisplayChipsMultEmit, MyContextType = EventContextType.GainEmit });
             EngineEventHandler.StartListening(new EngineEventListener() { MyAction = DisplayMoneyEmit, MyContextType = EventContextType.MoneyGainEmit });
 
@@ -336,6 +337,44 @@ namespace ConsoleBalatro.UI.EngineUI
             StartMenuListener(TriggerPostRoundSetup);
             StartMenuListener(TriggerBlindsSetup);
             StartMenuListener(TriggerGameOver);
+        }
+
+
+        private static void DisplayAchievementUnlocked(EngineEventArgs args)
+        {
+            if (EngineInterface == null)
+                return;
+            if(args is EngineAchievementUnlockArgs achArgs)
+            {
+                var lines = new List<string>
+                {
+                    "ACHIEVEMENT UNLOCKED!",
+                    achArgs.AchievementName,
+                    achArgs.AchievementDesc,
+                };
+                var popup = new TextDisplayPanel(lines, 48, 7)
+                {
+                    xLoc = Math.Max(0, (Interface.Display_Width - 48) / 2),
+                    yLoc = 1,
+                    zSortOrder = 1000,
+                    Visible = false,
+                    ClearBg = false,
+                };
+
+                popup.AdjustLinesByWrapWidth(42);
+                EngineInterface.AddEntity(popup);
+
+                CacheAnimationAction(_ =>
+                {
+                    popup.Visible = true;
+                }, 1500);
+
+                CacheAnimationAction(_ =>
+                {
+                    popup.Visible = false;
+                    EngineInterface.RemoveEntity(popup);
+                }, 0);
+            }
         }
 
         private static void StartMenuListener(Action<EngineEventArgs> listAct)

@@ -428,6 +428,9 @@ namespace ConsoleBalatro.Engine
         {
             //Should only happen at the very start of a run.
             //So once a deck is chosen, initialize ante and move into blind selection.
+            if (!DeckDb.IsDeckUnlocked(deckDBName))
+                return;
+
             DeckDb.BecomeDeck(deckDBName);
             CloseDeckSelectionRound();
             StartNewAnte();

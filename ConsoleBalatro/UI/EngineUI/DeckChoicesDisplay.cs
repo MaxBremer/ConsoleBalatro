@@ -35,7 +35,7 @@ namespace ConsoleBalatro.UI.EngineUI
             MyTable.StretchMode = TableStretchMode.EvenColumns;
             MyTable.Width = EngineDisplayConstants.DECK_CHOICE_DISPLAY_WIDTH;
             int ct = 0;
-            MyTable.Rows = DeckDb.DeckDBNames.Select(x => { ct++; return BuildDeckRow(ct, x); }).ToList();
+            MyTable.Rows = DeckDb.UnlockedDeckDBNames.Select(x => { ct++; return BuildDeckRow(ct, x); }).ToList();
         }
 
         private TableRow BuildDeckRow(int num, string deckDbName)

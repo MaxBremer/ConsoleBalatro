@@ -108,6 +108,9 @@ namespace ConsoleBalatro.Engine.Events
         SettingBaseChipsMult,
 
         ZoneShuffling,
+
+        AchievementUnlocked,
+        CollectionItemAdded,
     }
     public class EventContext
     {

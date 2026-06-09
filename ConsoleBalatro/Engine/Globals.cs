@@ -142,6 +142,8 @@ namespace ConsoleBalatro.Engine
 
         public static void InitializeMain()
         {
+            UnlockManager.LoadProgress();
+
             ZoneManager.InitializeMainGameZones();
 
             ScoreHandler.InitializeHandStatTracker();

@@ -1100,6 +1100,7 @@ namespace ConsoleBalatro.Engine.Cards.Consumables
             var dataBlock = new ConsumableCardDataBlock
             {
                 ConsumableName = PlanetCardNames[hand],
+                DBName = PlanetCardNames[hand].ToUpper(),
                 Type = ConsumableType.PLANET,
                 BuyType = BuyItemType.PLANET_CARD,
                 PlanetHandType = hand,

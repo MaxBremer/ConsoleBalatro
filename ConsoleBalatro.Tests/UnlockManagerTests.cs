@@ -89,15 +89,23 @@ public class UnlockManagerTests : TestClassBase
     {
         var savePath = BuildTempSavePath();
         var originalPath = UnlockManager.SaveFilePath;
-        var unlockedPopups = new List<AchievementUnlockedEventArgs>();
-        void CaptureUnlock(AchievementUnlockedEventArgs args) => unlockedPopups.Add(args);
+        var unlockedPopups = new List<EngineAchievementUnlockArgs>();
+        Action<EngineEventArgs> CaptureUnlock = (EngineEventArgs args) => 
+        { 
+            if (args is EngineAchievementUnlockArgs achArgs) 
+            { 
+                unlockedPopups.Add(achArgs); 
+            } 
+        };
+        var listener = new EngineEventListener() { MyAction = CaptureUnlock, MyContextType = EventContextType.AchievementUnlocked };
         try
         {
-            UnlockManager.AchievementUnlocked += CaptureUnlock;
+            //UnlockManager.AchievementUnlocked += CaptureUnlock;
             UnlockManager.SaveFilePath = savePath;
             EngineEventHandler.ResetFullEventHandler();
             UnlockManager.ResetProgressToDefaults();
             EngineEventHandler.ResetSavedEvents();
+            EngineEventHandler.StartListening(listener);
 
             for (var i = 0; i < 9; i++)
             {
@@ -122,13 +130,13 @@ public class UnlockManagerTests : TestClassBase
             });
             Assert.True(UnlockManager.IsAchievementAchieved(UnlockManager.DiscardRoyalFlushAchievementId));
 
-            Assert.Contains(unlockedPopups, args => args.AchievementName == "Practiced Hand" && args.AchievementDetails == "Played 10 hands.");
-            Assert.Contains(unlockedPopups, args => args.AchievementName == "Big Score" && args.AchievementDetails.Contains("10,000"));
-            Assert.Contains(unlockedPopups, args => args.AchievementName == "Royal Mistake" && args.AchievementDetails.Contains("royal flush"));
+            Assert.Contains(unlockedPopups, args => args.AchievementName == "Practiced Hand" && args.AchievementDesc == "Played 10 hands.");
+            Assert.Contains(unlockedPopups, args => args.AchievementName == "Big Score" && args.AchievementDesc.Contains("10,000"));
+            Assert.Contains(unlockedPopups, args => args.AchievementName == "Royal Mistake" && args.AchievementDesc.Contains("royal flush"));
         }
         finally
         {
-            UnlockManager.AchievementUnlocked -= CaptureUnlock;
+            EngineEventHandler.StopListening(listener);
             UnlockManager.SaveFilePath = originalPath;
             UnlockManager.ResetProgressToDefaults(clearAchievementDefinitions: true);
             EngineEventHandler.ResetFullEventHandler();

@@ -326,9 +326,7 @@ namespace ConsoleBalatro.UI.EngineUI
 
         public static void InitializeGlobalListeners()
         {
-            UnlockManager.AchievementUnlocked -= DisplayAchievementUnlocked;
-            UnlockManager.AchievementUnlocked += DisplayAchievementUnlocked;
-
+            EngineEventHandler.StartListening(new EngineEventListener() { MyAction = DisplayAchievementUnlocked, MyContextType = EventContextType.AchievementUnlocked});
             EngineEventHandler.StartListening(new EngineEventListener() { MyAction = DisplayChipsMultEmit, MyContextType = EventContextType.GainEmit });
             EngineEventHandler.StartListening(new EngineEventListener() { MyAction = DisplayMoneyEmit, MyContextType = EventContextType.MoneyGainEmit });
 
@@ -342,38 +340,41 @@ namespace ConsoleBalatro.UI.EngineUI
         }
 
 
-        private static void DisplayAchievementUnlocked(AchievementUnlockedEventArgs args)
+        private static void DisplayAchievementUnlocked(EngineEventArgs args)
         {
             if (EngineInterface == null)
                 return;
-
-            var popup = new TextDisplayPanel(new List<string>
+            if(args is EngineAchievementUnlockArgs achArgs)
             {
-                "ACHIEVEMENT UNLOCKED!",
-                args.AchievementName,
-                args.AchievementDetails,
-            }, 48, 7)
-            {
-                xLoc = Math.Max(0, (Interface.Display_Width - 48) / 2),
-                yLoc = 1,
-                zSortOrder = 1000,
-                Visible = false,
-                ClearBg = true,
-            };
+                var lines = new List<string>
+                {
+                    "ACHIEVEMENT UNLOCKED!",
+                    achArgs.AchievementName,
+                    achArgs.AchievementDesc,
+                };
+                var popup = new TextDisplayPanel(lines, 48, 7)
+                {
+                    xLoc = Math.Max(0, (Interface.Display_Width - 48) / 2),
+                    yLoc = 1,
+                    zSortOrder = 1000,
+                    Visible = false,
+                    ClearBg = false,
+                };
 
-            popup.AdjustLinesByWrapWidth(42);
-            EngineInterface.AddEntity(popup);
+                popup.AdjustLinesByWrapWidth(42);
+                EngineInterface.AddEntity(popup);
 
-            CacheAnimationAction(_ =>
-            {
-                popup.Visible = true;
-            }, 1500);
+                CacheAnimationAction(_ =>
+                {
+                    popup.Visible = true;
+                }, 1500);
 
-            CacheAnimationAction(_ =>
-            {
-                popup.Visible = false;
-                EngineInterface.RemoveEntity(popup);
-            }, 0);
+                CacheAnimationAction(_ =>
+                {
+                    popup.Visible = false;
+                    EngineInterface.RemoveEntity(popup);
+                }, 0);
+            }
         }
 
         private static void StartMenuListener(Action<EngineEventArgs> listAct)

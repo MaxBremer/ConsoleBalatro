@@ -43,7 +43,6 @@ namespace ConsoleBalatro.Engine
             "ConsoleBalatro",
             "unlocks.json");
 
-        public static event Action<AchievementUnlockedEventArgs>? AchievementUnlocked;
 
         public static IReadOnlyCollection<string> UnlockedDeckNames => UnlockedDecks.OrderBy(x => x).ToList();
         public static IReadOnlyCollection<string> AchievedAchievementIds => AchievedAchievements.OrderBy(x => x).ToList();
@@ -179,7 +178,10 @@ namespace ConsoleBalatro.Engine
             }
 
             StopAchievementListener(achievementId);
-            AchievementUnlocked?.Invoke(BuildAchievementUnlockedEventArgs(achievementId));
+            var displayData = AchievementDisplayDataById.GetValueOrDefault(achievementId)
+                ?? new AchievementDisplayData(achievementId, "Unlocked an achievement.");
+            var achArgs = new EngineAchievementUnlockArgs() { AchievementId = achievementId, AchievementName = displayData.Name, AchievementDesc = displayData.Details };
+            EngineEventHandler.TriggerEvent(achArgs);
 
             if (saveImmediately)
             {
@@ -230,15 +232,6 @@ namespace ConsoleBalatro.Engine
                 ApplySaveData(saveData);
                 return true;
             }
-        }
-
-
-        private static AchievementUnlockedEventArgs BuildAchievementUnlockedEventArgs(string achievementId)
-        {
-            var displayData = AchievementDisplayDataById.GetValueOrDefault(achievementId)
-                ?? new AchievementDisplayData(achievementId, "Unlocked an achievement.");
-
-            return new AchievementUnlockedEventArgs(achievementId, displayData.Name, displayData.Details);
         }
 
         private static bool RegisterAchievementListener(string achievementId, EventContextType contextType, Func<EngineEventArgs, bool> condition, bool startListening)
@@ -348,6 +341,10 @@ namespace ConsoleBalatro.Engine
             {
                 SaveProgress();
             }
+
+
+            var args = new EngineCollectionItemAddArgs() { ItemDbName = dbName };
+            EngineEventHandler.TriggerEvent(args);
             return true;
         }
 
@@ -469,19 +466,5 @@ namespace ConsoleBalatro.Engine
             public List<string> Jokers { get; set; } = new();
             public List<string> Consumables { get; set; } = new();
         }
-    }
-
-    public sealed class AchievementUnlockedEventArgs : EventArgs
-    {
-        public AchievementUnlockedEventArgs(string achievementId, string achievementName, string achievementDetails)
-        {
-            AchievementId = achievementId;
-            AchievementName = achievementName;
-            AchievementDetails = achievementDetails;
-        }
-
-        public string AchievementId { get; }
-        public string AchievementName { get; }
-        public string AchievementDetails { get; }
     }
 }

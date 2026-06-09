@@ -20,6 +20,9 @@ class Program
         Globals.InitializeMain();
         UIStateManager.InitializeUIStateManager();
 
+        //For now, always reset achievement progress to default.
+        UnlockManager.ResetProgressToDefaults();
+
         Console.Clear();
         EngineDisplayGlobals.InitializeDisplayAll(inte);
         DeckDb.BecomeDeck("YELLOW");

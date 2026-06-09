@@ -1,6 +1,8 @@
 ﻿using ConsoleBalatro.Engine.Cards;
+using ConsoleBalatro.Engine.Cards.Consumables;
 using ConsoleBalatro.Engine.Cards.Decks;
 using ConsoleBalatro.Engine.Cards.Enums;
+using ConsoleBalatro.Engine.Cards.Jokers;
 using ConsoleBalatro.Engine.Events;
 using ConsoleBalatro.Engine.Events.Args;
 using System.Text.Json;
@@ -13,8 +15,11 @@ namespace ConsoleBalatro.Engine
         private static readonly object SaveLock = new();
         private static readonly Dictionary<string, UnlockAchievementDefinition> AchievementDefinitions = new(StringComparer.OrdinalIgnoreCase);
         private static readonly Dictionary<string, EngineEventListener> AchievementListeners = new(StringComparer.OrdinalIgnoreCase);
+        private static readonly List<EngineEventListener> CollectionListeners = new();
         private static HashSet<string> UnlockedDecks = new(StringComparer.OrdinalIgnoreCase);
         private static HashSet<string> AchievedAchievements = new(StringComparer.OrdinalIgnoreCase);
+        private static HashSet<string> CollectedJokers = new(StringComparer.OrdinalIgnoreCase);
+        private static HashSet<string> CollectedConsumables = new(StringComparer.OrdinalIgnoreCase);
 
         public const string TenHandsPlayedAchievementId = "TEN_HANDS_PLAYED";
         public const string ScoreTenThousandAchievementId = "SCORE_10000_HAND";
@@ -43,6 +48,11 @@ namespace ConsoleBalatro.Engine
         public static IReadOnlyCollection<string> UnlockedDeckNames => UnlockedDecks.OrderBy(x => x).ToList();
         public static IReadOnlyCollection<string> AchievedAchievementIds => AchievedAchievements.OrderBy(x => x).ToList();
         public static IReadOnlyCollection<string> RegisteredAchievementIds => AchievementDefinitions.Keys.OrderBy(x => x).ToList();
+        public static IReadOnlyCollection<string> CollectedJokerDbNames => CollectedJokers.OrderBy(x => x).ToList();
+        public static IReadOnlyCollection<string> CollectedConsumableDbNames => CollectedConsumables.OrderBy(x => x).ToList();
+        public static int CollectedJokerCount => CollectedJokers.Count;
+        public static int CollectedConsumableCount => CollectedConsumables.Count;
+        public static int CollectionCount => CollectedJokerCount + CollectedConsumableCount;
 
         static UnlockManager()
         {
@@ -57,9 +67,12 @@ namespace ConsoleBalatro.Engine
                 EngineEventHandler.StopListening(listener);
             }
             AchievementListeners.Clear();
+            StopCollectionListeners();
 
             UnlockedDecks = new HashSet<string>(DeckDb.DefaultUnlockedDeckNames, StringComparer.OrdinalIgnoreCase);
             AchievedAchievements = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
+            CollectedJokers = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
+            CollectedConsumables = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
 
             if (clearAchievementDefinitions)
             {
@@ -68,6 +81,7 @@ namespace ConsoleBalatro.Engine
             else
             {
                 RegisterBuiltInAchievements();
+                StartCollectionListeners();
                 StartUnachievedAchievementListeners();
             }
         }
@@ -112,6 +126,34 @@ namespace ConsoleBalatro.Engine
             return true;
         }
 
+
+        public static bool IsJokerCollected(string jokerDbName) => CollectedJokers.Contains(jokerDbName);
+
+        public static bool IsConsumableCollected(string consumableDbName) => CollectedConsumables.Contains(consumableDbName);
+
+        public static bool IsCollectionComplete() => CollectedJokers.IsSupersetOf(JokerDb.JokerDbNames)
+            && CollectedConsumables.IsSupersetOf(GetAllConsumableDbNames());
+
+        public static bool AddJokerToCollection(string jokerDbName, bool saveImmediately = true)
+        {
+            if (string.IsNullOrWhiteSpace(jokerDbName) || !JokerDb.JokerData.ContainsKey(jokerDbName))
+            {
+                return false;
+            }
+
+            return AddCollectionItem(CollectedJokers, jokerDbName, saveImmediately);
+        }
+
+        public static bool AddConsumableToCollection(string consumableDbName, bool saveImmediately = true)
+        {
+            if (string.IsNullOrWhiteSpace(consumableDbName) || !GetAllConsumableDbNames().Contains(consumableDbName))
+            {
+                return false;
+            }
+
+            return AddCollectionItem(CollectedConsumables, consumableDbName, saveImmediately);
+        }
+
         public static bool IsAchievementAchieved(string achievementId) => AchievedAchievements.Contains(achievementId);
 
         public static bool RegisterAchievement(string achievementId)
@@ -150,7 +192,7 @@ namespace ConsoleBalatro.Engine
         {
             lock (SaveLock)
             {
-                var saveData = UnlockSaveData.FromCurrentState(UnlockedDecks, AchievedAchievements);
+                var saveData = UnlockSaveData.FromCurrentState(UnlockedDecks, AchievedAchievements, CollectedJokers, CollectedConsumables);
                 var saveDirectory = Path.GetDirectoryName(SaveFilePath);
                 if (!string.IsNullOrWhiteSpace(saveDirectory))
                 {
@@ -221,6 +263,8 @@ namespace ConsoleBalatro.Engine
         {
             UnlockedDecks = new HashSet<string>(DeckDb.DefaultUnlockedDeckNames, StringComparer.OrdinalIgnoreCase);
             AchievedAchievements = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
+            CollectedJokers = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
+            CollectedConsumables = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
 
             if (saveData != null)
             {
@@ -233,8 +277,20 @@ namespace ConsoleBalatro.Engine
                 {
                     AchievedAchievements.Add(achievementId);
                 }
+
+                foreach (var jokerDbName in (saveData.Collection?.Jokers ?? new List<string>()).Where(JokerDb.JokerData.ContainsKey))
+                {
+                    CollectedJokers.Add(jokerDbName);
+                }
+
+                var allConsumableDbNames = GetAllConsumableDbNames();
+                foreach (var consumableDbName in (saveData.Collection?.Consumables ?? new List<string>()).Where(allConsumableDbNames.Contains))
+                {
+                    CollectedConsumables.Add(consumableDbName);
+                }
             }
 
+            StartCollectionListeners();
             StartUnachievedAchievementListeners();
         }
 
@@ -280,6 +336,78 @@ namespace ConsoleBalatro.Engine
         }
 
 
+
+        private static bool AddCollectionItem(HashSet<string> collection, string dbName, bool saveImmediately)
+        {
+            if (!collection.Add(dbName))
+            {
+                return false;
+            }
+
+            if (saveImmediately)
+            {
+                SaveProgress();
+            }
+            return true;
+        }
+
+        private static void StartCollectionListeners()
+        {
+            StopCollectionListeners();
+
+            var jokerGainListener = new EngineEventListener
+            {
+                MyContextType = EventContextType.CardDrawnToZone,
+                MyAction = args =>
+                {
+                    if (args is EngineCardDrawnToZoneArgs drawArgs
+                        && drawArgs.ZoneDrawnTo == ZoneManager.JokerZone
+                        && drawArgs.CardBeingDrawn.isJoker
+                        && !drawArgs.CardBeingDrawn.isVoucher
+                        && !drawArgs.CardBeingDrawn.isTag
+                        && !string.IsNullOrWhiteSpace(drawArgs.CardBeingDrawn.JokerData?.DBName))
+                    {
+                        AddJokerToCollection(drawArgs.CardBeingDrawn.JokerData.DBName);
+                    }
+                },
+            };
+
+            var consumableUseListener = new EngineEventListener
+            {
+                MyContextType = EventContextType.ConsumableUsed,
+                MyAction = args =>
+                {
+                    if (args is EngineConsumableUseArgs consumableArgs && !string.IsNullOrWhiteSpace(consumableArgs.ConsumableDBName))
+                    {
+                        AddConsumableToCollection(consumableArgs.ConsumableDBName);
+                    }
+                },
+            };
+
+            CollectionListeners.Add(jokerGainListener);
+            CollectionListeners.Add(consumableUseListener);
+            EngineEventHandler.StartListening(jokerGainListener);
+            EngineEventHandler.StartListening(consumableUseListener);
+        }
+
+        private static void StopCollectionListeners()
+        {
+            foreach (var listener in CollectionListeners)
+            {
+                EngineEventHandler.StopListening(listener);
+            }
+            CollectionListeners.Clear();
+        }
+
+        private static HashSet<string> GetAllConsumableDbNames()
+        {
+            return new HashSet<string>(
+                ConsumableManager.TarotNames
+                    .Concat(ConsumableManager.SpectralNames)
+                    .Concat(ConsumableManager.PlanetCardNames.Values.Select(x => x.ToUpper())),
+                StringComparer.OrdinalIgnoreCase);
+        }
+
         private static bool IsRoyalFlush(List<Card>? cards)
         {
             if (cards == null || cards.Count < 5)
@@ -303,8 +431,9 @@ namespace ConsoleBalatro.Engine
             public int Version { get; set; } = 1;
             public DeckUnlockSaveData? Decks { get; set; } = new();
             public AchievementUnlockSaveData? Achievements { get; set; } = new();
+            public CollectionSaveData? Collection { get; set; } = new();
 
-            public static UnlockSaveData FromCurrentState(IEnumerable<string> unlockedDecks, IEnumerable<string> achievedAchievements)
+            public static UnlockSaveData FromCurrentState(IEnumerable<string> unlockedDecks, IEnumerable<string> achievedAchievements, IEnumerable<string> collectedJokers, IEnumerable<string> collectedConsumables)
             {
                 return new UnlockSaveData
                 {
@@ -315,6 +444,11 @@ namespace ConsoleBalatro.Engine
                     Achievements = new AchievementUnlockSaveData
                     {
                         Achieved = achievedAchievements.OrderBy(x => x).ToList(),
+                    },
+                    Collection = new CollectionSaveData
+                    {
+                        Jokers = collectedJokers.OrderBy(x => x).ToList(),
+                        Consumables = collectedConsumables.OrderBy(x => x).ToList(),
                     },
                 };
             }
@@ -328,6 +462,12 @@ namespace ConsoleBalatro.Engine
         private sealed class AchievementUnlockSaveData
         {
             public List<string> Achieved { get; set; } = new();
+        }
+
+        private sealed class CollectionSaveData
+        {
+            public List<string> Jokers { get; set; } = new();
+            public List<string> Consumables { get; set; } = new();
         }
     }
 

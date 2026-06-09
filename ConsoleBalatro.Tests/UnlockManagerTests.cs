@@ -1,6 +1,8 @@
 ﻿using ConsoleBalatro.Engine;
 using ConsoleBalatro.Engine.Cards;
 using ConsoleBalatro.Engine.Cards.Decks;
+using ConsoleBalatro.Engine.Cards.Consumables;
+using ConsoleBalatro.Engine.Cards.Jokers;
 using ConsoleBalatro.Engine.Events;
 using ConsoleBalatro.Engine.Events.Args;
 using Xunit;
@@ -127,6 +129,62 @@ public class UnlockManagerTests : TestClassBase
         finally
         {
             UnlockManager.AchievementUnlocked -= CaptureUnlock;
+            UnlockManager.SaveFilePath = originalPath;
+            UnlockManager.ResetProgressToDefaults(clearAchievementDefinitions: true);
+            EngineEventHandler.ResetFullEventHandler();
+            DeleteTempSave(savePath);
+        }
+    }
+
+
+    [Fact]
+    public void Collection_TracksJokersAndConsumables_FromEventsAndPersists()
+    {
+        var savePath = BuildTempSavePath();
+        var originalPath = UnlockManager.SaveFilePath;
+        try
+        {
+            UnlockManager.SaveFilePath = savePath;
+            EngineEventHandler.ResetFullEventHandler();
+            ZoneManager.InitializeMainGameZones();
+            UnlockManager.ResetProgressToDefaults();
+
+            var jimbo = JokerDb.GenerateJokerCard("JIMBO");
+            EngineEventHandler.TriggerEvent(new EngineCardDrawnToZoneArgs
+            {
+                MyContext = new EventContext { Context = EventContextType.CardDrawnToZone },
+                CardBeingDrawn = jimbo,
+                ZoneDrawnTo = ZoneManager.JokerZone,
+            });
+
+            EngineEventHandler.TriggerEvent(new EngineConsumableUseArgs
+            {
+                MyContext = new EventContext { Context = EventContextType.ConsumableUsed },
+                ConsumableDBName = "FOOL",
+            });
+
+            var pluto = ConsumableManager.MakePlanetCard(PlayedHandType.HIGHCARD);
+            EngineEventHandler.TriggerEvent(new EngineConsumableUseArgs
+            {
+                MyContext = new EventContext { Context = EventContextType.ConsumableUsed },
+                ConsumableDBName = pluto.ConsumableData.DBName,
+            });
+
+            Assert.True(UnlockManager.IsJokerCollected("JIMBO"));
+            Assert.True(UnlockManager.IsConsumableCollected("FOOL"));
+            Assert.True(UnlockManager.IsConsumableCollected("PLUTO"));
+            Assert.Equal(3, UnlockManager.CollectionCount);
+
+            UnlockManager.ResetProgressToDefaults();
+            Assert.False(UnlockManager.IsJokerCollected("JIMBO"));
+
+            Assert.True(UnlockManager.LoadProgress());
+            Assert.True(UnlockManager.IsJokerCollected("JIMBO"));
+            Assert.True(UnlockManager.IsConsumableCollected("FOOL"));
+            Assert.True(UnlockManager.IsConsumableCollected("PLUTO"));
+        }
+        finally
+        {
             UnlockManager.SaveFilePath = originalPath;
             UnlockManager.ResetProgressToDefaults(clearAchievementDefinitions: true);
             EngineEventHandler.ResetFullEventHandler();

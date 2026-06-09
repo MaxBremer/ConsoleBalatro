@@ -32,8 +32,8 @@ namespace ConsoleBalatro.Engine
                 _ => EngineEventHandler.CountOfSaved(EventContextType.HandPlayDone) >= 10);
             RegisterAllAchievementData(
                 ScoreTenThousandAchievementId, 
-                "Big Score", 
-                "Played a hand that scored 10,000 or more total chips.", 
+                "Lil Big Score", 
+                "Played a hand that scored 100 or more total chips (TEST ACHIEVEMENT).", 
                 EventContextType.HandPlayDone, 
                 args => args is EngineHandPlayDoneArgs playArgs && playArgs.CurrentTotalChips >= 100);
             RegisterAllAchievementData(

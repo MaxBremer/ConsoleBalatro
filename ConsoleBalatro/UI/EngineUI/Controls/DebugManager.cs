@@ -28,6 +28,7 @@ namespace ConsoleBalatro.UI.EngineUI.Controls
             { "HELP", Help },
             { "OP", Op },
             { "SETMONEY", SetMoney },
+            { "PERMAPROGRESS", PermanentProgress },
         };
 
         private static Dictionary<string, Func<CardZone>> CardZoneGetters = new()
@@ -183,6 +184,7 @@ namespace ConsoleBalatro.UI.EngineUI.Controls
             Console.WriteLine("ADDJOKER <jokerName> [-ignorespace] - Adds a joker card to the joker zone. Use -ignorespace to add even if zone is full.");
             Console.WriteLine("PRINT <listName> - Prints the contents of a predefined list. Valid list names are: " + string.Join(", ", GameStringLists.Keys));
             Console.WriteLine("SETREQ <amount> - Sets the required chips for the current blind during PlayRound state.");
+            Console.WriteLine("PERMAPROGRESS <enable|disable|status> - Toggles whether permanent progress saves are written.");
             Console.WriteLine("QUIT or Q - Exits the debug command line.");
         }
 
@@ -207,6 +209,36 @@ namespace ConsoleBalatro.UI.EngineUI.Controls
             }
 
             Globals.RequiredChipsForCurrentBlind = amount;
+        }
+
+        private static void PermanentProgress(List<string> parameters, List<string> flags)
+        {
+            if (parameters.Count != 1)
+            {
+                Console.WriteLine("Invalid number of parameters. Usage: permaprogress <enable|disable|status>");
+                return;
+            }
+
+            switch (parameters[0])
+            {
+                case "ENABLE":
+                case "ON":
+                    UnlockManager.PermanentProgressSavingDisabled = false;
+                    Console.WriteLine("Permanent progress saving is ENABLED.");
+                    break;
+                case "DISABLE":
+                case "OFF":
+                    UnlockManager.PermanentProgressSavingDisabled = true;
+                    Console.WriteLine("Permanent progress saving is DISABLED. Achievements, collections, and unlocks will still occur but will not be saved.");
+                    break;
+                case "STATUS":
+                    var status = UnlockManager.PermanentProgressSavingDisabled ? "DISABLED" : "ENABLED";
+                    Console.WriteLine($"Permanent progress saving is {status}.");
+                    break;
+                default:
+                    Console.WriteLine($"Unknown permanent progress option: {parameters[0]}. Usage: permaprogress <enable|disable|status>");
+                    break;
+            }
         }
 
         private static void SetMoney(List<string> parameters, List<string> flags)

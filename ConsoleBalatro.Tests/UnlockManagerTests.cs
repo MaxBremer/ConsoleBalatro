@@ -19,6 +19,7 @@ public class UnlockManagerTests : TestClassBase
         try
         {
             UnlockManager.SaveFilePath = savePath;
+            UnlockManager.PermanentProgressSavingDisabled = false;
             UnlockManager.ResetProgressToDefaults(clearAchievementDefinitions: true);
 
             Assert.True(DeckDb.IsDeckUnlocked("RED"));
@@ -36,6 +37,7 @@ public class UnlockManagerTests : TestClassBase
         }
         finally
         {
+            UnlockManager.PermanentProgressSavingDisabled = true;
             UnlockManager.SaveFilePath = originalPath;
             UnlockManager.ResetProgressToDefaults(clearAchievementDefinitions: true);
             DeleteTempSave(savePath);
@@ -51,6 +53,7 @@ public class UnlockManagerTests : TestClassBase
         try
         {
             UnlockManager.SaveFilePath = savePath;
+            UnlockManager.PermanentProgressSavingDisabled = false;
             UnlockManager.ResetProgressToDefaults(clearAchievementDefinitions: true);
             UnlockManager.RegisterAchievementListener(
                 "PLAY_A_HAND",
@@ -76,6 +79,7 @@ public class UnlockManagerTests : TestClassBase
         }
         finally
         {
+            UnlockManager.PermanentProgressSavingDisabled = true;
             UnlockManager.SaveFilePath = originalPath;
             UnlockManager.ResetProgressToDefaults(clearAchievementDefinitions: true);
             EngineEventHandler.ResetFullEventHandler();
@@ -102,6 +106,7 @@ public class UnlockManagerTests : TestClassBase
         {
             //UnlockManager.AchievementUnlocked += CaptureUnlock;
             UnlockManager.SaveFilePath = savePath;
+            UnlockManager.PermanentProgressSavingDisabled = false;
             EngineEventHandler.ResetFullEventHandler();
             UnlockManager.ResetProgressToDefaults();
             EngineEventHandler.ResetSavedEvents();
@@ -137,6 +142,7 @@ public class UnlockManagerTests : TestClassBase
         finally
         {
             EngineEventHandler.StopListening(listener);
+            UnlockManager.PermanentProgressSavingDisabled = true;
             UnlockManager.SaveFilePath = originalPath;
             UnlockManager.ResetProgressToDefaults(clearAchievementDefinitions: true);
             EngineEventHandler.ResetFullEventHandler();
@@ -153,6 +159,7 @@ public class UnlockManagerTests : TestClassBase
         try
         {
             UnlockManager.SaveFilePath = savePath;
+            UnlockManager.PermanentProgressSavingDisabled = false;
             EngineEventHandler.ResetFullEventHandler();
             ZoneManager.InitializeMainGameZones();
             UnlockManager.ResetProgressToDefaults();
@@ -193,9 +200,41 @@ public class UnlockManagerTests : TestClassBase
         }
         finally
         {
+            UnlockManager.PermanentProgressSavingDisabled = true;
             UnlockManager.SaveFilePath = originalPath;
             UnlockManager.ResetProgressToDefaults(clearAchievementDefinitions: true);
             EngineEventHandler.ResetFullEventHandler();
+            DeleteTempSave(savePath);
+        }
+    }
+
+
+    [Fact]
+    public void PermanentProgressSavingDisabled_AllowsProgressButSkipsFileWrites()
+    {
+        var savePath = BuildTempSavePath();
+        var originalPath = UnlockManager.SaveFilePath;
+        try
+        {
+            UnlockManager.SaveFilePath = savePath;
+            UnlockManager.PermanentProgressSavingDisabled = true;
+            UnlockManager.ResetProgressToDefaults(clearAchievementDefinitions: true);
+
+            Assert.True(DeckDb.UnlockDeck("BLUE"));
+            Assert.True(UnlockManager.MarkAchievementAchieved("DEBUG_ACHIEVEMENT"));
+            Assert.True(UnlockManager.AddJokerToCollection("JIMBO"));
+
+            Assert.True(DeckDb.IsDeckUnlocked("BLUE"));
+            Assert.True(UnlockManager.IsAchievementAchieved("DEBUG_ACHIEVEMENT"));
+            Assert.True(UnlockManager.IsJokerCollected("JIMBO"));
+            Assert.False(File.Exists(savePath));
+            Assert.False(File.Exists(savePath + ".tmp"));
+        }
+        finally
+        {
+            UnlockManager.PermanentProgressSavingDisabled = true;
+            UnlockManager.SaveFilePath = originalPath;
+            UnlockManager.ResetProgressToDefaults(clearAchievementDefinitions: true);
             DeleteTempSave(savePath);
         }
     }

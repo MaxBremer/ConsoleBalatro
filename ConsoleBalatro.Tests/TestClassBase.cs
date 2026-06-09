@@ -14,14 +14,29 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using System.Runtime.CompilerServices;
 using Xunit;
 
 [assembly: CollectionBehavior(DisableTestParallelization = true)]
 
 namespace ConsoleBalatro.Tests
 {
+    public static class TestAssemblySetup
+    {
+        [ModuleInitializer]
+        public static void DisablePermanentProgressSavingForTests()
+        {
+            UnlockManager.PermanentProgressSavingDisabled = true;
+        }
+    }
+
     public class TestClassBase
     {
+        public TestClassBase()
+        {
+            UnlockManager.PermanentProgressSavingDisabled = true;
+        }
+
         public void ResetEngineForTest()
         {
             EngineEventHandler.ResetFullEventHandler();

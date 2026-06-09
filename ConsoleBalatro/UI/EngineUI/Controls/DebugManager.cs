@@ -56,8 +56,8 @@ namespace ConsoleBalatro.UI.EngineUI.Controls
         {
             while(!QuitCmd)
             {
-                Console.Write("DEBUG> ");
-                var cmd = Console.ReadLine();
+                ConsoleWrite("DEBUG> ");
+                var cmd = ControlManager.ReadLine();
                 if(cmd == null)
                     continue;
                 if(cmd.ToUpper() == "QUIT" || cmd.ToUpper() == "Q")
@@ -76,7 +76,7 @@ namespace ConsoleBalatro.UI.EngineUI.Controls
             var cmd = args[0].ToUpper();
             if(!Commands.ContainsKey(cmd))
             {
-                Console.WriteLine($"Unknown command: {cmd}");
+                ConsoleWriteLine($"Unknown command: {cmd}");
                 return;
             }
 
@@ -92,6 +92,10 @@ namespace ConsoleBalatro.UI.EngineUI.Controls
 
             Commands[cmd](parameters, flags);
         }
+
+        public static void ConsoleWrite(string s) => Console.Write(s);
+
+        public static void ConsoleWriteLine(string s) => Console.WriteLine(s);
 
         private static void Op(List<string> parameters, List<string> flags)
         {
@@ -111,13 +115,13 @@ namespace ConsoleBalatro.UI.EngineUI.Controls
             {
                 if(!int.TryParse(targetInd, out int targetIndex))
                 {
-                    Console.WriteLine($"Invalid target index: {targetInd}");
+                    ConsoleWriteLine($"Invalid target index: {targetInd}");
                     return;
                 }
                 var targetZone = CardZoneGetters[zone]();
                 if(targetIndex < 0 || targetIndex >= targetZone.Cards.Count)
                 {
-                    Console.WriteLine($"Target index out of range. Zone {zone} has {targetZone.Cards.Count} cards.");
+                    ConsoleWriteLine($"Target index out of range. Zone {zone} has {targetZone.Cards.Count} cards.");
                     return;
                 }
                 var targetCard = targetZone.Cards[targetIndex];
@@ -136,7 +140,7 @@ namespace ConsoleBalatro.UI.EngineUI.Controls
                     }
                     else
                     {
-                        Console.WriteLine($"Invalid edition: {operationParams[0]}");
+                        ConsoleWriteLine($"Invalid edition: {operationParams[0]}");
                     }
                     break;
                 case "SETENHANCE":
@@ -146,7 +150,7 @@ namespace ConsoleBalatro.UI.EngineUI.Controls
                     }
                     else
                     {
-                        Console.WriteLine($"Invalid enhancement: {operationParams[0]}");
+                        ConsoleWriteLine($"Invalid enhancement: {operationParams[0]}");
                     }
                     break;
                 case "ADDSTICKER":
@@ -157,7 +161,7 @@ namespace ConsoleBalatro.UI.EngineUI.Controls
                     }
                     else
                     {
-                        Console.WriteLine($"Invalid sticker: {operationParams[0]}");
+                        ConsoleWriteLine($"Invalid sticker: {operationParams[0]}");
                     }
                     break;
                 case "SETSEAL":
@@ -167,44 +171,44 @@ namespace ConsoleBalatro.UI.EngineUI.Controls
                     }
                     else
                     {
-                        Console.WriteLine($"Invalid seal: {operationParams[0]}");
+                        ConsoleWriteLine($"Invalid seal: {operationParams[0]}");
                     }
                     break;
                 default:
-                    Console.WriteLine($"Unknown operation: {operation}");
+                    ConsoleWriteLine($"Unknown operation: {operation}");
                     break;
             }
         }
 
         private static void Help(List<string> parameters, List<string> flags)
         {
-            Console.WriteLine("Available commands:");
-            Console.WriteLine("TEST - A test command that prints parameters and flags.");
-            Console.WriteLine("ADDCON <type> <dbName> [-ignorespace] - Adds a consumable card to the consumable zone. Use -ignorespace to add even if zone is full.");
-            Console.WriteLine("ADDJOKER <jokerName> [-ignorespace] - Adds a joker card to the joker zone. Use -ignorespace to add even if zone is full.");
-            Console.WriteLine("PRINT <listName> - Prints the contents of a predefined list. Valid list names are: " + string.Join(", ", GameStringLists.Keys));
-            Console.WriteLine("SETREQ <amount> - Sets the required chips for the current blind during PlayRound state.");
-            Console.WriteLine("PERMAPROGRESS <enable|disable|status> - Toggles whether permanent progress saves are written.");
-            Console.WriteLine("QUIT or Q - Exits the debug command line.");
+            ConsoleWriteLine("Available commands:");
+            ConsoleWriteLine("TEST - A test command that prints parameters and flags.");
+            ConsoleWriteLine("ADDCON <type> <dbName> [-ignorespace] - Adds a consumable card to the consumable zone. Use -ignorespace to add even if zone is full.");
+            ConsoleWriteLine("ADDJOKER <jokerName> [-ignorespace] - Adds a joker card to the joker zone. Use -ignorespace to add even if zone is full.");
+            ConsoleWriteLine("PRINT <listName> - Prints the contents of a predefined list. Valid list names are: " + string.Join(", ", GameStringLists.Keys));
+            ConsoleWriteLine("SETREQ <amount> - Sets the required chips for the current blind during PlayRound state.");
+            ConsoleWriteLine("PERMAPROGRESS <enable|disable|status> - Toggles whether permanent progress saves are written.");
+            ConsoleWriteLine("QUIT or Q - Exits the debug command line.");
         }
 
         private static void SetReq(List<string> parameters, List<string> flags)
         {
             if(parameters.Count != 1)
             {
-                Console.WriteLine("Invalid number of parameters. Usage: setreq <amount>");
+                ConsoleWriteLine("Invalid number of parameters. Usage: setreq <amount>");
                 return;
             }
 
             if(!int.TryParse(parameters[0], out int amount))
             {
-                Console.WriteLine($"Invalid amount: {parameters[0]}");
+                ConsoleWriteLine($"Invalid amount: {parameters[0]}");
                 return;
             }
 
             if(Globals.CurrentGameState != GameState.PlayRound)
             {
-                Console.WriteLine("Can only set required chips during PlayRound state.");
+                ConsoleWriteLine("Can only set required chips during PlayRound state.");
                 return;
             }
 
@@ -215,7 +219,7 @@ namespace ConsoleBalatro.UI.EngineUI.Controls
         {
             if (parameters.Count != 1)
             {
-                Console.WriteLine("Invalid number of parameters. Usage: permaprogress <enable|disable|status>");
+                ConsoleWriteLine("Invalid number of parameters. Usage: permaprogress <enable|disable|status>");
                 return;
             }
 
@@ -224,19 +228,19 @@ namespace ConsoleBalatro.UI.EngineUI.Controls
                 case "ENABLE":
                 case "ON":
                     UnlockManager.PermanentProgressSavingDisabled = false;
-                    Console.WriteLine("Permanent progress saving is ENABLED.");
+                    ConsoleWriteLine("Permanent progress saving is ENABLED.");
                     break;
                 case "DISABLE":
                 case "OFF":
                     UnlockManager.PermanentProgressSavingDisabled = true;
-                    Console.WriteLine("Permanent progress saving is DISABLED. Achievements, collections, and unlocks will still occur but will not be saved.");
+                    ConsoleWriteLine("Permanent progress saving is DISABLED. Achievements, collections, and unlocks will still occur but will not be saved.");
                     break;
                 case "STATUS":
                     var status = UnlockManager.PermanentProgressSavingDisabled ? "DISABLED" : "ENABLED";
-                    Console.WriteLine($"Permanent progress saving is {status}.");
+                    ConsoleWriteLine($"Permanent progress saving is {status}.");
                     break;
                 default:
-                    Console.WriteLine($"Unknown permanent progress option: {parameters[0]}. Usage: permaprogress <enable|disable|status>");
+                    ConsoleWriteLine($"Unknown permanent progress option: {parameters[0]}. Usage: permaprogress <enable|disable|status>");
                     break;
             }
         }
@@ -245,12 +249,12 @@ namespace ConsoleBalatro.UI.EngineUI.Controls
         {
             if(parameters.Count != 1)
             {
-                Console.WriteLine("Invalid number of parameters. Usage: setmoney <amount>");
+                ConsoleWriteLine("Invalid number of parameters. Usage: setmoney <amount>");
                 return;
             }
             if(!int.TryParse(parameters[0], out int amount))
             {
-                Console.WriteLine($"Invalid amount: {parameters[0]}");
+                ConsoleWriteLine($"Invalid amount: {parameters[0]}");
                 return;
             }
             Globals.EmitMoneyGain(amount - Globals.Money, null);
@@ -260,21 +264,21 @@ namespace ConsoleBalatro.UI.EngineUI.Controls
         {
             if(parameters.Count != 1)
             {
-                Console.WriteLine("Invalid number of parameters. Usage: print <listName>");
+                ConsoleWriteLine("Invalid number of parameters. Usage: print <listName>");
                 return;
             }
 
             if(!GameStringLists.ContainsKey(parameters[0]))
             {
                 var validListNames = string.Join(", ", GameStringLists.Keys);
-                Console.WriteLine($"Unknown list name: {parameters[0]}. Valid list names are: {validListNames}");
+                ConsoleWriteLine($"Unknown list name: {parameters[0]}. Valid list names are: {validListNames}");
                 return;
             }
 
             var listToPrint = GameStringLists[parameters[0]];
             foreach(var ls in listToPrint)
             {
-                Console.WriteLine(ls);
+                ConsoleWriteLine(ls);
             }
         }
 
@@ -282,20 +286,20 @@ namespace ConsoleBalatro.UI.EngineUI.Controls
         {
             if(parameters.Count != 1)
             {
-                Console.WriteLine("Invalid number of parameters. Usage: addjoker <jokerName>");
+                ConsoleWriteLine("Invalid number of parameters. Usage: addjoker <jokerName>");
                 return;
             }
             //NOTE: IF ADDING JOKER WITH SPACES, USE AMPERSAND INSTEAD OF SPACE IN THE NAME, E.G. "THE TRIBE" WOULD BE "THE&TRIBE"
             var jokerName = parameters[0].Replace("&", " ");
             if(!JokerDb.JokerDbNames.Contains(jokerName))
             {
-                Console.WriteLine($"Unknown joker name: {jokerName}");
+                ConsoleWriteLine($"Unknown joker name: {jokerName}");
                 return;
             }
 
             if (!ZoneManager.JokerZone.HasRoom && !flags.Contains("IGNORESPACE"))
             {
-                Console.WriteLine("No room in joker zone to add card. Use -ignorespace flag to override.");
+                ConsoleWriteLine("No room in joker zone to add card. Use -ignorespace flag to override.");
                 return;
             }
 
@@ -306,7 +310,7 @@ namespace ConsoleBalatro.UI.EngineUI.Controls
         {
             if (parameters.Count != 1)
             {
-                Console.WriteLine("Invalid number of parameters. Usage: addvoucher <voucherName>");
+                ConsoleWriteLine("Invalid number of parameters. Usage: addvoucher <voucherName>");
                 return;
             }
 
@@ -314,7 +318,7 @@ namespace ConsoleBalatro.UI.EngineUI.Controls
             var voucherName = parameters[0].Replace("&", " ");
             if (!VoucherDb.VoucherDBNames.Contains(voucherName))
             {
-                Console.WriteLine($"Unknown voucher name: {voucherName}");
+                ConsoleWriteLine($"Unknown voucher name: {voucherName}");
                 return;
             }
 
@@ -325,7 +329,7 @@ namespace ConsoleBalatro.UI.EngineUI.Controls
         {
             if(parameters.Count != 2)
             {
-                Console.WriteLine("Invalid number of parameters. Usage: addcon <type> <dbName>");
+                ConsoleWriteLine("Invalid number of parameters. Usage: addcon <type> <dbName>");
                 return;
             }
             var conType = parameters[0].ToUpper();
@@ -341,13 +345,13 @@ namespace ConsoleBalatro.UI.EngineUI.Controls
             if (!validTypes.Contains(conType))
             {
                 var validTypeNames = string.Join(", ", validTypes.Select(t => $"{t} ({typeNames[t]})"));
-                Console.WriteLine($"Invalid consumable type: {conType}. Valid types are: {validTypeNames}");
+                ConsoleWriteLine($"Invalid consumable type: {conType}. Valid types are: {validTypeNames}");
                 return;
             }
 
             if(!ZoneManager.ConsumableZone.HasRoom && !flags.Contains("IGNORESPACE"))
             {
-                Console.WriteLine("No room in consumable zone to add card. Use -ignorespace flag to override.");
+                ConsoleWriteLine("No room in consumable zone to add card. Use -ignorespace flag to override.");
                 return;
             }
 
@@ -356,7 +360,7 @@ namespace ConsoleBalatro.UI.EngineUI.Controls
                 case "T":
                     if(!ConsumableManager.TarotNames.Contains(conDbName))
                     {
-                        Console.WriteLine($"Invalid Tarot card name: {conDbName}");
+                        ConsoleWriteLine($"Invalid Tarot card name: {conDbName}");
                         return;
                     }
                     ZoneManager.ConsumableZone.AddCard(ConsumableManager.MakeTarotCard(conDbName), overrideSpace: flags.Contains("IGNORESPACE"));
@@ -364,7 +368,7 @@ namespace ConsoleBalatro.UI.EngineUI.Controls
                 case "S":
                     if(!ConsumableManager.SpectralNames.Contains(conDbName))
                     {
-                        Console.WriteLine($"Invalid Spectral card name: {conDbName}");
+                        ConsoleWriteLine($"Invalid Spectral card name: {conDbName}");
                         return;
                     }
                     ZoneManager.ConsumableZone.AddCard(ConsumableManager.MakeSpectralCard(conDbName), overrideSpace: flags.Contains("IGNORESPACE"));
@@ -372,7 +376,7 @@ namespace ConsoleBalatro.UI.EngineUI.Controls
                 case "P":
                     if(!ConsumableManager.PlanetsToHandType.Keys.Contains(conDbName))
                     {
-                        Console.WriteLine($"Invalid Planet card name: {conDbName}");
+                        ConsoleWriteLine($"Invalid Planet card name: {conDbName}");
                         return;
                     }
                     ZoneManager.ConsumableZone.AddCard(ConsumableManager.MakePlanetCard(conDbName), overrideSpace: flags.Contains("IGNORESPACE"));
@@ -382,9 +386,9 @@ namespace ConsoleBalatro.UI.EngineUI.Controls
 
         private static void TestCommand(List<string> parameters, List<string> flags)
         {
-            Console.WriteLine("Test command executed!");
-            Console.WriteLine("Parameters: " + string.Join(", ", parameters));
-            Console.WriteLine("Flags: " + string.Join(", ", flags));
+            ConsoleWriteLine("Test command executed!");
+            ConsoleWriteLine("Parameters: " + string.Join(", ", parameters));
+            ConsoleWriteLine("Flags: " + string.Join(", ", flags));
         }
     }
 }

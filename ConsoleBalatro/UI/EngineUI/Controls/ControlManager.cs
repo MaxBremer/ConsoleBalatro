@@ -34,7 +34,7 @@ namespace ConsoleBalatro.UI.EngineUI.Controls
 
         public static void EngageControlset(ControlOptionset options, ControlContext context)
         {
-            var inp = Console.ReadKey();
+            var inp = ReadKey();
             if (options.AvailableActions.ContainsKey(inp.Key))
             {
                 options.AvailableActions[inp.Key](context);
@@ -66,7 +66,7 @@ namespace ConsoleBalatro.UI.EngineUI.Controls
             }
             EngineDisplayGlobals.Redraw();
 
-            var selInp = Console.ReadLine();
+            var selInp = ReadLine();
             Card toRet = null;
             if(Int32.TryParse(selInp, out int result) && dispList.ContainsKey(result))
             {
@@ -79,6 +79,21 @@ namespace ConsoleBalatro.UI.EngineUI.Controls
             }
             EngineDisplayGlobals.Redraw();
             return toRet;
+        }
+
+        public static string ReadLine()
+        {
+            return Console.ReadLine();
+        }
+
+        public static ConsoleKeyInfo ReadKey()
+        {
+            return Console.ReadKey();
+        }
+
+        public static void ClearConsole()
+        {
+            Console.Clear();
         }
 
         private static void AddStandardControls(ControlOptionset ret, LookZonesAvailable lookZones)
@@ -95,7 +110,7 @@ namespace ConsoleBalatro.UI.EngineUI.Controls
             {
                 EngineDisplayGlobals.HandStatsMenu.Visible = true;
                 EngineDisplayGlobals.Redraw();
-                var x = Console.ReadKey();
+                var x = ReadKey();
                 EngineDisplayGlobals.HandStatsMenu.Visible = false;
                 EngineDisplayGlobals.Redraw();
             });
@@ -104,7 +119,7 @@ namespace ConsoleBalatro.UI.EngineUI.Controls
             {
                 ret.AvailableActions.Add(ConsoleKey.Oem3, _ =>
                 {
-                    Console.Clear();
+                    ClearConsole();
                     DebugManager.RunDebugCmdLine();
                     EngineDisplayGlobals.Redraw();
                 });
@@ -154,7 +169,7 @@ namespace ConsoleBalatro.UI.EngineUI.Controls
                     return;
                 EngineDisplayGlobals.ShowInfoDisplay(FlowHandler.CurrentBossBlind + "&!&!" + ZoneManager.HiddenBlindAttributeZone.Cards[0].JokerData.DescriptionBuilder(null) + "&!&!(PRESS ANY KEY TO CLOSE)", "&!");
                 EngineDisplayGlobals.Redraw();
-                var x = Console.ReadKey();
+                var x = ReadKey();
                 EngineDisplayGlobals.HideInfoDisplay();
                 EngineDisplayGlobals.Redraw();
             });
@@ -307,7 +322,7 @@ namespace ConsoleBalatro.UI.EngineUI.Controls
             {
                 EngineDisplayGlobals.DisplayDetailInfoForCard(c);
                 EngineDisplayGlobals.Redraw();
-                var _ = Console.ReadKey();
+                var _ = ReadKey();
             });
 
             //Everyone besides market zones gets move.
@@ -518,7 +533,7 @@ namespace ConsoleBalatro.UI.EngineUI.Controls
                     return null;
                 }
                 EngineDisplayGlobals.Redraw();
-                ConsoleKey sel = Console.ReadKey().Key;
+                ConsoleKey sel = ReadKey().Key;
                 EngineDisplayGlobals.ClearDisplayBeneathChars();
                 EngineDisplayGlobals.Redraw();
                 if (!OptsToPickFrom.ContainsKey(sel))

@@ -626,7 +626,7 @@ namespace ConsoleBalatro.UI.EngineUI
 
         public static void Redraw()
         {
-            Console.Clear();
+            ControlManager.ClearConsole();
             EngineInterface.Draw();
             RedrawCached = false;
         }

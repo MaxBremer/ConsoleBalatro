@@ -36,7 +36,7 @@ namespace ConsoleBalatro.UI.EngineUI.Controls
             var continueEzLook = true;
             while (continueEzLook)
             {
-                var pressed = Console.ReadKey();//TODO: ALARM ALARM DIRECT CONSOLE READKEY CALL. CENTRALIZE. CONTROLS. AHHHHHHHHHHHHH.
+                var pressed = ControlManager.ReadKey();//TODO: ALARM ALARM DIRECT CONSOLE READKEY CALL. CENTRALIZE. CONTROLS. AHHHHHHHHHHHHH.
                 continueEzLook = MovementKeyPressed(pressed.Key);
                 EngineDisplayGlobals.Redraw();
             }

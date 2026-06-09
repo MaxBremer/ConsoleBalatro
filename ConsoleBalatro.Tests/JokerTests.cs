@@ -1473,6 +1473,8 @@ namespace ConsoleBalatro.Tests
         public void SkipBlindsAndPlayHand_WithThrowback_UsesBlindSkipsForMultMult()
         {
             var s = JokerSetup("THROWBACK");
+            FlowHandler.CurSmallBlindTag = TagType.INVESTMENT;
+            FlowHandler.CurBigBlindTag = TagType.INVESTMENT;
             FlowHandler.CurrentBossBlind = "THE WINDOW";//ensure its nothing that will cancel scoring.
             FlowHandler.DoSkip();
             FlowHandler.DoSkip();

@@ -38,6 +38,9 @@ namespace ConsoleBalatro.Engine
         public static int CollectedJokerCount => CollectedJokers.Count;
         public static int CollectedConsumableCount => CollectedConsumables.Count;
         public static int CollectionCount => CollectedJokerCount + CollectedConsumableCount;
+        // When true, unlocks, achievements, and collection progress still update in memory, but are not written to the permanent save file.
+        public static bool PermanentProgressSavingDisabled { get; set; } = false;
+
 
         static UnlockManager()
         {
@@ -158,6 +161,11 @@ namespace ConsoleBalatro.Engine
 
         public static void SaveProgress()
         {
+            if (PermanentProgressSavingDisabled)
+            {
+                return;
+            }
+
             lock (SaveLock)
             {
                 var saveData = UnlockSaveData.FromCurrentState(UnlockedDecks, AchievedAchievements, CollectedJokers, CollectedConsumables);

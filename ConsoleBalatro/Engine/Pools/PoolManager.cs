@@ -39,7 +39,7 @@ namespace ConsoleBalatro.Engine.Pools
 
         public static List<IMarketPoolRule> Rules = new List<IMarketPoolRule>();
 
-        public static void Initialize()
+        public static void InitializePoolManager()
         {
             InitializeAllPools();
             InitializeGlobalPoolRules();

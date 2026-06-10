@@ -11,5 +11,6 @@ namespace ConsoleBalatro.Engine.Events.Args
     {
         public Card SourceOfEmit;
         public int AmountGained;
+        public bool IsLoss => AmountGained < 0;
     }
 }

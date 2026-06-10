@@ -50,8 +50,7 @@ namespace ConsoleBalatro.Engine.Cards.Jokers
         };
 
 
-        //Costs of jokers... should prob just include in the db.
-        //Or maybe better to separate this stuff out, idk.
+        //Yeah, this isn't tEchNiCAllY metadata. Whatever. It's a cool name for a dict.
         public static Dictionary<string, JokerTypeData> JokerMetadata = new()
         {
             {"JIMBO", new JokerTypeData { DBName = "JIMBO", Price = 2 } },
@@ -2070,7 +2069,7 @@ namespace ConsoleBalatro.Engine.Cards.Jokers
                     MyContextType = EventContextType.MoneyGainEmit,
                     MyAction = args =>
                     {
-                        if (args is EngineGoldGainEmitArgs moneyArgs && moneyArgs.SourceOfEmit == Globals.RerollButtonCard)
+                        if (args is EngineGoldGainEmitArgs moneyArgs && moneyArgs.SourceOfEmit == Globals.RerollButtonCard && moneyArgs.IsLoss)//Is this clever? Or super jank? We may never know.
                             ret.DataDict["MULTAMOUNT"].DoubleData += ret.DataDict["MULTGAIN"].DoubleData;
                     }
                 });
@@ -2675,7 +2674,7 @@ namespace ConsoleBalatro.Engine.Cards.Jokers
                 ret.DescriptionBuilder = _ => "Earn $" + ret.DataDict["MONEYAMOUNT"].IntData + " if played hand triggers the Boss Blind ability";
                 ret.Listeners.Add(new EngineEventListener()
                 {
-                    //TODO: Make darn well sure you implement this event triggering in the relevant boss blinds.
+                    //TODO: Make darn well sure you implement this event triggering in the relevant boss blinds. You handsome fuck.
                     MyContextType = EventContextType.BossAbilityTriggeredByHand, 
                     MyAction = args => 
                     {
@@ -2825,8 +2824,7 @@ namespace ConsoleBalatro.Engine.Cards.Jokers
                     MyAction = _ => 
                     {
                         if (ZoneManager.ConsumableZone.HasRoom)
-                            MarketPullManager.DrawMarketItem(BuyItemType.TAROT_CARD, ZoneManager.ConsumableZone, source: GenerationSource.GenericJoker); 
-                            //MarketOptionsManager.DrawMarketItem(BuyItemType.TAROT_CARD, ZoneManager.ConsumableZone); 
+                            MarketPullManager.DrawMarketItem(BuyItemType.TAROT_CARD, ZoneManager.ConsumableZone, source: GenerationSource.GenericJoker);
                     } 
                 });
                 return ret;
@@ -2845,6 +2843,7 @@ namespace ConsoleBalatro.Engine.Cards.Jokers
                 };
                 ret.Listeners.Add(new EngineEventListener() { MyContextType = EventContextType.StartMarket, MyAction = _ => applyCosts() });
                 ret.Listeners.Add(new EngineEventListener() { MyContextType = EventContextType.Reroll, MyAction = _ => applyCosts() });
+                ret.OnJokerGainEffs.Add(applyCosts);
                 ret.OnJokerRemovalEffs.Add(() =>
                 {
                     foreach (var card in ZoneManager.MainMarketZone.Cards.Where(x => x.isConsumable && x.ConsumableData.Type == ConsumableType.PLANET))
@@ -3002,15 +3001,6 @@ namespace ConsoleBalatro.Engine.Cards.Jokers
             } },
 
         };
-
-        public static string GetRandomJokerOfRarity(JokerRarity rarity)
-        {
-            var jokersOfRarity = JokerMetadata.Where(x => x.Value.Rarity == rarity).ToList();
-            if (!jokersOfRarity.Any())
-                return null;
-            var randomIndex = Globals.randomNext(jokersOfRarity.Count);
-            return jokersOfRarity[randomIndex].Key;
-        }
 
         public static void MakeCardJoker(Card c, string JokerName)
         {

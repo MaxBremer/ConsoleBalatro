@@ -306,10 +306,31 @@ namespace ConsoleBalatro.UI.EngineUI.Controls
             return ret;
         }
 
+        private static ControlOptionset BuildDeckSelectOptions()
+        {
+            var ret = new ControlOptionset
+            {
+                SchemaName = "DECK SELECTION"
+            };
+
+            ret.AvailableActions.Add(ConsoleKey.S, _ =>
+            {
+                var sel = ReadLine();
+                if (!string.IsNullOrEmpty(sel) && Int32.TryParse(sel, out int selInt))
+                {
+                    
+                }
+            });
+
+            return ret;
+        }
+
         private static ControlOptionset BuildEmptyOptions()
         {
-            var ret = new ControlOptionset();
-            ret.SchemaName = "TEST OPTIONS IGNORE";
+            var ret = new ControlOptionset
+            {
+                SchemaName = "TEST OPTIONS IGNORE"
+            };
             return ret;
         }
 

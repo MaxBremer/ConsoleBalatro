@@ -281,6 +281,8 @@ namespace ConsoleBalatro.Engine
         {
             Globals.ClearGameStateStack();
             Globals.PushGameState(new GameStateObj() { GameState = GameState.GameOverMenu });
+            //TODO: EVENTUALLY, REMOVE THIS.
+            Globals.QUIT = true;
         }
 
         public static void IncrementBlind()
@@ -356,11 +358,14 @@ namespace ConsoleBalatro.Engine
 
             //and set current blind to small.
             CurrentSelectedBlind = BlindType.SMALL;
+
+            //Reset current remaining boss rerolls to the base
+            Globals.CurBossBlindRerollsAllowed = Globals.BaseBossBlindRerollsAllowed;
         }
 
         public static void RerollBossBlind(bool isPlayerReroll = false)
         {
-            if(isPlayerReroll && (Globals.CurBossBlindRerollsAllowed == 0 || !Globals.CanAfford(10)))//TODO: HARD-SET PRICE OF BOSS REROLL SEEMS BAD.
+            if(isPlayerReroll && (Globals.CurBossBlindRerollsAllowed == 0 || !Globals.CanAfford(Globals.CurrentBossBlindRerollCost)))
             {
                 return;
             }
@@ -380,7 +385,7 @@ namespace ConsoleBalatro.Engine
             if (isPlayerReroll)
             {
                 BossBlindDb.BossBlindsAlreadyUsed.Remove(oldBossBlind);//if player reroll, that boss can be reused.
-                Globals.EmitMoneyLoss(10, null, false);
+                Globals.EmitMoneyLoss(Globals.CurrentBossBlindRerollCost, null, false);
                 if (Globals.CurBossBlindRerollsAllowed > 0)
                     Globals.CurBossBlindRerollsAllowed--;
             }

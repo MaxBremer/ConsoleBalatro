@@ -39,10 +39,7 @@ namespace ConsoleBalatro.Engine
         {
             get
             {
-                List<Card> overall = new();
-                overall.AddRange(CardsSelectedInHand);
-                overall.AddRange(JokersSelectedInZone);
-                overall.AddRange(ConsumablesSelectedInZone);
+                List<Card> overall = [.. CardsSelectedInHand, .. JokersSelectedInZone, .. ConsumablesSelectedInZone];
                 return overall;
             }
         }
@@ -74,7 +71,7 @@ namespace ConsoleBalatro.Engine
         //Invisible zones
         public static CardZone DiscardZone; //Where cards go when discarded during a blind.
         public static CardZone PreDestructionZone; //Special zone for cards about to be destroyed, but needed for the moment. Currently used for tags only.
-        public static DestroyCardZone DestructionZone; //Where destroyed cards go, deletes them.
+        public static DestroyCardZone DestructionZone; //Where destroyed cards go, deletes them. Don't put anything here u want to see ever again.
         public static CardZone HiddenPlayZone; //Where cards go when played during a round.
         public static CardZone DeckZone; //Zone that holds the deck in its current state (not necessarily full list during a play round)
 
@@ -85,7 +82,9 @@ namespace ConsoleBalatro.Engine
         //NOTE: The following should only be used for PERMANENT effects, staying across the entire run after being added.
         public static CardZone OtherHiddenJokerZone; //Used for other hidden effects; deck abilities, stake effects, challenge effects, etc.
 
-
+        /// <summary>
+        /// Initialize all CardZones needed for a run.
+        /// </summary>
         public static void InitializeMainGameZones()
         {
             DeckZone = MakeBasicDeck();
@@ -109,23 +108,32 @@ namespace ConsoleBalatro.Engine
             InitializeMarketRoundZones();
         }
 
-        public static void InitializePlayRoundZones()
+        private static void InitializePlayRoundZones()
         {
-            //TODO: Hand size change changes this zones size.
-            HandZone = MakeHand(Globals.BaseHandSize);
+            //XTOXDOX: Hand size change changes this zones size.
+            //Ignore above; BASE hand size is only what it starts at. 
+            //HandSize is a field in both Globals and ZoneManager that does directly pull/set the MaxCapacity of handzone.
+            HandZone = MakeZone("Hand", Globals.BaseHandSize);
             HandSize = Globals.BaseHandSize; //Yes, this is redundant with the above line. Live with it. It doesn't hurt anything.
             DiscardZone = MakeZone("Discard");
             HiddenPlayZone = MakeZone("Played");
         }
 
+        /// <summary>
+        /// Zone-related actions taken when a Play round is closed.
+        /// </summary>
         public static void ClosePlayRound()
         {
+            //Return all cards played, discarded, or currently in hand to the deck.
             DeckZone.DrawUntilCapacityFrom(HandZone);
             DeckZone.DrawUntilCapacityFrom(HiddenPlayZone);
             DeckZone.DrawUntilCapacityFrom(DiscardZone);
             ShuffleDeck();
         }
 
+        /// <summary>
+        /// Zone-related actions taken when the pack selection round is closed.
+        /// </summary>
         public static void ClosePackSelection()
         {
             foreach (Card card in PackOptionZone.Cards.ToList())
@@ -137,7 +145,7 @@ namespace ConsoleBalatro.Engine
             ShuffleDeck();
         }
 
-        public static void InitializeMarketRoundZones()
+        private static void InitializeMarketRoundZones()
         {
             MainMarketZone = MakeZone("MainMarket", Globals.BaseMainMarketCount);
             PackMarketZone = MakeZone("PacksMarket", Globals.BasePackMarketCount);
@@ -148,15 +156,23 @@ namespace ConsoleBalatro.Engine
             CurrentlyActivatingConsumable = MakeZone("CurrentConsumable");
         }
 
+        /// <summary>
+        /// Shuffle the DeckZone... it's pretty intuitive from the name.
+        /// </summary>
         public static void ShuffleDeck()
         {
             DeckZone.Shuffle();
         }
 
+        /// <summary>
+        /// Attempt to redraw the players hand, as in at the start of round, after a discard, or after a play.
+        /// </summary>
         public static void DrawHandful()
         {
             var redrawStart = new EngineRedrawArgs() { MyContext = new() { Context = EventContextType.DrawHandfulStarted} };
             EngineEventHandler.TriggerEvent(redrawStart);
+            //Listeners (just Serpent for now) can set a "Forced redraw amount" which means that on this drawHandful attempt instead of redrawing to full,
+            //we will draw that set amount to hand, ignoring MaxCapacity entirely.
             if (redrawStart.ForcedRedrawAmount < 0)
                 HandZone.DrawUntilCapacityFrom(DeckZone);
             else
@@ -164,11 +180,9 @@ namespace ConsoleBalatro.Engine
             EngineEventHandler.TriggerEvent(new EngineEventArgs() { MyContext = new() { Context = EventContextType.DrawHandfulDone } });
         }
 
-        public static void DrawXCardsToHand(int x)
-        {
-            HandZone.DrawXFrom(DeckZone, x);
-        }
-
+        /// <summary>
+        /// Helper func to empty the CurrentlyBeingPlayedZone once a hand play/scoring is done.
+        /// </summary>
         public static void ClearOutPlayZone()
         {
             var cList = CurrentlyBeingPlayedZone.Cards.ToList();
@@ -195,7 +209,8 @@ namespace ConsoleBalatro.Engine
 
                 DiscardZone.DrawTargetFrom(HandZone, c);
                 c.ForcedSelect = false;
-                c.ToggleSelect();
+                //c.ToggleSelect();
+                c.isSelected = false;
             }
         }
 
@@ -205,11 +220,6 @@ namespace ConsoleBalatro.Engine
             ret.AddCards(CardFactory.CardListFromDefString(EngineUtils.BasicDeckString, ","));
 
             return ret;
-        }
-
-        public static CardZone MakeHand(int handSize)
-        {
-            return MakeZone("Hand", handSize);
         }
 
         public static JokerZone MakeJokerZone(int numSlots = 5)
@@ -257,6 +267,12 @@ namespace ConsoleBalatro.Engine
         {
             OtherHiddenJokerZone.AddCard(c);
         }
+
+        /// <summary>
+        /// Return the current "Full deck list"; that is, all cards in the current runs main deck, regardless of play status in this round.
+        /// Used in jokers/effects that care about the full deck.
+        /// </summary>
+        /// <returns>A list of all cards in the runs full deck.</returns>
         public static List<Card> GetFullDeckCards()
         {
             var ret = new List<Card>();
@@ -267,6 +283,12 @@ namespace ConsoleBalatro.Engine
             ret.AddRange(CurrentlyBeingPlayedZone.Cards);
             return ret.Distinct().ToList();
         }
+
+        /// <summary>
+        /// A version of GetFullDeckCards that intentionally filters out non-playing cards.
+        /// In case a consumable/joker/whatever ended up in the deck... somehow.
+        /// </summary>
+        /// <returns>A list of all PLAYING cards in the runs full deck.</returns>
         public static List<Card> GetFullDeckPlayingCards()
         {
             return GetFullDeckCards().Where(x => !x.isJoker && !x.isVoucher && !x.isConsumable && !x.isTag && !x.isPack).ToList();

@@ -95,14 +95,13 @@ namespace ConsoleBalatro.Engine
                 Context = EventContextType.PackOddsEstablished
             };
             EngineEventHandler.TriggerEvent(args);
-            //MarketOptionsManager.DrawNumMarketItems(packInfo.RelevantBuyItemType, packInfo.NumOptionsPresented, ZoneManager.PackOptionZone);
+
             var batchInfo = new ContentRollBatchContext();
             for (int i = ZoneManager.PackOptionZone.Cards.Count; i < packInfo.NumOptionsPresented; i++) //lookit my pretty lil hack i got here :)
             {
                 var type = MarketPullManager.ChooseRollItemByOdds(args.Odds);
                 MarketPullManager.DrawMarketItem(type, ZoneManager.PackOptionZone, source: GenerationSource.Pack, batchContext: batchInfo);
             }
-            //MarketOptionsManager.DrawItemsByOdds(packInfo.NumOptionsPresented, ZoneManager.PackOptionZone, args.Odds);
 
             //OPTIONS:
             //JOKER: choose to add to jokerzone
@@ -132,6 +131,7 @@ namespace ConsoleBalatro.Engine
             }
             //TODO: Other stuff? At least emit an event later.
             //Is this even necessary? Can we just go direct to FlowHandler call.
+            //Yeah this seems super sus, seems MUCH more like a FlowHandler type action.
 
             FlowHandler.ClosePackSelectionRound();
         }
@@ -182,7 +182,6 @@ namespace ConsoleBalatro.Engine
                     break;
                 case BuyItemType.JOKER:
                     //ADD TO ZONE
-                    //TODO: ONLY ALLOW IF THERE IS ROOM
                     ZoneManager.JokerZone.DrawTargetFrom(ZoneManager.PackOptionZone, optionSelected);
                     break;
                 case BuyItemType.VOUCHER:

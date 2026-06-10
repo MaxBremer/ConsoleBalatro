@@ -210,10 +210,10 @@ namespace ConsoleBalatro.Engine
                     return true;
                 case BuyItemType.JOKER:
                     return option.isJoker;
-                case BuyItemType.PLANET_CARD:
-                    return option.isConsumable && option.ConsumableData.Type == ConsumableType.PLANET;
-                case BuyItemType.TAROT_CARD:
-                    return option.isConsumable && option.ConsumableData.Type == ConsumableType.TAROT;
+                case BuyItemType.PLANET_CARD://Planet cards OR black hole
+                    return (option.isConsumable && option.ConsumableData.Type == ConsumableType.PLANET) || (option.isConsumable && option.ConsumableData.Type == ConsumableType.SPECTRAL && option.ConsumableData.DBName == "BLACK HOLE");
+                case BuyItemType.TAROT_CARD://Tarot cards OR soul
+                    return (option.isConsumable && option.ConsumableData.Type == ConsumableType.TAROT) || (option.isConsumable && option.ConsumableData.Type == ConsumableType.SPECTRAL && option.ConsumableData.DBName == "SOUL");
                 case BuyItemType.SPECTRAL_CARD:
                     return option.isConsumable && option.ConsumableData.Type == ConsumableType.SPECTRAL;
                 default:

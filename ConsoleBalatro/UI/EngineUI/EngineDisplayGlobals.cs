@@ -281,16 +281,86 @@ namespace ConsoleBalatro.UI.EngineUI
                 PackOptionsDisplay.DisplayBeneath = "";
         }
 
+        /// <summary>
+        /// Turn all engine entities invisible.
+        /// </summary>
+        public static void HideAllEngineEntities()
+        {
+            foreach (var dispEnt in EngineDisplays)
+            {
+                dispEnt.Visible = false;
+            }
+        }
+
+        /// <summary>
+        /// Redraw the engine interface object.
+        /// </summary>
+        public static void Redraw()
+        {
+            ControlManager.ClearConsole();
+            EngineInterface.Draw();
+            RedrawCached = false;
+        }
+
+        //TODO: Careful spongebob. This could break some things. Currently you can't cache multiple redraws EVEN IF non-consecutive.
+        /// <summary>
+        /// Cache a full interface-redraw in the animation queue.
+        /// </summary>
+        public static void CacheRedraw()
+        {
+            if (!RedrawCached)
+            {
+                CacheAnimationAction(_ => { Redraw(); });
+                RedrawCached = true;
+            }
+        }
+
+        /// <summary>
+        /// Play through all cached animations, returning the engine Interface to sync with the engine.
+        /// </summary>
+        public static void PlayCachedAnimations()
+        {
+            //TODO: For now, no args needed. Maybe later will be needed.
+            Animation.PerformAnimatedAction(null, true);
+        }
+
+        /// <summary>
+        /// Cache an action to be played as an animation.
+        /// </summary>
+        /// <param name="action">The action to be taken in the animation.</param>
+        /// <param name="delayInvolved">The pause (in ms) to be taken after this action. Default = -1, which results in using the GlobalFrameDelay in the animation engine.</param>
+        public static void CacheAnimationAction(Action<AnimationFrameArgs> action, int delayInvolved = -1)
+        {
+            if (OVERRIDE_ANIMATIONS)
+            {
+                Animation.FrameActions.Add(new AnimationFrame() { MyAction = action, MyFrameDelay = 1 });
+            }
+            else
+            {
+                Animation.FrameActions.Add(new AnimationFrame() { MyAction = action, MyFrameDelay = delayInvolved });
+            }
+        }
+
+        /// <summary>
+        /// Reset the display fields for current hand being played.
+        /// </summary>
+        public static void ResetPlayedHand()
+        {
+            DisplayHandChips = 0;
+            DisplayHandMult = 0;
+            DisplayPlayedHand = PlayedHandType.FLUSHFIVE;
+        }
+
         private static void SetupDeckChoiceState()
         {
-            ClearEngineEntities();
+            HideAllEngineEntities();
 
             DeckChoiceMenu.Visible = true;
         }
 
         private static void SetupPlayRoundState()
         {
-            ClearEngineEntities();
+            HideAllEngineEntities();
 
             HandDisplay.Visible = true;
             JokersDisplay.Visible = true;
@@ -301,7 +371,7 @@ namespace ConsoleBalatro.UI.EngineUI
 
         private static void SetupMarketState()
         {
-            ClearEngineEntities();
+            HideAllEngineEntities();
 
             JokersDisplay.Visible = true;
             ConsumableDisplay.Visible = true;
@@ -314,7 +384,7 @@ namespace ConsoleBalatro.UI.EngineUI
 
         private static void SetupPackOptionSelection()
         {
-            ClearEngineEntities();
+            HideAllEngineEntities();
 
             JokersDisplay.Visible = true;
             ConsumableDisplay.Visible = true;
@@ -327,7 +397,7 @@ namespace ConsoleBalatro.UI.EngineUI
 
         private static void SetupPostRoundDisplay(List<(string, int)> moneyData)
         {
-            ClearEngineEntities();
+            HideAllEngineEntities();
 
             JokersDisplay.Visible = true;
             ConsumableDisplay.Visible = true;
@@ -349,7 +419,7 @@ namespace ConsoleBalatro.UI.EngineUI
 
         private static void SetupBlindSelectionState()
         {
-            ClearEngineEntities();
+            HideAllEngineEntities();
 
             JokersDisplay.Visible = true;
             ConsumableDisplay.Visible = true;
@@ -471,14 +541,6 @@ namespace ConsoleBalatro.UI.EngineUI
             EngineEventHandler.StartListening(new EngineEventListener() { MyAction = listAct, MyContextType = EventContextType.GameStatePush });
         }
 
-        public static void ClearEngineEntities()
-        {
-            foreach (var dispEnt in EngineDisplays)
-            {
-                dispEnt.Visible = false;
-            }
-        }
-
         //TODO: AGAIN, I was just snorting dumb juice when writing this. lookit all the repeated code. Make better.
         private static void TriggerMarketSetup(EngineEventArgs args)
         {
@@ -564,7 +626,7 @@ namespace ConsoleBalatro.UI.EngineUI
             {
                 CacheAnimationAction(_ =>
                 {
-                    ClearEngineEntities();
+                    HideAllEngineEntities();
                     ShowInfoDisplay("GAME OVER", "*");
                     ControlManager.CurrentControlset = "GAMEOVER";
                     Redraw();
@@ -710,62 +772,6 @@ namespace ConsoleBalatro.UI.EngineUI
                     }
                 });
             }
-        }
-
-        /// <summary>
-        /// Redraw the engine interface object.
-        /// </summary>
-        public static void Redraw()
-        {
-            ControlManager.ClearConsole();
-            EngineInterface.Draw();
-            RedrawCached = false;
-        }
-
-        //TODO: Careful spongebob. This could break some things. Currently you can't cache multiple redraws EVEN IF non-consecutive.
-        public static void CacheRedraw()
-        {
-            if (!RedrawCached)
-            {
-                CacheAnimationAction(_ => { Redraw(); });
-                RedrawCached = true;
-            }
-        }
-
-        /// <summary>
-        /// Play through all cached animations, returning the engine Interface to sync with the engine.
-        /// </summary>
-        public static void PlayCachedAnimations()
-        {
-            //TODO: For now, no args needed. Maybe later will be needed.
-            Animation.PerformAnimatedAction(null, true);
-        }
-
-        /// <summary>
-        /// Cache an action to be played as an animation.
-        /// </summary>
-        /// <param name="action">The action to be taken in the animation.</param>
-        /// <param name="delayInvolved">The pause (in ms) to be taken after this action. Default = -1, which results in using the GlobalFrameDelay in the animation engine.</param>
-        public static void CacheAnimationAction(Action<AnimationFrameArgs> action, int delayInvolved = -1)
-        {
-            if (OVERRIDE_ANIMATIONS)
-            {
-                Animation.FrameActions.Add(new AnimationFrame() { MyAction = action, MyFrameDelay = 1 });
-            }
-            else
-            {
-                Animation.FrameActions.Add(new AnimationFrame() { MyAction = action, MyFrameDelay = delayInvolved });
-            }
-        }
-
-        /// <summary>
-        /// Reset the display fields for current hand being played.
-        /// </summary>
-        public static void ResetPlayedHand()
-        {
-            DisplayHandChips = 0;
-            DisplayHandMult = 0;
-            DisplayPlayedHand = PlayedHandType.FLUSHFIVE;
         }
 
         #region Helpers

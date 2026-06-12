@@ -22,7 +22,7 @@ namespace ConsoleBalatro.UI.EngineUI
     {
         public const bool OVERRIDE_ANIMATIONS = true;
 
-        public static Dictionary<Edition, string> EditionBorderChars = new()
+        public static readonly Dictionary<Edition, string> EditionBorderChars = new()
         {
             {Edition.FOIL, "^" },
             {Edition.HOLOGRAPHIC, "w" },
@@ -31,7 +31,7 @@ namespace ConsoleBalatro.UI.EngineUI
 
         };
 
-        public static Dictionary<Enhancement, Func<string, string>> EnhancementModifiers = new()
+        public static readonly Dictionary<Enhancement, Func<string, string>> EnhancementModifiers = new()
         {
             { Enhancement.MULT, x => setCharsAt(x, 19, "MMM") },
             { Enhancement.BONUSCHIPS, x => setCharsAt(x, 19, "^^^") },
@@ -43,7 +43,7 @@ namespace ConsoleBalatro.UI.EngineUI
             { Enhancement.STONE, x => setCharsAt(x, 13, "STO") },
         };
 
-        public static Dictionary<Seal, Func<string, string>> SealModifiers = new()
+        public static readonly Dictionary<Seal, Func<string, string>> SealModifiers = new()
         {
             { Seal.RED, x => setCharAt(x, 9, 'r') },
             { Seal.BLUE, x => setCharAt(x, 9, 'b') },
@@ -51,7 +51,7 @@ namespace ConsoleBalatro.UI.EngineUI
             { Seal.GOLD, x => setCharAt(x, 9, 'g') },
         };
 
-        public static Dictionary<Sticker, Func<string, string>> StickerModifiers = new()
+        public static readonly Dictionary<Sticker, Func<string, string>> StickerModifiers = new()
         {
             { Sticker.ETERNAL, x => setCharAt(x, 10, 'E') },
             { Sticker.PERISHABLE, x => setCharAt(x, 10, 'P') },

@@ -58,30 +58,87 @@ namespace ConsoleBalatro.UI.EngineUI
             { Sticker.RENTAL, x => setCharAt(x, 10, 'R') },
         };
 
+        /// <summary>
+        /// Tracks the CardDisplay UI objects for each Card in the engine that should currently be displayed.
+        /// </summary>
         public static Dictionary<Card, CardDisplay> GlobalCardDisplays = new();
-        public static CardZoneBeingPlayedDisplay BeingPlayedDisplay;
+
+        //Almost universally visible.
+        /// <summary>
+        /// Joker Zone display. (top bar that contains Jokers, almost always visible)
+        /// </summary>
         public static CardZoneJokersDisplay JokersDisplay;
-        public static CardZoneHandDisplay HandDisplay;
+        /// <summary>
+        /// Consumable Zone display. (top-right box that contains consumables, almost always visible)
+        /// </summary>
         public static CardZoneConsumableDisplay ConsumableDisplay;
 
+        //Play round visible.
+        /// <summary>
+        /// Hand Zone display. (shows cards in hand during play round)
+        /// </summary>
+        public static CardZoneHandDisplay HandDisplay;
+        /// <summary>
+        /// Being Played Zone display. (shows cards currently being played/scoring, pretty much only during scoring animation in play round)
+        /// </summary>
+        public static CardZoneBeingPlayedDisplay BeingPlayedDisplay;
+
+        //Market round visible.
+        /// <summary>
+        /// Main market Zone display. (cards in the primary market that can be rerolled, i.e. Jokers and individual consumables)
+        /// </summary>
         public static CardZoneDisplay MainMarketDisplay;
+        /// <summary>
+        /// Pack market Zone display. (packs in the market, rolled once per market round)
+        /// </summary>
         public static CardZoneDisplay PackMarketDisplay;
+        /// <summary>
+        /// Voucher market Zone display. (voucher(s) in the market. rolled once per ante except in edge cases i.e. voucher tag)
+        /// </summary>
         public static CardZoneDisplay VoucherMarketDisplay;
 
+        /// <summary>
+        /// Displays consumable options given by an opened pack
+        /// </summary>
         public static CardZoneDisplay PackOptionsDisplay;
 
+        /// <summary>
+        /// Large side panel that displays score, controls, other info during a play round.
+        /// </summary>
         public static ScoreDisplay ScoreDisplay;
 
+        /// <summary>
+        /// Large side panel that displays money, controls, other contextual info during market round, pack option round, and blind selection round.
+        /// (name is a misnomer, originally was only for market)
+        /// </summary>
         public static MarketSideDisplay MarketSidePanelDisplay;
 
+        //Blind selection.
+        /// <summary>
+        /// Panel displaying info on first/small blind during blind selection.
+        /// </summary>
         public static BlindDisplayEntity FirstBlindPanel;
+        /// <summary>
+        /// Panel displaying info on second/big blind during blind selection.
+        /// </summary>
         public static BlindDisplayEntity SecondBlindPanel;
+        /// <summary>
+        /// Panel displaying info on third/boss blind during blind selection.
+        /// </summary>
         public static BlindDisplayEntity ThirdBlindPanel;
 
+        /// <summary>
+        /// Popup displaying hand stats, i.e. hand level, hand num times played, current hand chipsxmult.
+        /// </summary>
         public static HandStatsDisplay HandStatsMenu;
 
+        /// <summary>
+        /// Menu for choosing a deck at the start of a run.
+        /// </summary>
         public static DeckChoicesDisplay DeckChoiceMenu;
 
+        //DISPLAY fields are soft mirrors of their engine counterpart;
+        //basically, they exist so that their update to match the engine can be delayed for animations to play out.
         public static int DisplayRequiredChipsForBlind;
         public static int DisplayTotalCurrentChips;
 
@@ -102,8 +159,15 @@ namespace ConsoleBalatro.UI.EngineUI
 
         public static EngineActionAnimation Animation = new EngineActionAnimation();
 
+        /// <summary>
+        /// Flag indicating whether we've cached a simple redraw in the animation queue (so that only ONE is ever cached)
+        /// </summary>
         private static bool RedrawCached = false;
 
+        /// <summary>
+        /// The big one. Initialize all displays, controls, UI listeners, etc.
+        /// </summary>
+        /// <param name="theGuy">The Interface object on which all this EngineUI will be displayed.</param>
         public static void InitializeDisplayAll(Interface theGuy)
         {
             EngineInterface = theGuy;
@@ -113,6 +177,7 @@ namespace ConsoleBalatro.UI.EngineUI
             InitializeAllDisplays();
         }
 
+        //TODO:...do I even fucking need this?
         public static CardZoneDisplay GetZoneDisplayOfCard(Card c)
         {
             //TODO: Stupid idiot fucking way to do it. But what other option do I have?
@@ -137,11 +202,19 @@ namespace ConsoleBalatro.UI.EngineUI
             return null;
         }
 
+        /// <summary>
+        /// Hide the general-purpose info panel.
+        /// </summary>
         public static void HideInfoDisplay()
         {
             InfoDisplayPanel.Visible = false;
         }
 
+        /// <summary>
+        /// Show passed string, given a line-break character to split it on, in the general-purpose info panel.
+        /// </summary>
+        /// <param name="infoToDisplay">The string that will be displayed.</param>
+        /// <param name="breakChar">The character to use to line-break the above string.</param>
         public static void ShowInfoDisplay(string infoToDisplay, string breakChar)
         {
             InfoDisplayPanel.SetLines(infoToDisplay, breakChar);
@@ -150,6 +223,11 @@ namespace ConsoleBalatro.UI.EngineUI
             //Also not this funcs responsibility to redraw.
         }
 
+        /// <summary>
+        /// Show the passed string in the general-purpose info panel, given a maximum width of said panel (default 15).
+        /// </summary>
+        /// <param name="infoToDisplay">String to be displayed.</param>
+        /// <param name="maxLen">Maximum width of the info panel when displaying this string (default 15)</param>
         public static void ShowInfoDisplay(string infoToDisplay, int maxLen = 15)
         {
             InfoDisplayPanel.SetLines(infoToDisplay, "$%^&");
@@ -157,6 +235,10 @@ namespace ConsoleBalatro.UI.EngineUI
             InfoDisplayPanel.Visible = true;
         }
 
+        /// <summary>
+        /// Display detailed info for the passed card display in the info panel.
+        /// </summary>
+        /// <param name="cd">CardDisplay UI object of the card to be displayed.</param>
         public static void DisplayDetailInfoForCardDisplay(CardDisplay cd)
         {
             CardBeingViewed = cd;
@@ -165,13 +247,136 @@ namespace ConsoleBalatro.UI.EngineUI
             //TODO: adjust card display to highlight it or something.
         }
 
+        /// <summary>
+        /// Display detail info for the passed Card.
+        /// </summary>
+        /// <param name="c">Card whose details should be displayed.</param>
         public static void DisplayDetailInfoForCard(Card c)
         {
             if (GlobalCardDisplays.ContainsKey(c))
                 DisplayDetailInfoForCardDisplay(GlobalCardDisplays[c]);
         }
 
-        public static void InitializeAllDisplays()
+        /// <summary>
+        /// Clear all the "display-beneath" characters, used for zone selection.
+        /// </summary>
+        public static void ClearDisplayBeneathChars()
+        {
+            //TODO: Again...... very stupid. Do better.
+            if (HandDisplay != null)
+                HandDisplay.DisplayBeneath = "";
+            if (JokersDisplay != null)
+                JokersDisplay.DisplayBeneath = "";
+            if (ConsumableDisplay != null)
+                ConsumableDisplay.DisplayBeneath = "";
+            if (BeingPlayedDisplay != null)
+                BeingPlayedDisplay.DisplayBeneath = "";
+            if (MainMarketDisplay != null)
+                MainMarketDisplay.DisplayBeneath = "";
+            if (VoucherMarketDisplay != null)
+                VoucherMarketDisplay.DisplayBeneath = "";
+            if (PackMarketDisplay != null)
+                PackMarketDisplay.DisplayBeneath = "";
+            if (PackOptionsDisplay != null)
+                PackOptionsDisplay.DisplayBeneath = "";
+        }
+
+        private static void SetupDeckChoiceState()
+        {
+            ClearEngineEntities();
+
+            DeckChoiceMenu.Visible = true;
+        }
+
+        private static void SetupPlayRoundState()
+        {
+            ClearEngineEntities();
+
+            HandDisplay.Visible = true;
+            JokersDisplay.Visible = true;
+            ConsumableDisplay.Visible = true;
+            BeingPlayedDisplay.Visible = true;
+            ScoreDisplay.Visible = true;
+        }
+
+        private static void SetupMarketState()
+        {
+            ClearEngineEntities();
+
+            JokersDisplay.Visible = true;
+            ConsumableDisplay.Visible = true;
+            MarketSidePanelDisplay.Visible = true;
+            MarketSidePanelDisplay.SideImDisplaying = "MARKET";
+            MainMarketDisplay.Visible = true;
+            VoucherMarketDisplay.Visible = true;
+            PackMarketDisplay.Visible = true;
+        }
+
+        private static void SetupPackOptionSelection()
+        {
+            ClearEngineEntities();
+
+            JokersDisplay.Visible = true;
+            ConsumableDisplay.Visible = true;
+            MarketSidePanelDisplay.Visible = true;
+            MarketSidePanelDisplay.SideImDisplaying = "PACK";
+
+            PackOptionsDisplay.Visible = true;
+            HandDisplay.Visible = true;
+        }
+
+        private static void SetupPostRoundDisplay(List<(string, int)> moneyData)
+        {
+            ClearEngineEntities();
+
+            JokersDisplay.Visible = true;
+            ConsumableDisplay.Visible = true;
+
+            var totalMoney = moneyData.Sum(x => x.Item2);
+
+            var breakStr = "@";
+            var finalStr = "";
+            foreach (var money in moneyData)
+            {
+                finalStr += money.Item1 + ": " + money.Item2 + breakStr;
+            }
+
+            finalStr += breakStr + "TOTAL: " + totalMoney + breakStr;
+            finalStr += breakStr + "[C]ontinue";
+
+            ShowInfoDisplay(finalStr, breakStr);
+        }
+
+        private static void SetupBlindSelectionState()
+        {
+            ClearEngineEntities();
+
+            JokersDisplay.Visible = true;
+            ConsumableDisplay.Visible = true;
+            MarketSidePanelDisplay.Visible= true;
+            MarketSidePanelDisplay.SideImDisplaying = "BLIND";
+
+            FirstBlindPanel.Visible = true;
+            SecondBlindPanel.Visible = true;
+            ThirdBlindPanel.Visible = true;
+        }
+
+        private static void InitializeGlobalListeners()
+        {
+            EngineEventHandler.StartListening(new EngineEventListener() { MyAction = DisplayAchievementUnlocked, MyContextType = EventContextType.AchievementUnlocked});
+            EngineEventHandler.StartListening(new EngineEventListener() { MyAction = DisplayChipsMultEmit, MyContextType = EventContextType.GainEmit });
+            EngineEventHandler.StartListening(new EngineEventListener() { MyAction = DisplayMoneyEmit, MyContextType = EventContextType.MoneyGainEmit });
+
+            StartMenuListener(TriggerMarketSetup);
+            StartMenuListener(TriggerPlayRoundSetup);
+            StartMenuListener(TriggerDeckChoiceSetup);
+            StartMenuListener(TriggerPackOptionSetup);
+            StartMenuListener(TriggerPostRoundSetup);
+            StartMenuListener(TriggerBlindsSetup);
+            StartMenuListener(TriggerGameOver);
+        }
+
+        private static void InitializeAllDisplays()
         {
             EngineDisplays = new List<DisplayEntity>();
 
@@ -222,123 +427,6 @@ namespace ConsoleBalatro.UI.EngineUI
                 EngineInterface.AddEntity(dispEnt);
             }
         }
-
-        public static void ClearDisplayBeneathChars()
-        {
-            //TODO: Again...... very stupid. Do better.
-            if (HandDisplay != null)
-                HandDisplay.DisplayBeneath = "";
-            if (JokersDisplay != null)
-                JokersDisplay.DisplayBeneath = "";
-            if (ConsumableDisplay != null)
-                ConsumableDisplay.DisplayBeneath = "";
-            if (BeingPlayedDisplay != null)
-                BeingPlayedDisplay.DisplayBeneath = "";
-            if (MainMarketDisplay != null)
-                MainMarketDisplay.DisplayBeneath = "";
-            if (VoucherMarketDisplay != null)
-                VoucherMarketDisplay.DisplayBeneath = "";
-            if (PackMarketDisplay != null)
-                PackMarketDisplay.DisplayBeneath = "";
-            if (PackOptionsDisplay != null)
-                PackOptionsDisplay.DisplayBeneath = "";
-        }
-
-        public static void SetupDeckChoiceState()
-        {
-            ClearEngineEntities();
-
-            DeckChoiceMenu.Visible = true;
-        }
-
-        public static void SetupPlayRoundState()
-        {
-            ClearEngineEntities();
-
-            HandDisplay.Visible = true;
-            JokersDisplay.Visible = true;
-            ConsumableDisplay.Visible = true;
-            BeingPlayedDisplay.Visible = true;
-            ScoreDisplay.Visible = true;
-        }
-
-        public static void SetupMarketState()
-        {
-            ClearEngineEntities();
-
-            JokersDisplay.Visible = true;
-            ConsumableDisplay.Visible = true;
-            MarketSidePanelDisplay.Visible = true;
-            MarketSidePanelDisplay.SideImDisplaying = "MARKET";
-            MainMarketDisplay.Visible = true;
-            VoucherMarketDisplay.Visible = true;
-            PackMarketDisplay.Visible = true;
-        }
-
-        public static void SetupPackOptionSelection()
-        {
-            ClearEngineEntities();
-
-            JokersDisplay.Visible = true;
-            ConsumableDisplay.Visible = true;
-            MarketSidePanelDisplay.Visible = true;
-            MarketSidePanelDisplay.SideImDisplaying = "PACK";
-
-            PackOptionsDisplay.Visible = true;
-            HandDisplay.Visible = true;
-        }
-
-        public static void SetupPostRoundDisplay(List<(string, int)> moneyData)
-        {
-            ClearEngineEntities();
-
-            JokersDisplay.Visible = true;
-            ConsumableDisplay.Visible = true;
-
-            var totalMoney = moneyData.Sum(x => x.Item2);
-
-            var breakStr = "@";
-            var finalStr = "";
-            foreach (var money in moneyData)
-            {
-                finalStr += money.Item1 + ": " + money.Item2 + breakStr;
-            }
-
-            finalStr += breakStr + "TOTAL: " + totalMoney + breakStr;
-            finalStr += breakStr + "[C]ontinue";
-
-            ShowInfoDisplay(finalStr, breakStr);
-        }
-
-        public static void SetupBlindSelectionState()
-        {
-            ClearEngineEntities();
-
-            JokersDisplay.Visible = true;
-            ConsumableDisplay.Visible = true;
-            MarketSidePanelDisplay.Visible= true;
-            MarketSidePanelDisplay.SideImDisplaying = "BLIND";
-
-            FirstBlindPanel.Visible = true;
-            SecondBlindPanel.Visible = true;
-            ThirdBlindPanel.Visible = true;
-        }
-
-        public static void InitializeGlobalListeners()
-        {
-            EngineEventHandler.StartListening(new EngineEventListener() { MyAction = DisplayAchievementUnlocked, MyContextType = EventContextType.AchievementUnlocked});
-            EngineEventHandler.StartListening(new EngineEventListener() { MyAction = DisplayChipsMultEmit, MyContextType = EventContextType.GainEmit });
-            EngineEventHandler.StartListening(new EngineEventListener() { MyAction = DisplayMoneyEmit, MyContextType = EventContextType.MoneyGainEmit });
-
-            StartMenuListener(TriggerMarketSetup);
-            StartMenuListener(TriggerPlayRoundSetup);
-            StartMenuListener(TriggerDeckChoiceSetup);
-            StartMenuListener(TriggerPackOptionSetup);
-            StartMenuListener(TriggerPostRoundSetup);
-            StartMenuListener(TriggerBlindsSetup);
-            StartMenuListener(TriggerGameOver);
-        }
-
 
         private static void DisplayAchievementUnlocked(EngineEventArgs args)
         {

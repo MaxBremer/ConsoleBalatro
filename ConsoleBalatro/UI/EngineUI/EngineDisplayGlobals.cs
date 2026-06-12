@@ -712,6 +712,9 @@ namespace ConsoleBalatro.UI.EngineUI
             }
         }
 
+        /// <summary>
+        /// Redraw the engine interface object.
+        /// </summary>
         public static void Redraw()
         {
             ControlManager.ClearConsole();
@@ -729,12 +732,20 @@ namespace ConsoleBalatro.UI.EngineUI
             }
         }
 
+        /// <summary>
+        /// Play through all cached animations, returning the engine Interface to sync with the engine.
+        /// </summary>
         public static void PlayCachedAnimations()
         {
             //TODO: For now, no args needed. Maybe later will be needed.
             Animation.PerformAnimatedAction(null, true);
         }
 
+        /// <summary>
+        /// Cache an action to be played as an animation.
+        /// </summary>
+        /// <param name="action">The action to be taken in the animation.</param>
+        /// <param name="delayInvolved">The pause (in ms) to be taken after this action. Default = -1, which results in using the GlobalFrameDelay in the animation engine.</param>
         public static void CacheAnimationAction(Action<AnimationFrameArgs> action, int delayInvolved = -1)
         {
             if (OVERRIDE_ANIMATIONS)
@@ -746,12 +757,19 @@ namespace ConsoleBalatro.UI.EngineUI
                 Animation.FrameActions.Add(new AnimationFrame() { MyAction = action, MyFrameDelay = delayInvolved });
             }
         }
+
+        /// <summary>
+        /// Reset the display fields for current hand being played.
+        /// </summary>
         public static void ResetPlayedHand()
         {
             DisplayHandChips = 0;
             DisplayHandMult = 0;
             DisplayPlayedHand = PlayedHandType.FLUSHFIVE;
         }
+
+        #region Helpers
+
         public static string setCharAt(string baseS, int ind, char x)
         {
             var cArr = baseS.ToCharArray();
@@ -811,5 +829,6 @@ namespace ConsoleBalatro.UI.EngineUI
                 }
             }
         }
+        #endregion
     }
 }

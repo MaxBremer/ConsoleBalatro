@@ -20,7 +20,7 @@ namespace ConsoleBalatro.UI.EngineUI
 {
     public static class EngineDisplayGlobals
     {
-        public const bool OVERRIDE_ANIMATIONS = false;
+        public const bool OVERRIDE_ANIMATIONS = true;
 
         public static Dictionary<Edition, string> EditionBorderChars = new()
         {
@@ -295,7 +295,7 @@ namespace ConsoleBalatro.UI.EngineUI
             JokersDisplay.Visible = true;
             ConsumableDisplay.Visible = true;
 
-            var totalMoney = moneyData.Select(x => x.Item2).Sum();
+            var totalMoney = moneyData.Sum(x => x.Item2);
 
             var breakStr = "@";
             var finalStr = "";

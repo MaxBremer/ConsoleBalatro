@@ -30,13 +30,15 @@ namespace ConsoleBalatro.UI.EngineUI.Controls
             CurrentTargetZone = ZoneData.Keys.ToList().FirstOrDefault(x => x.Cards.Any());
             if (CurrentTargetZone == null)
                 return;
+            if(CurrentTargetIndex >= CurrentTargetZone.Cards.Count)
+                CurrentTargetIndex = CurrentTargetZone.Cards.Count - 1;
 
             RefreshTarget();
 
             var continueEzLook = true;
             while (continueEzLook)
             {
-                var pressed = ControlManager.ReadKey();//TODO: ALARM ALARM DIRECT CONSOLE READKEY CALL. CENTRALIZE. CONTROLS. AHHHHHHHHHHHHH.
+                var pressed = ControlManager.ReadKey();
                 continueEzLook = MovementKeyPressed(pressed.Key);
                 EngineDisplayGlobals.Redraw();
             }

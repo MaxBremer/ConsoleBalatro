@@ -28,6 +28,10 @@ namespace ConsoleBalatro.Engine.Events.Args
         public Rank OldRank;
         public Rank NewRank;
 
+        public bool isStickerChange = false;
+        public Sticker? StickerBeingAdded = null;
+        public Sticker? StickerBeingRemoved = null;
+
         public bool isFlip = false;
         public bool newFlipVal = false;
 

@@ -539,7 +539,7 @@ namespace ConsoleBalatro.Engine.Cards.Blinds
                         MyContextType = EventContextType.CardSell,
                         MyAction = args =>
                         {
-                            if(args is EngineCardSoldArgs sellArgs && sellArgs.CardBeingSold.isJoker)
+                            if(args is EngineCardSoldArgs sellArgs && sellArgs.CardBeingSold.IsJoker)
                             {
                                 ret.DataDict["DEBUFFFLAG"].IntData = 0;
                                 foreach (var c in ZoneManager.HandZone.Cards)

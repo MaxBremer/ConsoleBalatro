@@ -13,7 +13,7 @@ namespace ConsoleBalatro.Engine.Pools.Rules
         public void ModifyCandidates(MarketPoolContext context)
         {
             bool hasShowman = ZoneManager.JokerZone.Cards
-                .Any(j => j.isJoker && j.JokerData.DBName == "SHOWMAN");
+                .Any(j => j.IsJoker && j.JokerData.DBName == "SHOWMAN");
 
             if (!hasShowman)
                 return;

@@ -543,7 +543,7 @@ namespace ConsoleBalatro.Engine
         /// <returns>A boolean indicating whether the passed card could currently be purchased.</returns>
         public static bool CanBePurchased(Card c)
         {
-            if (c.isJoker)
+            if (c.IsJoker)
             {
                 return CanAfford(c) && ZoneManager.JokerZone.HasRoomFor(c);
             }
@@ -574,7 +574,7 @@ namespace ConsoleBalatro.Engine
 
             //Right now, only jokers/consumables get returned to market pools.
             //Later maybe vouchers? I mean they shouldn't be sell-able but do have a pool.
-            if(args.CardBeingSold.isJoker || args.CardBeingSold.isConsumable)
+            if(args.CardBeingSold.IsJoker || args.CardBeingSold.isConsumable)
             {
                 if(!MarketOptionsManager.ReturnMarketItemFromZone(args.CardBeingSold, args.ZoneCardIsLeaving))
                 {
@@ -596,10 +596,10 @@ namespace ConsoleBalatro.Engine
             var zoneFrom = beingPurchased.MyZone;
             CardZone zoneTo = null;
             //Order matters here; a card can in theory be multiple of these things.
-            if (beingPurchased.isVoucher)
+            if (beingPurchased.IsVoucher)
             {
                 zoneTo = ZoneManager.ActiveVoucherZone;
-            }else if (beingPurchased.isJoker)
+            }else if (beingPurchased.IsJoker)
             {
                 zoneTo = ZoneManager.JokerZone;
             }else if (beingPurchased.isConsumable)

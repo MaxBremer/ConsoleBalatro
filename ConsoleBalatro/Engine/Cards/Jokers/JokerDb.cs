@@ -499,7 +499,7 @@ namespace ConsoleBalatro.Engine.Cards.Jokers
             { "STENCIL JOKER", c =>
             {
                 var ret = BasicDataBlock("Stencil Joker");
-                Func<double> getCurrentAmt = () => (ZoneManager.JokerZone.MaxCapacity - ZoneManager.JokerZone.Cards.Count(x => x.isJoker && x.JokerData.DBName != "STENCIL JOKER")) * ret.DataDict["MULTMULTAMOUNT"].DoubleData;
+                Func<double> getCurrentAmt = () => (ZoneManager.JokerZone.MaxCapacity - ZoneManager.JokerZone.Cards.Count(x => x.IsJoker && x.JokerData.DBName != "STENCIL JOKER")) * ret.DataDict["MULTMULTAMOUNT"].DoubleData;
                 ret.DescriptionBuilder = _ => "* " + ret.DataDict["MULTMULTAMOUNT"].DoubleData + " Mult for each empty Joker slot, Stencil Joker included. Currently * " + getCurrentAmt().ToString() + " Mult";
                 ret.DataDict.Add("MULTMULTAMOUNT", new JokerData() { DoubleData = 1, MyDataType = JokerDataType.DOUBLE});
                 ret.Listeners.Add(new EngineEventListener()
@@ -537,7 +537,7 @@ namespace ConsoleBalatro.Engine.Cards.Jokers
 
                 ret.OnJokerRemovalEffs.Add(() =>
                 {
-                    if(!ZoneManager.JokerZone.Cards.Any(x => x.isJoker && x.JokerData.DBName == "FOUR FINGERS"))
+                    if(!ZoneManager.JokerZone.Cards.Any(x => x.IsJoker && x.JokerData.DBName == "FOUR FINGERS"))
                     {
                         EngineUtils.LenFlush = ret.DataDict["OLDFLUSH"].IntData;
                         EngineUtils.LenStraight = ret.DataDict["OLDSTRAIGHT"].IntData;
@@ -577,7 +577,7 @@ namespace ConsoleBalatro.Engine.Cards.Jokers
 
                 ret.OnJokerRemovalEffs.Add(() =>
                 {
-                    if(!ZoneManager.JokerZone.Cards.Where(x => x.isJoker && x.JokerData.DBName == "CREDIT CARD").Any())
+                    if(!ZoneManager.JokerZone.Cards.Where(x => x.IsJoker && x.JokerData.DBName == "CREDIT CARD").Any())
                     {
                         Globals.MinimumMoneyAllowed = ret.DataDict["OLDMONEYAMOUNT"].IntData;
                     }
@@ -595,7 +595,7 @@ namespace ConsoleBalatro.Engine.Cards.Jokers
                     MyContextType = EventContextType.EndBlindSelection,
                     MyAction = args =>
                     {
-                        var jokers = ZoneManager.JokerZone.Cards.Where(x => x.isJoker).ToList();
+                        var jokers = ZoneManager.JokerZone.Cards.Where(x => x.IsJoker).ToList();
                         var myInd = jokers.IndexOf(c);
                         if (myInd >= 0 && myInd < jokers.Count - 1)
                         {
@@ -809,7 +809,7 @@ namespace ConsoleBalatro.Engine.Cards.Jokers
             { "ABSTRACT JOKER", c =>
             {
                 var ret = BasicDataBlock("Abstract Joker");
-                Func<double> getMult = () => ZoneManager.JokerZone.Cards.Count(x => x.isJoker) * ret.DataDict["MULTAMOUNT"].DoubleData;
+                Func<double> getMult = () => ZoneManager.JokerZone.Cards.Count(x => x.IsJoker) * ret.DataDict["MULTAMOUNT"].DoubleData;
                 ret.DescriptionBuilder = _ => "+" + ret.DataDict["MULTAMOUNT"].DoubleData + " Mult for each Joker card (Currently +" + getMult() + " Mult)";
                 ret.DataDict.Add("MULTAMOUNT", new JokerData() { DoubleData = 3, MyDataType = JokerDataType.DOUBLE });
                 ret.Listeners.Add(new EngineEventListener()
@@ -885,7 +885,7 @@ namespace ConsoleBalatro.Engine.Cards.Jokers
                 });
                 ret.OnJokerRemovalEffs.Add(() =>
                 {
-                    if (!ZoneManager.JokerZone.Cards.Any(x => x.isJoker && x.JokerData.DBName == "PAREIDOLIA"))
+                    if (!ZoneManager.JokerZone.Cards.Any(x => x.IsJoker && x.JokerData.DBName == "PAREIDOLIA"))
                         EngineUtils.RankGroups["FACE"] = new List<Rank>() { Rank.JACK, Rank.QUEEN, Rank.KING };
                 });
                 return ret;
@@ -2003,7 +2003,7 @@ namespace ConsoleBalatro.Engine.Cards.Jokers
                     MyContextType = EventContextType.CardTrigger,
                     MyAction = args =>
                     {
-                        if (args is EngineCardTriggerArgs triggerArgs && triggerArgs.isScoringTrigger && triggerArgs.CardThatIsTriggering.isJoker &&
+                        if (args is EngineCardTriggerArgs triggerArgs && triggerArgs.isScoringTrigger && triggerArgs.CardThatIsTriggering.IsJoker &&
                             triggerArgs.CardThatIsTriggering != c && triggerArgs.CardThatIsTriggering.JokerData?.Rarity == JokerRarity.UNCOMMON)
                             Globals.EmitMultMult(ret.DataDict["MULTMULTAMOUNT"].DoubleData, c);
                     }

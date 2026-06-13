@@ -336,9 +336,9 @@ namespace ConsoleBalatro.Engine
                 {
                     if (args is EngineCardDrawnToZoneArgs drawArgs
                         && drawArgs.ZoneDrawnTo == ZoneManager.JokerZone
-                        && drawArgs.CardBeingDrawn.isJoker
-                        && !drawArgs.CardBeingDrawn.isVoucher
-                        && !drawArgs.CardBeingDrawn.isTag
+                        && drawArgs.CardBeingDrawn.IsJoker
+                        && !drawArgs.CardBeingDrawn.IsVoucher
+                        && !drawArgs.CardBeingDrawn.IsTag
                         && !string.IsNullOrWhiteSpace(drawArgs.CardBeingDrawn.JokerData?.DBName))
                     {
                         AddJokerToCollection(drawArgs.CardBeingDrawn.JokerData.DBName);

@@ -209,7 +209,7 @@ namespace ConsoleBalatro.Engine
                 case BuyItemType.PLAYING_CARD:
                     return true;
                 case BuyItemType.JOKER:
-                    return option.isJoker;
+                    return option.IsJoker;
                 case BuyItemType.PLANET_CARD://Planet cards OR black hole
                     return (option.isConsumable && option.ConsumableData.Type == ConsumableType.PLANET) || (option.isConsumable && option.ConsumableData.Type == ConsumableType.SPECTRAL && option.ConsumableData.DBName == "BLACK HOLE");
                 case BuyItemType.TAROT_CARD://Tarot cards OR soul

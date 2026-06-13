@@ -246,23 +246,46 @@ namespace ConsoleBalatro.Engine
             zone.Cards = zone.Cards.OrderByDescending(x => x.Suit).ThenByDescending(y => y.Rank).ToList();
         }
 
-        public static void DestroyCard(Card c, CardZone fromZone)
+        /// <summary>
+        /// Destroy the passed card by drawing it to the Destruction Zone (if possible)
+        /// </summary>
+        /// <param name="c">Card to be destroyed</param>
+        /// <param name="fromZone">The zone the card is being drawn from.</param>
+        /// <returns>A boolean indicating whether the destruction was successful.</returns>
+        public static bool DestroyCard(Card c, CardZone fromZone)
         {
-            if(c.IsDestructible)
+            if (c.IsDestructible)
+            {
                 DestructionZone.DrawTargetFrom(fromZone, c);
+                return true;
+            }
+            return false;
         }
 
-        public static void DestroyCard(Card c)
+        /// <summary>
+        /// Destroy the passed card by drawing it to the Destruction Zone (if possible)
+        /// </summary>
+        /// <param name="c">Card to be destroyed</param>
+        /// <returns>A boolean indicating whether the destruction was successful.</returns>
+        public static bool DestroyCard(Card c)
         {
-            DestroyCard(c, c.MyZone);
+            return DestroyCard(c, c.MyZone);
         }
 
+        /// <summary>
+        /// Remove the passed card wholly from the game state, without triggering any of the usual card destruction events/triggers.
+        /// </summary>
+        /// <param name="c">The card to be removed.</param>
         public static void DeleteCard(Card c)
         {
             if (c.MyZone != null)
                 c.MyZone.RemoveCard(c);
         }
 
+        /// <summary>
+        /// Add a passed card as a run-long hidden effect.
+        /// </summary>
+        /// <param name="c">The card representing the hidden effect.</param>
         public static void AddHiddenEffect(Card c)
         {
             OtherHiddenJokerZone.AddCard(c);
@@ -291,7 +314,7 @@ namespace ConsoleBalatro.Engine
         /// <returns>A list of all PLAYING cards in the runs full deck.</returns>
         public static List<Card> GetFullDeckPlayingCards()
         {
-            return GetFullDeckCards().Where(x => !x.isJoker && !x.isVoucher && !x.isConsumable && !x.isTag && !x.isPack).ToList();
+            return GetFullDeckCards().Where(x => !x.IsJoker && !x.IsVoucher && !x.isConsumable && !x.IsTag && !x.isPack).ToList();
         }
 
     }

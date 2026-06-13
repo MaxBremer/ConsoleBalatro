@@ -25,7 +25,7 @@ namespace ConsoleBalatro.Engine.Pools.Rules
             }
 
             //no duplicate vouchers either
-            foreach (var card in ZoneManager.ActiveVoucherZone.Cards.Where(x => x.isVoucher))
+            foreach (var card in ZoneManager.ActiveVoucherZone.Cards.Where(x => x.IsVoucher))
             {
                 ownedIds.Add(card.JokerData.DBName);
             }

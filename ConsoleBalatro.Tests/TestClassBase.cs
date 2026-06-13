@@ -237,7 +237,7 @@ namespace ConsoleBalatro.Tests
 
         public bool VoucherIsInMarket(string voucherName)
         {
-            return VoucherPoolRules.CurrentValidVouchers.Contains(voucherName.ToUpper()) && !ZoneManager.ActiveVoucherZone.Cards.Any(c => c.isVoucher && c.JokerData.DBName == voucherName.ToUpper());
+            return VoucherPoolRules.CurrentValidVouchers.Contains(voucherName.ToUpper()) && !ZoneManager.ActiveVoucherZone.Cards.Any(c => c.IsVoucher && c.JokerData.DBName == voucherName.ToUpper());
             //return MarketOptionsManager.MarketPoolsToDrawFrom[BuyItemType.VOUCHER].Cards.Any(x => x.isVoucher && x.JokerData.JokerName == voucherName);
         }
 

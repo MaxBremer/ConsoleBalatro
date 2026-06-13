@@ -369,7 +369,7 @@ namespace ConsoleBalatro.Tests
             Assert.Equal(tagType, record.TagsTriggeredInstantly[0].JokerData.TagData.MyType);
 
             if (isJokerPack)
-                Assert.True(ZoneManager.PackOptionZone.Cards[0].isJoker);
+                Assert.True(ZoneManager.PackOptionZone.Cards[0].IsJoker);
             else
             {
                 Assert.NotEqual(Rank.NONE, ZoneManager.PackOptionZone.Cards[0].Rank);
@@ -403,7 +403,7 @@ namespace ConsoleBalatro.Tests
             Assert.Equal(1, record.TriggerListenerCount);
             Assert.Equal(tagType, record.TagsTriggeredViaListener[0].JokerData.TagData.MyType);
 
-            Assert.True(ZoneManager.MainMarketZone.Cards[0].isJoker);
+            Assert.True(ZoneManager.MainMarketZone.Cards[0].IsJoker);
             Assert.Equal(expectedEdition, ZoneManager.MainMarketZone.Cards[0].Edition);
         }
 
@@ -431,7 +431,7 @@ namespace ConsoleBalatro.Tests
             Assert.Equal(1, record.TriggerListenerCount);
             Assert.Equal(tagType, record.TagsTriggeredViaListener[0].JokerData.TagData.MyType);
 
-            Assert.True(ZoneManager.MainMarketZone.Cards[0].isJoker);
+            Assert.True(ZoneManager.MainMarketZone.Cards[0].IsJoker);
             Assert.Equal(expectedRarity, ZoneManager.MainMarketZone.Cards[0].JokerData.Rarity);
         }
 

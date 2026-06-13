@@ -52,7 +52,7 @@ namespace ConsoleBalatro.Engine.Cards
                 _debuffed = value;
                 var args = new EngineCardDetailsChangeArgs() { MyContext = new() { Context = EventContextType.CardDetailsChange }, CardBeingChanged = this, isDebuff = true };
                 EngineEventHandler.TriggerEvent(args);
-                if (isJoker && (MyZone == ZoneManager.JokerZone || MyZone == ZoneManager.ActiveVoucherZone || MyZone == ZoneManager.HiddenBlindAttributeZone || MyZone == ZoneManager.OtherHiddenJokerZone) && MyZone is IJokerContainer jokZone)
+                if (IsJoker && (MyZone == ZoneManager.JokerZone || MyZone == ZoneManager.ActiveVoucherZone || MyZone == ZoneManager.HiddenBlindAttributeZone || MyZone == ZoneManager.OtherHiddenJokerZone) && MyZone is IJokerContainer jokZone)
                 {
                     if (_debuffed)
                     {
@@ -71,12 +71,13 @@ namespace ConsoleBalatro.Engine.Cards
                 _facedown = value;
                 EngineEventHandler.TriggerEvent(new EngineCardDetailsChangeArgs() { MyContext = new() { Context = EventContextType.CardDetailsChange }, CardBeingChanged = this, isFlip = true, newFlipVal = _facedown, isAfter = true });
             } }
-        public bool IsDestructible = true;//TODO: Later things can prevent destruction, for now does nothing.
-        public bool isJoker => JokerData != null && JokerData.isJoker;
-        public bool isVoucher => JokerData != null && JokerData.isVoucher;
-        public bool isTag => JokerData != null && JokerData.isTag;
-        public JokerCardDataBlock JokerData = null;
-        public TagDataBlock TagData => isTag ? JokerData.TagData : null;
+        //public bool IsDestructible = true;//TODO: Later things can prevent destruction, for now does nothing.
+        public bool IsDestructible => Stickers == null || (!Stickers.Contains(Sticker.ETERNAL));
+        public bool IsJoker => JokerData != null && JokerData.isJoker;
+        public bool IsVoucher => JokerData != null && JokerData.isVoucher;
+        public bool IsTag => JokerData != null && JokerData.isTag;
+        public JokerCardDataBlock? JokerData = null;
+        public TagDataBlock? TagData => IsTag ? JokerData.TagData : null;
 
         public PackType MyPackType = PackType.NONE;
         public bool isPack => MyPackType != PackType.NONE;
@@ -85,7 +86,7 @@ namespace ConsoleBalatro.Engine.Cards
         public bool isConsumable => ConsumableData != null;
         public ConsumableCardDataBlock ConsumableData = null;
 
-        public bool isPlayingCard => !isJoker && !isVoucher && !isTag && !isConsumable && !isPack;
+        public bool isPlayingCard => !IsJoker && !IsVoucher && !IsTag && !isConsumable && !isPack;
 
         public int BaseCost = 1; //Default cost of playing card.
         public int? BuyCostOverride = null;
@@ -169,7 +170,7 @@ namespace ConsoleBalatro.Engine.Cards
             }
         }
         public Action<EventContext> TriggerCardForScoring;
-        public List<Sticker> Stickers = new();
+        public readonly List<Sticker> Stickers = new();
 
         public void SetEditionOfficial(Edition ed)
         {
@@ -301,6 +302,33 @@ namespace ConsoleBalatro.Engine.Cards
 
         public bool IsSuit(Suit possibleSuit) => GetCardSuits().Contains(possibleSuit);
 
+        public void AddSticker(Sticker s)
+        {
+            if (Stickers.Contains(s))
+                return;
+            Stickers.Add(s);
+            var args = new EngineCardDetailsChangeArgs();
+            args.MyContext = new() { Context = EventContextType.CardDetailsChange };
+            args.CardBeingChanged = this;
+            args.isStickerChange = true;
+            args.StickerBeingAdded = s;
+            EngineEventHandler.TriggerEvent(args);
+        }
+
+        public void RemoveSticker(Sticker s)
+        {
+            if (Stickers.Contains(s))
+            {
+                Stickers.Remove(s);
+                var args = new EngineCardDetailsChangeArgs();
+                args.MyContext = new() { Context = EventContextType.CardDetailsChange };
+                args.CardBeingChanged = this;
+                args.isStickerChange = true;
+                args.StickerBeingRemoved = s;
+                EngineEventHandler.TriggerEvent(args);
+            }
+        }
+
         public void TriggerScoring(ScoringContext context)
         {
             if (Debuffed)
@@ -383,17 +411,17 @@ namespace ConsoleBalatro.Engine.Cards
             target.SetEnhancementOfficial(Enhancement);
 
             //NOTE: Deciding here and now that joker, voucher, and tag are exclusive. A card can only be 0 to 1 of these things, not multiple.
-            if (isJoker)
+            if (IsJoker)
             {
                 var jName = JokerData.DBName;
                 JokerDb.MakeCardJoker(target, jName);
                 JokerData.CopyDataDictTo(target.JokerData);
-            }else if (isVoucher)
+            }else if (IsVoucher)
             {
                 var vName = JokerData.DBName;
                 VoucherDb.MakeCardVoucher(target, vName);
                 JokerData.CopyDataDictTo(target.JokerData);
-            }else if (isTag)
+            }else if (IsTag)
             {
                 var tType = JokerData.TagData.MyType;
                 TagDb.MakeCardTagOfType(target, tType);
@@ -451,7 +479,7 @@ namespace ConsoleBalatro.Engine.Cards
             return;//FOR NOW, DONT ACTUALLY DO ANYTHING TO DESTROY A CARD. MAYBE LATER IDK.
             //TODO: CLEAN UP.
             //tbh idk if this actually does anything, but it makes me feel better.
-            if(isJoker || isVoucher)
+            if(IsJoker || IsVoucher)
             {
                 JokerData.DataDict.Clear();
                 JokerData.OnJokerGainEffs.Clear();
@@ -467,7 +495,7 @@ namespace ConsoleBalatro.Engine.Cards
 
         private int CalcBuyCost()
         {
-            if(isVoucher)
+            if(IsVoucher)
                 return (int)(BaseCost + EngineUtils.EditionCostIncreases[Edition]);//NO GLOBAL DISCOUNT FOR VOUCHERS
             else
                 return (int)((BaseCost + EngineUtils.EditionCostIncreases[Edition]) * Globals.DiscountMultiplier);
@@ -521,11 +549,11 @@ namespace ConsoleBalatro.Engine.Cards
             {
                 retStr += "FACE DOWN";
             }
-            else if(isJoker || isVoucher)
+            else if(IsJoker || IsVoucher)
             {
                 retStr += JokerData.JokerName + CardInfoDoubleDivider;
                 retStr += JokerData.DescriptionBuilder(context) + CardInfoDoubleDivider;
-                if (isJoker)
+                if (IsJoker)
                 {
                     retStr += JokerData.Rarity.ToString();
                 }

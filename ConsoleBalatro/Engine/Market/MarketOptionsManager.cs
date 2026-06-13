@@ -422,7 +422,7 @@ namespace ConsoleBalatro.Engine.Market
         public static Card PullRandomJokerFromPool(JokerRarity? rarity, bool removeFromPool = false)
         {
             var pool = rarity == JokerRarity.LEGENDARY ? SpecialPool_LegendaryJokers : MarketPoolsToDrawFrom[BuyItemType.JOKER];
-            var valid = pool.Cards.Where(x => x.isJoker && (!rarity.HasValue || x.JokerData.Rarity == rarity.Value)).ToList();
+            var valid = pool.Cards.Where(x => x.IsJoker && (!rarity.HasValue || x.JokerData.Rarity == rarity.Value)).ToList();
             if (valid.Count == 0)
                 return Globals.USE_DEFAULT_JOKER_IF_POOL_EMPTY ? JokerDb.GenerateDefaultJokerCard() : null;
             var chosen = valid[Globals.randomNext(valid.Count)];

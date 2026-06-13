@@ -157,7 +157,7 @@ namespace ConsoleBalatro.UI.EngineUI.Controls
                     //stickers are a bit more complex, so we'll just do add for now
                     if(Enum.TryParse(operationParams[0], out Sticker newSticker))
                     {
-                        c.Stickers.Add(newSticker);
+                        c.AddSticker(newSticker);
                     }
                     else
                     {

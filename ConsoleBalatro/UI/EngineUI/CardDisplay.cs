@@ -111,7 +111,7 @@ namespace ConsoleBalatro.UI.EngineUI
                 return;
             }
 
-            if (MyCard.isJoker || MyCard.isVoucher)
+            if (MyCard.IsJoker || MyCard.IsVoucher)
             {
                 var dispName = MyCard.JokerData.JokerName;
                 if(dispName.Length > 3)
@@ -126,7 +126,7 @@ namespace ConsoleBalatro.UI.EngineUI
                     }
                 }
                 tempDisplay = insertInto(tempDisplay, dispName, 13);
-                tempDisplay = insertInto(tempDisplay, MyCard.isVoucher ? "V" : "J", 8);
+                tempDisplay = insertInto(tempDisplay, MyCard.IsVoucher ? "V" : "J", 8);
             }else if (MyCard.isConsumable)
             {
                 var dispName = MyCard.ConsumableData.ConsumableName;

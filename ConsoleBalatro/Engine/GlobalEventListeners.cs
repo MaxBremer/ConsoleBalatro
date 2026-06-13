@@ -141,6 +141,14 @@ namespace ConsoleBalatro.Engine
             }
         }
 
+        private static void SetEternalUndestroyable(EngineEventArgs args)
+        {
+            if(args is EngineCardDetailsChangeArgs detailArgs && detailArgs.isStickerChange && detailArgs.StickerBeingAdded == Sticker.ETERNAL)
+            {
+                detailArgs.CardBeingChanged.IsDestructible = false;
+            }
+        }
+
         //After a hand is played, if it's an as-of-yet unplayed hidden hand, add its planet card to the pool.
         private static void RevealHiddenHand(EngineEventArgs args)
         {

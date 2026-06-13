@@ -311,7 +311,7 @@ namespace ConsoleBalatro.Engine.Cards.Tags
         public static void OnTagAdd(Card TagCard, CardZone fromZone = null)
         {
             //First just check that the card passed is a tag.
-            if (!TagCard.isTag)
+            if (!TagCard.IsTag)
                 return;
 
             //Build the activation function.
@@ -394,7 +394,7 @@ namespace ConsoleBalatro.Engine.Cards.Tags
 
         public static void OnTagRemove(Card TagCard)
         {
-            if (!TagCard.isTag)
+            if (!TagCard.IsTag)
                 return;
             var targetId = TagCard.JokerData.TagData.MyTagID;
             foreach (var list in TagListeners[targetId])

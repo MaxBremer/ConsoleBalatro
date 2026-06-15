@@ -248,8 +248,9 @@ namespace ConsoleBalatro.Engine.Cards.Decks
                         {
                             if(args is EnginePreFinalGainArgs preCalcArgs)
                             {
-                                preCalcArgs.FinalChips = (int)((preCalcArgs.FinalChips + preCalcArgs.FinalMult) / 2);
-                                preCalcArgs.FinalMult = (double)((preCalcArgs.FinalChips + preCalcArgs.FinalMult) / 2);
+                                var splitVal = (preCalcArgs.FinalChips + preCalcArgs.FinalMult) / 2;
+                                preCalcArgs.FinalChips = (int)splitVal;
+                                preCalcArgs.FinalMult = splitVal;
                             }
                         }
                     });

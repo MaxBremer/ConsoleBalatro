@@ -16,6 +16,7 @@ using System.Text;
 using System.Threading.Tasks;
 using System.Runtime.CompilerServices;
 using Xunit;
+using ConsoleBalatro.Engine.Cards.Decks;
 
 [assembly: CollectionBehavior(DisableTestParallelization = true)]
 
@@ -75,6 +76,14 @@ namespace ConsoleBalatro.Tests
         {
             ResetToBlindSelection(resetVoucher);
             FlowHandler.StartSelectedBlind();
+        }
+
+        public void ResetToBlindDeckSetup(string deckDBName)
+        {
+            ResetEngineForTest();
+            DeckDb.BecomeDeck(deckDBName);
+            FlowHandler.StartNewAnte();
+            FlowHandler.InitializeBlindSelectionRound();
         }
 
         public List<Card> BuildKnownHand(string handDef, bool selectAll = true, bool clearHand = true)

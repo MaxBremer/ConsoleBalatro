@@ -28,6 +28,10 @@ namespace ConsoleBalatro.Engine
 
             EngineEventHandler.StartListening(new EngineEventListener() { MyAction = RemoveDebuffsAndHidesAtUndraw, MyContextType = EventContextType.CardDrawnToZone });
             EngineEventHandler.StartListening(new EngineEventListener() { MyAction = ShowPlayedCards, MyContextType = EventContextType.CardDrawnToZone });
+
+            EngineEventHandler.StartListening(new EngineEventListener() { MyAction = AddStickerEffsOnDetailChange, MyContextType = EventContextType.CardDetailsChange });
+
+            EngineEventHandler.StartListening(new EngineEventListener() { MyAction = RoundEndRentalCharge, MyContextType = EventContextType.EndPlayRound });
         }
 
         public static void ChangeZoneSizeForNegative(EngineEventArgs args)
@@ -172,6 +176,41 @@ namespace ConsoleBalatro.Engine
             if (args is EngineCardDrawnToZoneArgs drawArgs && drawArgs.CardBeingDrawn.FaceDown && drawArgs.ZoneDrawnTo == ZoneManager.CurrentlyBeingPlayedZone)
             {
                 drawArgs.CardBeingDrawn.FaceDown = false;
+            }
+        }
+
+        private static void RoundEndRentalCharge(EngineEventArgs args)
+        {
+            //TODO: FOR NOW, only jokers can charge rental fees. Maybe others later? Like vouchers or tags.
+            if(ZoneManager.JokerZone.Cards.Any(c => c.HasSticker(Sticker.RENTAL)))
+            {
+                foreach (var c in ZoneManager.JokerZone.Cards.Where(c => c.HasSticker(Sticker.RENTAL)))
+                {
+                    //Set rental cost somewhere else????
+                    Globals.EmitMoneyLoss(3, c, false);
+                }
+            }
+        }
+
+        private static void AddStickerEffsOnDetailChange(EngineEventArgs args)
+        {
+            if (args is EngineCardDetailsChangeArgs detailArgs && detailArgs.isStickerChange && detailArgs.isAfter)
+            {
+                //I know I know, this nesting is gross. It's to handle if I want to add other sticker BS here. There's a reason I promise.
+                if(detailArgs.StickerBeingAdded != null)
+                {
+                    if(detailArgs.StickerBeingAdded == Sticker.RENTAL)
+                    {
+                        detailArgs.CardBeingChanged.BuyCostOverride = 1;
+                    }
+                }
+                else if(detailArgs.StickerBeingRemoved != null)
+                {
+                    if (detailArgs.StickerBeingAdded == Sticker.RENTAL)
+                    {
+                        detailArgs.CardBeingChanged.BuyCostOverride = null;
+                    }
+                }
             }
         }
     }

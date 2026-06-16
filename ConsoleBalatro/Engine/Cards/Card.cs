@@ -72,7 +72,7 @@ namespace ConsoleBalatro.Engine.Cards
                 EngineEventHandler.TriggerEvent(new EngineCardDetailsChangeArgs() { MyContext = new() { Context = EventContextType.CardDetailsChange }, CardBeingChanged = this, isFlip = true, newFlipVal = _facedown, isAfter = true });
             } }
         //public bool IsDestructible = true;//TODO: Later things can prevent destruction, for now does nothing.
-        public bool IsDestructible => Stickers == null || (!Stickers.Contains(Sticker.ETERNAL));
+        public bool IsDestructible => Stickers == null || (!HasSticker(Sticker.ETERNAL));
         public bool IsJoker => JokerData != null && JokerData.isJoker;
         public bool IsVoucher => JokerData != null && JokerData.isVoucher;
         public bool IsTag => JokerData != null && JokerData.isTag;
@@ -329,6 +329,8 @@ namespace ConsoleBalatro.Engine.Cards
                 EngineEventHandler.TriggerEvent(args);
             }
         }
+
+        public bool HasSticker(Sticker s) => Stickers.Contains(s);
 
         public void TriggerScoring(ScoringContext context)
         {

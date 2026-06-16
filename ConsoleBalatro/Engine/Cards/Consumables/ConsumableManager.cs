@@ -305,10 +305,10 @@ namespace ConsoleBalatro.Engine.Cards.Consumables
                 
                 ret.DescriptionBuilder = _ => "Destroy " + ret.DataDict["INTAMOUNT"].IntData + " random cards in hand, gain $"  + ret.DataDict["MONEYAMOUNT"].IntData;
 
-                ret.IsActivatable = _ => ZoneManager.HandZone.Cards.Count >= ret.DataDict["INTAMOUNT"].IntData;
+                ret.IsActivatable = _ => ZoneManager.HandZone.Cards.Count(c => c.IsDestructible) >= ret.DataDict["INTAMOUNT"].IntData;
                 ret.Use = _ =>
                 {
-                    var handCards = ZoneManager.HandZone.Cards.ToList();
+                    var handCards = ZoneManager.HandZone.Cards.Where(x => x.IsDestructible).ToList();
                     var selCards = new List<Card>();
                     for (int i = 0; i < ret.DataDict["INTAMOUNT"].IntData; i++)
                     {
@@ -764,7 +764,7 @@ namespace ConsoleBalatro.Engine.Cards.Consumables
                 ret.DBName = "HANGED";
                 ret.DataDict.Add("INTAMOUNT", new JokerData() { MyDataType = JokerDataType.INT, IntData = 2});
                 ret.DescriptionBuilder = _ => "Destroy up to " + ret.DataDict["INTAMOUNT"].IntData + " selected playing card(s) in hand.";
-                ret.IsActivatable = _ => EngineUtils.NumCardsSelectedInHand > 0 && EngineUtils.NumCardsSelectedInHand <= ret.DataDict["INTAMOUNT"].IntData;
+                ret.IsActivatable = _ => EngineUtils.NumCardsSelectedInHand > 0 && EngineUtils.NumCardsSelectedInHand <= ret.DataDict["INTAMOUNT"].IntData && ZoneManager.CardsSelectedInHand.All(c => c.IsDestructible);
                 ret.Use = _ =>
                 {
                     var toDest = ZoneManager.CardsSelectedInHand.ToList();
@@ -1149,12 +1149,13 @@ namespace ConsoleBalatro.Engine.Cards.Consumables
             ret.DataDict.Add("INTAMOUNT", new() { MyDataType = JokerDataType.INT, IntData = numberToMake });
             ret.DataDict.Add("DESTROYAMOUNT", new() { MyDataType = JokerDataType.INT, IntData = 1 });
             ret.DescriptionBuilder = _ => "Destroy " + ret.DataDict["DESTROYAMOUNT"].IntData + " random card in your hand, but add " + ret.DataDict["INTAMOUNT"].IntData + " random " + rankGroupToPull + " instead.";
-            ret.IsActivatable = _ => ZoneManager.HandZone.Cards.Count > 0;
+            ret.IsActivatable = _ => ZoneManager.HandZone.Cards.Count(c => c.IsDestructible) > 0;
             ret.Use = _ =>
             {
                 for (int i = 0; i < ret.DataDict["DESTROYAMOUNT"].IntData; i++)
                 {
-                    var toRem = ZoneManager.HandZone.Cards[Globals.randomNext(ZoneManager.HandZone.Cards.Count)];
+                    var opts = ZoneManager.HandZone.Cards.Where(c => c.IsDestructible).ToList();
+                    var toRem = opts[Globals.randomNext(opts.Count)];
                     ZoneManager.DestroyCard(toRem, ZoneManager.HandZone);
                 }
                 var toAdd = new List<Card>();

@@ -600,8 +600,11 @@ namespace ConsoleBalatro.Engine.Cards.Jokers
                         if (myInd >= 0 && myInd < jokers.Count - 1)
                         {
                             var toDestroy = jokers[myInd + 1];
-                            ret.DataDict["MULTAMOUNT"].DoubleData += toDestroy.SellCost * 2;
-                            ZoneManager.DestroyCard(toDestroy, ZoneManager.JokerZone);
+                            if (toDestroy.IsDestructible)
+                            {
+                                ret.DataDict["MULTAMOUNT"].DoubleData += toDestroy.SellCost * 2;
+                                ZoneManager.DestroyCard(toDestroy, ZoneManager.JokerZone);
+                            }
                         }
                     },
                 });
@@ -903,7 +906,7 @@ namespace ConsoleBalatro.Engine.Cards.Jokers
                     MyContextType = EventContextType.EndPlayRound,
                     MyAction = _ =>
                     {
-                        if (ZoneManager.JokerZone.Cards.Contains(c) && Globals.RollRandom(ret.DataDict["NUMERATOR"].IntData, ret.DataDict["DENOMINATOR"].IntData, c))
+                        if (ZoneManager.JokerZone.Cards.Contains(c) && c.IsDestructible && Globals.RollRandom(ret.DataDict["NUMERATOR"].IntData, ret.DataDict["DENOMINATOR"].IntData, c))
                         {
                             ZoneManager.DestroyCard(c, ZoneManager.JokerZone);
                             Globals.AddFlag("GROS_MICHEL_SELF_DESTROY");
@@ -1143,7 +1146,7 @@ namespace ConsoleBalatro.Engine.Cards.Jokers
                     {
                         ret.DataDict["CHIPAMOUNT"].IntData = Math.Max(0, ret.DataDict["CHIPAMOUNT"].IntData - ret.DataDict["CHIPLOSS"].IntData);
                         if (ret.DataDict["CHIPAMOUNT"].IntData == 0 && ZoneManager.JokerZone.Cards.Contains(c))
-                            ZoneManager.DestroyCard(c, ZoneManager.JokerZone);
+                            ZoneManager.DeleteCard(c);
                     },
                 });
                 return ret;
@@ -1210,7 +1213,7 @@ namespace ConsoleBalatro.Engine.Cards.Jokers
                     MyContextType = EventContextType.HandPlayScoringDone,
                     MyAction = _ =>
                     {
-                        if (ret.DataDict["FIRSTHAND"].IntData == 1 && ZoneManager.CurrentlyBeingPlayedZone.Cards.Count == 1 && ZoneManager.CurrentlyBeingPlayedZone.Cards[0].Rank == Rank.SIX)
+                        if (ret.DataDict["FIRSTHAND"].IntData == 1 && ZoneManager.CurrentlyBeingPlayedZone.Cards.Count == 1 && ZoneManager.CurrentlyBeingPlayedZone.Cards[0].IsDestructible && ZoneManager.CurrentlyBeingPlayedZone.Cards[0].Rank == Rank.SIX)
                         {
                             ZoneManager.DestroyCard(ZoneManager.CurrentlyBeingPlayedZone.Cards[0], ZoneManager.CurrentlyBeingPlayedZone);
                             if (ZoneManager.ConsumableZone.HasRoom)
@@ -1369,7 +1372,7 @@ namespace ConsoleBalatro.Engine.Cards.Jokers
                     MyContextType = EventContextType.EndPlayRound,
                     MyAction = _ =>
                     {
-                        if (ZoneManager.JokerZone.Cards.Contains(c) && Globals.RollRandom(ret.DataDict["NUMERATOR"].IntData, ret.DataDict["DENOMINATOR"].IntData, c))
+                        if (ZoneManager.JokerZone.Cards.Contains(c) && c.IsDestructible && Globals.RollRandom(ret.DataDict["NUMERATOR"].IntData, ret.DataDict["DENOMINATOR"].IntData, c))
                             ZoneManager.DestroyCard(c, ZoneManager.JokerZone);
                     },
                 });
@@ -1796,7 +1799,7 @@ namespace ConsoleBalatro.Engine.Cards.Jokers
                         ret.DataDict["HANDSIZEAMOUNT"].IntData = Math.Max(0, ret.DataDict["HANDSIZEAMOUNT"].IntData - ret.DataDict["LOSSAMOUNT"].IntData); 
                         Globals.HandSize -= ret.DataDict["LOSSAMOUNT"].IntData;//subtract from handsize and stored bonus
                         if (ret.DataDict["HANDSIZEAMOUNT"].IntData == 0 && ZoneManager.JokerZone.Cards.Contains(c)) 
-                            ZoneManager.DestroyCard(c, ZoneManager.JokerZone); 
+                            ZoneManager.DeleteCard(c); 
                     } 
                 });
                 return ret;
@@ -2090,7 +2093,7 @@ namespace ConsoleBalatro.Engine.Cards.Jokers
                     {
                         ret.DataDict["MULTAMOUNT"].DoubleData -= ret.DataDict["MULTLOSS"].DoubleData;
                         if (ret.DataDict["MULTAMOUNT"].DoubleData <= 0)
-                            ZoneManager.DestroyCard(c, c.MyZone);
+                            ZoneManager.DeleteCard(c);
                     }
                 });
                 return ret;
@@ -2161,7 +2164,7 @@ namespace ConsoleBalatro.Engine.Cards.Jokers
                             //TODO: Trigger on each card instead of all at once at end of discard.
                             ret.DataDict["MULTMULTAMOUNT"].DoubleData -= discardArgs.BeingDiscarded.Count * ret.DataDict["MULTMULTLOSS"].DoubleData;
                             if (ret.DataDict["MULTMULTAMOUNT"].DoubleData <= 1)
-                                ZoneManager.DestroyCard(c, c.MyZone);
+                                ZoneManager.DeleteCard(c);
                         }
                     }
                 });
@@ -2216,7 +2219,7 @@ namespace ConsoleBalatro.Engine.Cards.Jokers
                     { 
                         ret.DataDict["HANDSLEFT"].IntData -= 1; 
                         if (ret.DataDict["HANDSLEFT"].IntData <= 0 && c.MyZone == ZoneManager.JokerZone) 
-                            ZoneManager.DestroyCard(c, ZoneManager.JokerZone); 
+                            ZoneManager.DeleteCard(c); 
                     }
                 });
                 return ret;
@@ -2340,7 +2343,7 @@ namespace ConsoleBalatro.Engine.Cards.Jokers
                         {
                             h.PreventGameOverAndWinBlind = true;
                             if (c.MyZone == ZoneManager.JokerZone) 
-                                ZoneManager.DestroyCard(c, ZoneManager.JokerZone);
+                                ZoneManager.DeleteCard(c);
                         }
                     }
                 });

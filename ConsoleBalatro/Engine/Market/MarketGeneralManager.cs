@@ -79,7 +79,7 @@ namespace ConsoleBalatro.Engine.Market
             toRem.AddRange(ZoneManager.PackMarketZone.Cards);
             foreach (var c in toRem)
             {
-                ZoneManager.DestroyCard(c, c.MyZone);
+                ZoneManager.DeleteCard(c);
             }
 
             for (int i = 0; i < ZoneManager.PackMarketZone.MaxCapacity; i++)

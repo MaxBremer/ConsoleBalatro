@@ -587,7 +587,7 @@ namespace ConsoleBalatro.Engine
             {
                 if(!MarketOptionsManager.ReturnMarketItemFromZone(args.CardBeingSold, args.ZoneCardIsLeaving))
                 {
-                    ZoneManager.DestroyCard(args.CardBeingSold, args.ZoneCardIsLeaving);
+                    ZoneManager.DeleteCard(args.CardBeingSold);
                 }
             }
             else
@@ -638,7 +638,7 @@ namespace ConsoleBalatro.Engine
             if (beingPurchased.isPack)
             {
                 PackActions.OpenPack(beingPurchased);
-                ZoneManager.DestroyCard(beingPurchased, beingPurchased.MyZone);
+                ZoneManager.DeleteCard(beingPurchased);
             }else if(beingPurchased.BuyCostOverride != null)
             {
                 beingPurchased.BuyCostOverride = null;//Currently after purchase, any buy cost override is reset.

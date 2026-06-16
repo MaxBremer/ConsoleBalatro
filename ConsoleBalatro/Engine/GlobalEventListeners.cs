@@ -75,7 +75,7 @@ namespace ConsoleBalatro.Engine
                 if(c.Enhancement == Enhancement.GLASS)
                 {
                     Globals.EmitMultMult(2, c);
-                    if (Globals.RollRandom(1, 4, c))
+                    if (Globals.RollRandom(1, 4, c) && c.IsDestructible)
                         ZoneManager.DestroyCard(c, c.MyZone);
                 }else if(c.Enhancement == Enhancement.MULT)
                 {

@@ -169,7 +169,6 @@ namespace ConsoleBalatro.Engine.Cards
                 }
             }
         }
-        public Action<EventContext> TriggerCardForScoring;
         public readonly List<Sticker> Stickers = new();
 
         public void SetEditionOfficial(Edition ed)

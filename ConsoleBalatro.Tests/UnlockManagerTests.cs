@@ -136,7 +136,7 @@ public class UnlockManagerTests : TestClassBase
             Assert.True(UnlockManager.IsAchievementAchieved(AchievementDb.DiscardRoyalFlushAchievementId));
 
             Assert.Contains(unlockedPopups, args => args.AchievementName == "Practiced Hand" && args.AchievementDesc == "Played 10 hands.");
-            Assert.Contains(unlockedPopups, args => args.AchievementName == "Big Score" && args.AchievementDesc.Contains("10,000"));
+            Assert.Contains(unlockedPopups, args => args.AchievementName == "Lil Big Score" && args.AchievementDesc.Contains("100"));
             Assert.Contains(unlockedPopups, args => args.AchievementName == "Royal Mistake" && args.AchievementDesc.Contains("royal flush"));
         }
         finally

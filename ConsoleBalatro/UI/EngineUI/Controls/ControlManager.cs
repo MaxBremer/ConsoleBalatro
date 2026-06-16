@@ -374,7 +374,7 @@ namespace ConsoleBalatro.UI.EngineUI.Controls
             }
 
             //Joker and Consumable zones get Sell
-            if(ZoneManager.JokerZone.Cards.Contains(c) || ZoneManager.ConsumableZone.Cards.Contains(c))
+            if((ZoneManager.JokerZone.Cards.Contains(c) || ZoneManager.ConsumableZone.Cards.Contains(c)) && Globals.CanBeSold(c))
             {
                 ret.AvailableActions.Add(ConsoleKey.S, context =>
                 {
@@ -446,7 +446,7 @@ namespace ConsoleBalatro.UI.EngineUI.Controls
             }
 
             //Joker and Consumable zones get Sell
-            if (ZoneManager.JokerZone.Cards.Contains(c) || ZoneManager.ConsumableZone.Cards.Contains(c))
+            if ((ZoneManager.JokerZone.Cards.Contains(c) || ZoneManager.ConsumableZone.Cards.Contains(c)) && Globals.CanBeSold(c))
             {
                 ret += "[S]ell (" + c.SellCost + ")" + lineDivider;
             }

@@ -554,6 +554,12 @@ namespace ConsoleBalatro.Engine
             return CanAfford(c);
         }
 
+        public static bool CanBeSold(Card beingSold)
+        {
+            //For now, just this. Later, potential restrictions, maybe based on zone or type.
+            return beingSold.IsDestructible;
+        }
+
         /// <summary>
         /// Sell the passed card.
         /// </summary>
@@ -561,6 +567,9 @@ namespace ConsoleBalatro.Engine
         /// <param name="zoneCardIsLeaving">The zone the sold card is from.</param>
         public static void PerformSell(Card beingSold, CardZone zoneCardIsLeaving)
         {
+            if (!CanBeSold(beingSold))
+                return;
+
             var args = new EngineCardSoldArgs()
             {
                 CardBeingSold = beingSold,

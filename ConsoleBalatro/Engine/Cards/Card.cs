@@ -550,7 +550,8 @@ namespace ConsoleBalatro.Engine.Cards
                 ret += "Stickers: ";
                 foreach(var stick in Stickers)
                 {
-                    ret += stick.ToString() + ", ";
+                    var perishCount = stick == Sticker.PERISHABLE ? " (" + PerishCountdownVal + " left)" : "";
+                    ret += stick.ToString() + perishCount + ", ";
                 }
                 ret += "\n";
             }
@@ -598,6 +599,11 @@ namespace ConsoleBalatro.Engine.Cards
             if (!retStr.Contains("ERROR") && !FaceDown)
             {
                 retStr += CardInfoLineDivider + GetModifiersText().Replace("\n", CardInfoLineDivider);
+            }
+
+            if (Debuffed)
+            {
+                retStr += "DEBUFFED";
             }
 
             return retStr;

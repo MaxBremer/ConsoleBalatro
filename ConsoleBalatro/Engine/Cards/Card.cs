@@ -70,11 +70,9 @@ namespace ConsoleBalatro.Engine.Cards
             } 
         }
 
-        public void BossDebuff()
-        {
-            DebuffedByBoss = true;
-            Debuffed = true;
-        }
+        //YES I KNOW THIS IS BAD PRACTICE. REALLY BAD PRACTICE. IMPLEMENT STICKER-SPECIFIC FEATURE AS CARD FIELD.
+        //WHATEVER MAN AT THIS POINT I DONT CAAAAAAAAAAAAAAAAARE.
+        public int PerishCountdownVal;
 
         public bool FaceDown { get => _facedown;
             set
@@ -181,6 +179,12 @@ namespace ConsoleBalatro.Engine.Cards
             }
         }
         public readonly List<Sticker> Stickers = new();
+
+        public void BossDebuff()
+        {
+            DebuffedByBoss = true;
+            Debuffed = true;
+        }
 
         public void SetEditionOfficial(Edition ed)
         {

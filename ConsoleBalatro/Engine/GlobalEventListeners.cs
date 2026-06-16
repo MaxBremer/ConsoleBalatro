@@ -32,6 +32,7 @@ namespace ConsoleBalatro.Engine
             EngineEventHandler.StartListening(new EngineEventListener() { MyAction = AddStickerEffsOnDetailChange, MyContextType = EventContextType.CardDetailsChange });
 
             EngineEventHandler.StartListening(new EngineEventListener() { MyAction = RoundEndRentalCharge, MyContextType = EventContextType.EndPlayRound });
+            EngineEventHandler.StartListening(new EngineEventListener() { MyAction = PerishableCountdown, MyContextType = EventContextType.EndPlayRound });
         }
 
         public static void ChangeZoneSizeForNegative(EngineEventArgs args)
@@ -145,14 +146,6 @@ namespace ConsoleBalatro.Engine
             }
         }
 
-        /*private static void SetEternalUndestroyable(EngineEventArgs args)
-        {
-            if(args is EngineCardDetailsChangeArgs detailArgs && detailArgs.isStickerChange && detailArgs.StickerBeingAdded == Sticker.ETERNAL)
-            {
-                detailArgs.CardBeingChanged.IsDestructible = false;
-            }
-        }*/
-
         //After a hand is played, if it's an as-of-yet unplayed hidden hand, add its planet card to the pool.
         private static void RevealHiddenHand(EngineEventArgs args)
         {
@@ -204,12 +197,32 @@ namespace ConsoleBalatro.Engine
                     {
                         detailArgs.CardBeingChanged.BuyCostOverride = 1;
                     }
+                    else if(detailArgs.StickerBeingAdded == Sticker.PERISHABLE)
+                    {
+                        detailArgs.CardBeingChanged.PerishCountdownVal = 5;
+                    }
                 }
                 else if(detailArgs.StickerBeingRemoved != null)
                 {
                     if (detailArgs.StickerBeingAdded == Sticker.RENTAL)
                     {
                         detailArgs.CardBeingChanged.BuyCostOverride = null;
+                    }
+                }
+            }
+        }
+
+        private static void PerishableCountdown(EngineEventArgs args)
+        {
+            if(ZoneManager.JokerZone.Cards.Any(c => c.HasSticker(Sticker.PERISHABLE)))
+            {
+                foreach (var c in ZoneManager.JokerZone.Cards.Where(c => c.HasSticker(Sticker.PERISHABLE)))
+                {
+                    c.PerishCountdownVal -= 1;
+                    if(c.PerishCountdownVal <= 0)
+                    {
+                        c.Debuffed = true;
+                        c.RemoveSticker(Sticker.PERISHABLE);
                     }
                 }
             }

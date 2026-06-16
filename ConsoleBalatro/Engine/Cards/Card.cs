@@ -311,6 +311,7 @@ namespace ConsoleBalatro.Engine.Cards
             args.CardBeingChanged = this;
             args.isStickerChange = true;
             args.StickerBeingAdded = s;
+            args.isAfter = true;
             EngineEventHandler.TriggerEvent(args);
         }
 

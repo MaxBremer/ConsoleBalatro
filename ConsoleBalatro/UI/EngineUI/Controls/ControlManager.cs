@@ -300,6 +300,7 @@ namespace ConsoleBalatro.UI.EngineUI.Controls
                 if (Globals.CanRerollBossBlind)
                 {
                     FlowHandler.RerollBossBlind(isPlayerReroll: true);
+                    EngineDisplayGlobals.Redraw();
                 }
             });
 

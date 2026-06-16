@@ -157,9 +157,9 @@ namespace ConsoleBalatro.UI.EngineUI
             {
                 ".---------------.",
                 "|  /---------\\  |",
-                "| |         | | |",
-                $"| | {middle.PadRight(7).Substring(0, 7)} | | |",
-                "| |         | | |",
+                "| |           | |",
+               $"| | {middle.PadRight(7).Substring(0, 7)}   | |",
+                "| |           | |",
                 "|  \\---------/  |",
                 "'---------------'",
             };

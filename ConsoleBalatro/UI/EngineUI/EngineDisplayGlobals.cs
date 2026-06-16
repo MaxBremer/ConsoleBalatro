@@ -172,9 +172,15 @@ namespace ConsoleBalatro.UI.EngineUI
         {
             EngineInterface = theGuy;
 
+            SyncValues();
             InitializeGlobalListeners();
             ControlManager.InitializeControls();
             InitializeAllDisplays();
+        }
+
+        private static void SyncValues()
+        {
+            DisplayMoney = Globals.Money;
         }
 
         //TODO:...do I even fucking need this?

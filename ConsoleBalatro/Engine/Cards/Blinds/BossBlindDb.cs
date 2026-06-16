@@ -529,7 +529,7 @@ namespace ConsoleBalatro.Engine.Cards.Blinds
                         {
                             if(args is EngineCardDrawnToZoneArgs drawArgs && drawArgs.ZoneDrawnTo == ZoneManager.HandZone && ret.DataDict["DEBUFFFLAG"].IntData == 1)
                             {
-                                drawArgs.CardBeingDrawn.Debuffed = true;
+                                drawArgs.CardBeingDrawn.BossDebuff();
                             }
                         },
                     });
@@ -611,7 +611,7 @@ namespace ConsoleBalatro.Engine.Cards.Blinds
                             var target = GetJoker(null);
                             if(target != null)
                             {
-                                target.Debuffed = true;
+                                target.BossDebuff();
                                 ret.DataDict["CARDTARGET"].CardData = target;
                             }
                         },
@@ -629,7 +629,7 @@ namespace ConsoleBalatro.Engine.Cards.Blinds
                             var target = GetJoker(ret.DataDict["CARDTARGET"].CardData);
                             if(target != null)
                             {
-                                target.Debuffed = true;
+                                target.BossDebuff();
                                 ret.DataDict["CARDTARGET"].CardData = target;
                             }
                         },
@@ -715,7 +715,7 @@ namespace ConsoleBalatro.Engine.Cards.Blinds
                 {
                     if (args is EngineCardDrawnToZoneArgs drawArgs && drawArgs.ZoneDrawnTo == ZoneManager.HandZone && isValidTarget(drawArgs.CardBeingDrawn))
                     {
-                        drawArgs.CardBeingDrawn.Debuffed = true;
+                        drawArgs.CardBeingDrawn.BossDebuff();
                     }
                 },
             });

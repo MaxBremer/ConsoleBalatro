@@ -36,6 +36,7 @@ namespace ConsoleBalatro.Engine.Events.Args
         public bool newFlipVal = false;
 
         public bool isDebuff = false;
+        public bool debuffedByBoss = false;
 
         public bool isAfter = false;
     }

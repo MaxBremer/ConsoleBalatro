@@ -54,8 +54,8 @@ namespace ConsoleBalatro.UI.EngineUI
         public static readonly Dictionary<Sticker, Func<string, string>> StickerModifiers = new()
         {
             { Sticker.ETERNAL, x => setCharAt(x, 10, 'E') },
-            { Sticker.PERISHABLE, x => setCharAt(x, 10, 'P') },
-            { Sticker.RENTAL, x => setCharAt(x, 10, 'R') },
+            { Sticker.PERISHABLE, x => setCharAt(x, 16, 'P') },
+            { Sticker.RENTAL, x => setCharAt(x, 22, 'R') },
         };
 
         /// <summary>

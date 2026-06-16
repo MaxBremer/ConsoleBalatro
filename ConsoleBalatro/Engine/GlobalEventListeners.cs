@@ -166,7 +166,8 @@ namespace ConsoleBalatro.Engine
         {
             if (args is EngineCardDrawnToZoneArgs drawArgs && (drawArgs.CardBeingDrawn.Debuffed || drawArgs.CardBeingDrawn.FaceDown) && (drawArgs.ZoneDrawnTo == ZoneManager.DiscardZone || drawArgs.ZoneDrawnTo == ZoneManager.HiddenPlayZone || drawArgs.ZoneDrawnTo == ZoneManager.DeckZone))
             {
-                drawArgs.CardBeingDrawn.Debuffed = false;
+                if(drawArgs.CardBeingDrawn.DebuffedByBoss)//Only remove boss debuffs.
+                    drawArgs.CardBeingDrawn.Debuffed = false;
                 drawArgs.CardBeingDrawn.FaceDown = false;
             }
         }

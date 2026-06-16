@@ -42,6 +42,8 @@ namespace ConsoleBalatro.Engine.Cards
 
         public bool ForcedSelect = false;
 
+        public bool DebuffedByBoss = false;
+
         public bool Debuffed {  
             get 
             {
@@ -50,7 +52,9 @@ namespace ConsoleBalatro.Engine.Cards
             set
             {
                 _debuffed = value;
-                var args = new EngineCardDetailsChangeArgs() { MyContext = new() { Context = EventContextType.CardDetailsChange }, CardBeingChanged = this, isDebuff = true };
+                if (!_debuffed)
+                    DebuffedByBoss = false;
+                var args = new EngineCardDetailsChangeArgs() { MyContext = new() { Context = EventContextType.CardDetailsChange }, CardBeingChanged = this, isDebuff = true, debuffedByBoss = DebuffedByBoss };
                 EngineEventHandler.TriggerEvent(args);
                 if (IsJoker && (MyZone == ZoneManager.JokerZone || MyZone == ZoneManager.ActiveVoucherZone || MyZone == ZoneManager.HiddenBlindAttributeZone || MyZone == ZoneManager.OtherHiddenJokerZone) && MyZone is IJokerContainer jokZone)
                 {
@@ -65,6 +69,13 @@ namespace ConsoleBalatro.Engine.Cards
                 }
             } 
         }
+
+        public void BossDebuff()
+        {
+            DebuffedByBoss = true;
+            Debuffed = true;
+        }
+
         public bool FaceDown { get => _facedown;
             set
             {

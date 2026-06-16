@@ -29,7 +29,7 @@ namespace ConsoleBalatro.UI.EngineUI.Controls
             AvailableControlSets.Add("POSTROUND", BuildPostRoundOptions());
             AvailableControlSets.Add("BLIND", BuildBlindOptions());
             AvailableControlSets.Add("GAMEOVER", BuildEmptyOptions());
-            AvailableControlSets.Add("DECKCHOICE", BuildEmptyOptions());
+            AvailableControlSets.Add("DECKCHOICE", BuildDeckSelectOptions());
         }
 
         public static void EngageControlset(ControlOptionset options, ControlContext context)
@@ -300,6 +300,7 @@ namespace ConsoleBalatro.UI.EngineUI.Controls
                 if (Globals.CanRerollBossBlind)
                 {
                     FlowHandler.RerollBossBlind(isPlayerReroll: true);
+                    EngineDisplayGlobals.Redraw();
                 }
             });
 
@@ -310,16 +311,37 @@ namespace ConsoleBalatro.UI.EngineUI.Controls
         {
             var ret = new ControlOptionset
             {
-                SchemaName = "DECK SELECTION"
+                SchemaName = "DeckSelection"
             };
 
-            ret.AvailableActions.Add(ConsoleKey.S, _ =>
+            ret.AvailableActions.Add(ConsoleKey.LeftArrow, _ =>
             {
-                var sel = ReadLine();
-                if (!string.IsNullOrEmpty(sel) && Int32.TryParse(sel, out int selInt))
-                {
-                    
-                }
+                EngineDisplayGlobals.DeckChoiceMenu.SelectPreviousDeck();
+                EngineDisplayGlobals.Redraw();
+            });
+
+            ret.AvailableActions.Add(ConsoleKey.RightArrow, _ =>
+            {
+                EngineDisplayGlobals.DeckChoiceMenu.SelectNextDeck();
+                EngineDisplayGlobals.Redraw();
+            });
+
+            ret.AvailableActions.Add(ConsoleKey.UpArrow, _ =>
+            {
+                EngineDisplayGlobals.DeckChoiceMenu.SelectPreviousStake();
+                EngineDisplayGlobals.Redraw();
+            });
+
+            ret.AvailableActions.Add(ConsoleKey.DownArrow, _ =>
+            {
+                EngineDisplayGlobals.DeckChoiceMenu.SelectNextStake();
+                EngineDisplayGlobals.Redraw();
+            });
+
+            ret.AvailableActions.Add(ConsoleKey.Enter, _ =>
+            {
+                if (EngineDisplayGlobals.DeckChoiceMenu.CanSelectCurrentDeck)
+                    FlowHandler.DeckChosen(EngineDisplayGlobals.DeckChoiceMenu.SelectedDeckName);
             });
 
             return ret;

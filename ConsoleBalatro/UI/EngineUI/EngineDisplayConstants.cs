@@ -78,5 +78,6 @@ namespace ConsoleBalatro.UI.EngineUI
         public const int DECK_CHOICE_DISPLAY_YLOC = 1;
 
         public const int DECK_CHOICE_DISPLAY_WIDTH = 116;
+        public const int DECK_CHOICE_DISPLAY_HEIGHT = 20;
     }
 }

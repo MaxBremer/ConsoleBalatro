@@ -12,24 +12,39 @@ using ConsoleBalatro.UI.EngineUI.Controls;
 
 class Program
 {
+    private const int INTERFACE_WIDTH = 120;
+    private const int INTERFACE_HEIGHT = 29;
+
+    private const bool RESET_PROGRESS_ON_START = true;
+    private const bool SKIP_TO_BLIND_SELECTION = false;
+
+
     public static void Main(string[] args)
     {
-        var inte = new Interface(120, 29);
+        var inte = new Interface(INTERFACE_WIDTH, INTERFACE_HEIGHT);
 
         Console.CursorVisible = false;
         Globals.InitializeMain();
         UIStateManager.InitializeUIStateManager();
 
         //For now, always reset achievement progress to default.
-        UnlockManager.ResetProgressToDefaults();
-        UnlockManager.SaveProgress();
+        if (RESET_PROGRESS_ON_START)
+        {
+            UnlockManager.ResetProgressToDefaults();
+            UnlockManager.SaveProgress();
+        }
 
         Console.Clear();
         EngineDisplayGlobals.InitializeDisplayAll(inte);
-        DeckDb.BecomeDeck("YELLOW");
-        FlowHandler.StartNewAnte();
-        FlowHandler.InitializeBlindSelectionRound();
-        //FlowHandler.InitializeDeckSelectionRound();
+        if (SKIP_TO_BLIND_SELECTION)
+        {
+            FlowHandler.StartNewAnte();
+            FlowHandler.InitializeBlindSelectionRound();
+        }
+        else
+        {
+            FlowHandler.InitializeDeckSelectionRound();
+        }
 
         EngineDisplayGlobals.PlayCachedAnimations();
 

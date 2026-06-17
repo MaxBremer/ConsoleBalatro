@@ -341,7 +341,7 @@ namespace ConsoleBalatro.UI.EngineUI.Controls
 
             ret.AvailableActions.Add(ConsoleKey.Enter, _ =>
             {
-                if (EngineDisplayGlobals.DeckChoiceMenu.CanSelectCurrentDeck)
+                if (EngineDisplayGlobals.DeckChoiceMenu.CanSelectCurrentDeck && EngineDisplayGlobals.DeckChoiceMenu.CanSelectCurrentStake)
                     FlowHandler.DeckChosen(EngineDisplayGlobals.DeckChoiceMenu.SelectedDeckName, (StakeType)EngineDisplayGlobals.DeckChoiceMenu.SelectedStakeIndex);
             });
 

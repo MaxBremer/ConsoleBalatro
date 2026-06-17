@@ -378,19 +378,8 @@ namespace ConsoleBalatro.UI.EngineUI.Controls
                     var secondCardForSwap = KeySelectCardFromZone(targetZone);
                     if (c == secondCardForSwap)
                         return;
-                    /*var firstInd = targetZone.Cards.IndexOf(c);
-                    var secondInd = targetZone.Cards.IndexOf(secondCardForSwap);
-                    targetZone.Cards[secondInd] = c;
-                    targetZone.Cards[firstInd] = secondCardForSwap;*/
-                    
 
                     targetZone.SwapCardPositions(c, secondCardForSwap);
-                    /*var zoneDisplay = EngineDisplayGlobals.GetZoneDisplayOfCard(c);
-
-                    zoneDisplay.CardList[secondInd] = c;
-                    zoneDisplay.CardList[firstInd] = secondCardForSwap;
-                    zoneDisplay.SetCardPositions();
-                    zoneDisplay.PreDisplaySetup();*/
 
                     EngineDisplayGlobals.Redraw();
                 });

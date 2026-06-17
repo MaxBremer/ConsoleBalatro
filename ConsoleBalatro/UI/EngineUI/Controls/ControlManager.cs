@@ -2,6 +2,7 @@
 using ConsoleBalatro.Engine.Cards;
 using ConsoleBalatro.Engine.Cards.Consumables;
 using ConsoleBalatro.Engine.Market;
+using ConsoleBalatro.Engine.Stakes;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -328,20 +329,20 @@ namespace ConsoleBalatro.UI.EngineUI.Controls
 
             ret.AvailableActions.Add(ConsoleKey.UpArrow, _ =>
             {
-                EngineDisplayGlobals.DeckChoiceMenu.SelectPreviousStake();
+                EngineDisplayGlobals.DeckChoiceMenu.SelectNextStake();
                 EngineDisplayGlobals.Redraw();
             });
 
             ret.AvailableActions.Add(ConsoleKey.DownArrow, _ =>
             {
-                EngineDisplayGlobals.DeckChoiceMenu.SelectNextStake();
+                EngineDisplayGlobals.DeckChoiceMenu.SelectPreviousStake();
                 EngineDisplayGlobals.Redraw();
             });
 
             ret.AvailableActions.Add(ConsoleKey.Enter, _ =>
             {
                 if (EngineDisplayGlobals.DeckChoiceMenu.CanSelectCurrentDeck)
-                    FlowHandler.DeckChosen(EngineDisplayGlobals.DeckChoiceMenu.SelectedDeckName);
+                    FlowHandler.DeckChosen(EngineDisplayGlobals.DeckChoiceMenu.SelectedDeckName, (StakeType)EngineDisplayGlobals.DeckChoiceMenu.SelectedStakeIndex);
             });
 
             return ret;

@@ -111,6 +111,8 @@ namespace ConsoleBalatro.Engine.Events
 
         AchievementUnlocked,
         CollectionItemAdded,
+
+        RolledCardGenerated,
     }
     public class EventContext
     {

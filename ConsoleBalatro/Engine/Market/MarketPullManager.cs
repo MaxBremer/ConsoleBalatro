@@ -134,6 +134,14 @@ namespace ConsoleBalatro.Engine.Market
                     break;
             }
 
+            var args = new EngineCardRollGeneratedArgs
+            {
+                FinalCardRolled = ret,
+                RollMade = resp,
+                RollRequest = req
+            };
+            EngineEventHandler.TriggerEvent(args);
+
             return ret;
         }
     }

@@ -5,6 +5,7 @@ using ConsoleBalatro.Engine.Cards.Tags;
 using ConsoleBalatro.Engine.Events;
 using ConsoleBalatro.Engine.Events.Args;
 using ConsoleBalatro.Engine.Market;
+using ConsoleBalatro.Engine.Stakes;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -33,6 +34,32 @@ namespace ConsoleBalatro.Engine
             50000,
         };
 
+        public static List<int> GreenStakeAnteChipAmounts = new()
+        {
+            100,
+            300,
+            900,
+            2600,
+            8000,
+            20000,
+            36000,
+            60000,
+            100000,
+        };
+
+        public static List<int> PurpleStakeAnteChipAmounts = new()
+        {
+            100,
+            300,
+            1000,
+            3200,
+            9000,
+            25000,
+            60000,
+            110000,
+            200000,
+        };
+
         public static Dictionary<BlindType, int> PostRoundFreeMoney = new()
         {
             {BlindType.SMALL, 3 },
@@ -48,7 +75,7 @@ namespace ConsoleBalatro.Engine
         };
 
         public static int CurrentAnte = 0;
-        public static int CurrentBaseChipAmount => BaseAnteChipAmounts[CurrentAnte];
+        public static int CurrentBaseChipAmount => GetCurrentChipScalingList()[CurrentAnte];
         public static BlindType CurrentSelectedBlind = BlindType.SMALL;
         public static TagType CurSmallBlindTag;
         public static TagType CurBigBlindTag;
@@ -66,6 +93,22 @@ namespace ConsoleBalatro.Engine
             //There was one! I'm a smartie :)
             EngineEventHandler.StartListening(new EngineEventListener() { MyAction = RestoreSavedOrderings, MyContextType = EventContextType.GameStatePop });
             EngineEventHandler.StartListening(new EngineEventListener() { MyAction = SavePlayRoundOrderings, MyContextType= EventContextType.GameStatePush });
+        }
+
+        private static List<int> GetCurrentChipScalingList()
+        {
+            //Yeah, it's the dumb way to do it, but doing an event is also pretty dumb idk.
+            if (StakeManager.StakeActive(StakeType.PURPLE))
+            {
+                return PurpleStakeAnteChipAmounts;
+            }else if (StakeManager.StakeActive(StakeType.GREEN))
+            {
+                return GreenStakeAnteChipAmounts;
+            }
+            else
+            {
+                return BaseAnteChipAmounts;
+            }
         }
 
         private static void SavePlayRoundOrderings(EngineEventArgs args)
@@ -429,14 +472,15 @@ namespace ConsoleBalatro.Engine
             //AttemptRoundInitialize(InitializePlayRound, CurrentSelectedBlind);
         }
 
-        public static void DeckChosen(string deckDBName)
+        public static void DeckChosen(string deckDBName, StakeType stakeChosen)
         {
             //Should only happen at the very start of a run.
             //So once a deck is chosen, initialize ante and move into blind selection.
-            if (!DeckDb.IsDeckUnlocked(deckDBName))
+            if (!DeckDb.IsDeckUnlocked(deckDBName))//TODO: Only allow unlocked stakes for that deck.
                 return;
 
             DeckDb.BecomeDeck(deckDBName);
+            StakeManager.SetStake(stakeChosen);
             CloseDeckSelectionRound();
             StartNewAnte();
             InitializeBlindSelectionRound();

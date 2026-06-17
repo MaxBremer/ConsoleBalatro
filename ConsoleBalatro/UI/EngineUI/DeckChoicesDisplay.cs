@@ -12,7 +12,7 @@ namespace ConsoleBalatro.UI.EngineUI
         private const int ArtPanelWidth = 25;
         private const int StakePanelWidth = 22;
         private const int ContentMargin = 2;
-        private static readonly List<string> StakePlaceholders = new() { "White" };
+        private static readonly List<string> StakePlaceholders = new() { "White", "Red", "Green", "Black", "Blue", "Purple", "Orange", "Gold" };
 
         public int SelectedDeckIndex { get; private set; } = 0;
         public int SelectedStakeIndex { get; private set; } = 0;
@@ -28,6 +28,8 @@ namespace ConsoleBalatro.UI.EngineUI
         }
 
         public bool CanSelectCurrentDeck => !string.IsNullOrEmpty(SelectedDeckName) && DeckDb.IsDeckUnlocked(SelectedDeckName);
+
+        public bool CanSelectCurrentStake => true;//TODO: Replace with implementation. For now just allows any stake.
 
         public void SelectNextDeck()
         {

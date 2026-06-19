@@ -15,13 +15,29 @@ namespace ConsoleBalatro.UI.EngineUI.Controls
     {
         private static List<ConsoleKey> numKeyList = new List<ConsoleKey>() { ConsoleKey.D1, ConsoleKey.D2, ConsoleKey.D3, ConsoleKey.D4, ConsoleKey.D5, ConsoleKey.D6, ConsoleKey.D7, ConsoleKey.D8, ConsoleKey.D9, ConsoleKey.D0 };
 
+        /// <summary>
+        /// A dictionary containing all available controlsets, indexed by their string key.
+        /// </summary>
         public static Dictionary<string, ControlOptionset> AvailableControlSets = new();
 
+        /// <summary>
+        /// The currently active controlset.
+        /// </summary>
         public static ControlOptionset CurrentOptions;
+
+        /// <summary>
+        /// The context object for the current controlset.
+        /// </summary>
         public static ControlContext CurrentContext;
 
+        /// <summary>
+        /// The string name for the current controlset.
+        /// </summary>
         public static string CurrentControlset = "ROUND";
 
+        /// <summary>
+        /// A one-time-trigger, start-of-program initializer for all controlsets.
+        /// </summary>
         public static void InitializeControls()
         {
             AvailableControlSets.Add("ROUND", BuildPlayRoundOptions());
@@ -33,6 +49,11 @@ namespace ConsoleBalatro.UI.EngineUI.Controls
             AvailableControlSets.Add("DECKCHOICE", BuildDeckSelectOptions());
         }
 
+        /// <summary>
+        /// Engage the passed controlset with the passed context; meaning, actually wait for input, and once received act according to the controlset.
+        /// </summary>
+        /// <param name="options">The controlset to engage.</param>
+        /// <param name="context">The context for the controlset to engage.</param>
         public static void EngageControlset(ControlOptionset options, ControlContext context)
         {
             var inp = ReadKey();
@@ -42,12 +63,21 @@ namespace ConsoleBalatro.UI.EngineUI.Controls
             }
         }
 
+        /// <summary>
+        /// Engage the controlset indicated by the string name from the CurrentControlset field.
+        /// </summary>
+        /// <param name="context">The context for engaging this controlset.</param>
         public static void EngageCurrentControlset(ControlContext context)
         {
             var curSet = AvailableControlSets[CurrentControlset];
             EngageControlset(curSet, context);
         }
 
+        /// <summary>
+        /// Prompt for user input to select a Card from a passed CardZone.
+        /// </summary>
+        /// <param name="zone">The CardZone for the user to select a card from.</param>
+        /// <returns>The selected card.</returns>
         public static Card KeySelectCardFromZone(CardZone zone)
         {
             //null represents a cancelled select.
@@ -82,16 +112,27 @@ namespace ConsoleBalatro.UI.EngineUI.Controls
             return toRet;
         }
 
+        /// <summary>
+        /// A generic readLine wrapper for the console.
+        /// </summary>
+        /// <returns>The line the user entered into the console.</returns>
         public static string ReadLine()
         {
             return Console.ReadLine();
         }
 
+        /// <summary>
+        /// A generic readKey wrapper for the console.
+        /// </summary>
+        /// <returns>The key the user entered into the console.</returns>
         public static ConsoleKeyInfo ReadKey()
         {
             return Console.ReadKey();
         }
 
+        /// <summary>
+        /// A generic wrapper method to clear the console.
+        /// </summary>
         public static void ClearConsole()
         {
             Console.Clear();

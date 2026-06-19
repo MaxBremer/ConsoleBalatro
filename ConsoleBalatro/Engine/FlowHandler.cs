@@ -355,7 +355,7 @@ namespace ConsoleBalatro.Engine
 
         private static void MarkCurrentStakeBeatenIfRunWon()
         {
-            if (CurrentAnte >= 8 && !string.IsNullOrWhiteSpace(CurrentDeckDbName))
+            if (CurrentAnte == 8 && !string.IsNullOrWhiteSpace(CurrentDeckDbName))
             {
                 var progressChanged = UnlockManager.MarkDeckStakeBeaten(CurrentDeckDbName, StakeManager.CurrentStake, saveImmediately: false);
 

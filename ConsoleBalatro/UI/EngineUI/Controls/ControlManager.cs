@@ -99,13 +99,16 @@ namespace ConsoleBalatro.UI.EngineUI.Controls
 
         private static void AddStandardControls(ControlOptionset ret, LookZonesAvailable lookZones)
         {
-            ret.AvailableActions.Add(ConsoleKey.L, BuildLookAction(lookZones));
-            ret.ZonesAvailable = lookZones;
-
-            ret.AvailableActions.Add(EzLook.EZ_LOOK_KEY, _ =>
+            if (lookZones.AnyZonesAvailable)
             {
-                EzLook.EngageEzLook(ret);
-            });
+                ret.AvailableActions.Add(ConsoleKey.L, BuildLookAction(lookZones));
+                ret.ZonesAvailable = lookZones;
+
+                ret.AvailableActions.Add(EzLook.EZ_LOOK_KEY, _ =>
+                {
+                    EzLook.EngageEzLook(ret);
+                });
+            }
 
             ret.AvailableActions.Add(ConsoleKey.T, _ =>
             {
@@ -314,6 +317,7 @@ namespace ConsoleBalatro.UI.EngineUI.Controls
             {
                 SchemaName = "DeckSelection"
             };
+            AddStandardControls(ret, new());
 
             ret.AvailableActions.Add(ConsoleKey.LeftArrow, _ =>
             {
@@ -511,6 +515,8 @@ namespace ConsoleBalatro.UI.EngineUI.Controls
             public bool VoucherMarketAvailable = false;
 
             public bool PackOptionsAvailable = false;
+
+            public bool AnyZonesAvailable => HandAvailable || JokersAvailable || ConsumablesAvailable || BeingPlayedAvailable || PackMarketAvailable || MainMarketAvailable || VoucherMarketAvailable || PackOptionsAvailable;
         }
 
         private static Action<ControlContext> BuildLookAction(LookZonesAvailable zonesAvailable)

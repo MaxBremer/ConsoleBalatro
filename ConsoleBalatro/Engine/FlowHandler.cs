@@ -355,9 +355,22 @@ namespace ConsoleBalatro.Engine
 
         private static void MarkCurrentStakeBeatenIfRunWon()
         {
-            if (CurrentAnte >= 8 && !string.IsNullOrWhiteSpace(CurrentDeckDbName))
+            if (CurrentAnte == 8 && !string.IsNullOrWhiteSpace(CurrentDeckDbName))
             {
-                UnlockManager.MarkDeckStakeBeaten(CurrentDeckDbName, StakeManager.CurrentStake);
+                var progressChanged = UnlockManager.MarkDeckStakeBeaten(CurrentDeckDbName, StakeManager.CurrentStake, saveImmediately: false);
+
+                foreach (var jokerName in ZoneManager.JokerZone.Cards
+                    .Where(card => card.IsJoker && !card.IsVoucher && !card.IsTag && !string.IsNullOrWhiteSpace(card.JokerData?.DBName))
+                    .Select(card => card.JokerData!.DBName)
+                    .Distinct(StringComparer.OrdinalIgnoreCase))
+                {
+                    progressChanged |= UnlockManager.MarkJokerStakeBeaten(jokerName, StakeManager.CurrentStake, saveImmediately: false);
+                }
+
+                if (progressChanged)
+                {
+                    UnlockManager.SaveProgress();
+                }
             }
         }
 

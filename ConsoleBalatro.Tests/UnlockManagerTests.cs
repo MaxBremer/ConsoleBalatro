@@ -5,6 +5,7 @@ using ConsoleBalatro.Engine.Cards.Consumables;
 using ConsoleBalatro.Engine.Cards.Jokers;
 using ConsoleBalatro.Engine.Events;
 using ConsoleBalatro.Engine.Events.Args;
+using ConsoleBalatro.Engine.Stakes;
 using Xunit;
 
 namespace ConsoleBalatro.Tests;
@@ -34,6 +35,48 @@ public class UnlockManagerTests : TestClassBase
             Assert.True(UnlockManager.LoadProgress());
             Assert.True(DeckDb.IsDeckUnlocked("RED"));
             Assert.True(DeckDb.IsDeckUnlocked("BLUE"));
+        }
+        finally
+        {
+            UnlockManager.PermanentProgressSavingDisabled = true;
+            UnlockManager.SaveFilePath = originalPath;
+            UnlockManager.ResetProgressToDefaults(clearAchievementDefinitions: true);
+            DeleteTempSave(savePath);
+        }
+    }
+
+
+    [Fact]
+    public void DeckStakeProgress_IsPerDeck_UnlocksNextStakeAndPersists()
+    {
+        var savePath = BuildTempSavePath();
+        var originalPath = UnlockManager.SaveFilePath;
+        try
+        {
+            UnlockManager.SaveFilePath = savePath;
+            UnlockManager.PermanentProgressSavingDisabled = false;
+            UnlockManager.ResetProgressToDefaults(clearAchievementDefinitions: true);
+            DeckDb.UnlockDeck("BLUE");
+
+            Assert.True(UnlockManager.IsStakeUnlockedForDeck("RED", StakeType.WHITE));
+            Assert.False(UnlockManager.IsStakeUnlockedForDeck("RED", StakeType.RED));
+            Assert.Equal(0, UnlockManager.GetStakesBeatenCountForDeck("RED"));
+
+            Assert.True(UnlockManager.MarkDeckStakeBeaten("RED", StakeType.WHITE));
+
+            Assert.True(UnlockManager.HasDeckStakeSticker("RED", StakeType.WHITE));
+            Assert.True(UnlockManager.IsStakeUnlockedForDeck("RED", StakeType.RED));
+            Assert.False(UnlockManager.IsStakeUnlockedForDeck("RED", StakeType.GREEN));
+            Assert.False(UnlockManager.IsStakeUnlockedForDeck("BLUE", StakeType.RED));
+            Assert.Equal(1, UnlockManager.GetStakesBeatenCountForDeck("RED"));
+
+            UnlockManager.ResetProgressToDefaults(clearAchievementDefinitions: true);
+            Assert.False(UnlockManager.IsStakeUnlockedForDeck("RED", StakeType.RED));
+
+            Assert.True(UnlockManager.LoadProgress());
+            Assert.True(UnlockManager.IsStakeUnlockedForDeck("RED", StakeType.RED));
+            Assert.True(UnlockManager.HasDeckStakeSticker("RED", StakeType.WHITE));
+            Assert.False(UnlockManager.IsStakeUnlockedForDeck("BLUE", StakeType.RED));
         }
         finally
         {

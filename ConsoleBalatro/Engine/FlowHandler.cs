@@ -75,6 +75,7 @@ namespace ConsoleBalatro.Engine
         };
 
         public static int CurrentAnte = 0;
+        public static string CurrentDeckDbName = string.Empty;
         public static int CurrentBaseChipAmount => GetCurrentChipScalingList()[CurrentAnte];
         public static BlindType CurrentSelectedBlind = BlindType.SMALL;
         public static TagType CurSmallBlindTag;
@@ -340,6 +341,7 @@ namespace ConsoleBalatro.Engine
                     CurrentSelectedBlind = BlindType.BOSS;
                     break;
                 case BlindType.BOSS:
+                    MarkCurrentStakeBeatenIfRunWon();
                     StartNewAnte();
                     break;
             }
@@ -348,6 +350,15 @@ namespace ConsoleBalatro.Engine
             args.NewBlindType = CurrentSelectedBlind;
             args.MyContext = new EventContext() { Context = EventContextType.BlindChange };
             EngineEventHandler.TriggerEvent(args);
+        }
+
+
+        private static void MarkCurrentStakeBeatenIfRunWon()
+        {
+            if (CurrentAnte >= 8 && !string.IsNullOrWhiteSpace(CurrentDeckDbName))
+            {
+                UnlockManager.MarkDeckStakeBeaten(CurrentDeckDbName, StakeManager.CurrentStake);
+            }
         }
 
         public static List<(string, int)> CalcPostRoundMoneyWithSources()
@@ -476,9 +487,10 @@ namespace ConsoleBalatro.Engine
         {
             //Should only happen at the very start of a run.
             //So once a deck is chosen, initialize ante and move into blind selection.
-            if (!DeckDb.IsDeckUnlocked(deckDBName))//TODO: Only allow unlocked stakes for that deck.
+            if (!DeckDb.IsDeckUnlocked(deckDBName) || !UnlockManager.IsStakeUnlockedForDeck(deckDBName, stakeChosen))
                 return;
 
+            CurrentDeckDbName = deckDBName;
             DeckDb.BecomeDeck(deckDBName);
             StakeManager.SetStake(stakeChosen);
             CloseDeckSelectionRound();

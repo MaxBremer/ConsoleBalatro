@@ -1,5 +1,6 @@
 ﻿using ConsoleBalatro.Engine;
 using ConsoleBalatro.Engine.Cards.Decks;
+using ConsoleBalatro.Engine.Stakes;
 using ConsoleBalatro.UI;
 using System;
 using System.Collections.Generic;
@@ -12,14 +13,15 @@ namespace ConsoleBalatro.UI.EngineUI
         private const int ArtPanelWidth = 25;
         private const int StakePanelWidth = 22;
         private const int ContentMargin = 2;
-        private static readonly List<string> StakePlaceholders = new() { "White", "Red", "Green", "Black", "Blue", "Purple", "Orange", "Gold" };
+        private static readonly List<StakeType> StakeChoices = StakeManager.OfficialStakeOrder;
 
         public int SelectedDeckIndex { get; private set; } = 0;
         public int SelectedStakeIndex { get; private set; } = 0;
 
         private List<string> DeckNames => DeckDb.DeckDBNames;
         public string SelectedDeckName => DeckNames.Count == 0 ? string.Empty : DeckNames[SelectedDeckIndex];
-        public string SelectedStakeName => StakePlaceholders[SelectedStakeIndex];
+        public StakeType SelectedStake => StakeChoices[SelectedStakeIndex];
+        public string SelectedStakeName => SelectedStake.ToString();
 
         public DeckChoicesDisplay(int xLoc, int yLoc) : base(EngineDisplayConstants.DECK_CHOICE_DISPLAY_HEIGHT, EngineDisplayConstants.DECK_CHOICE_DISPLAY_WIDTH)
         {
@@ -29,7 +31,7 @@ namespace ConsoleBalatro.UI.EngineUI
 
         public bool CanSelectCurrentDeck => !string.IsNullOrEmpty(SelectedDeckName) && DeckDb.IsDeckUnlocked(SelectedDeckName);
 
-        public bool CanSelectCurrentStake => true;//TODO: Replace with implementation. For now just allows any stake.
+        public bool CanSelectCurrentStake => !string.IsNullOrEmpty(SelectedDeckName) && UnlockManager.IsStakeUnlockedForDeck(SelectedDeckName, SelectedStake);
 
         public void SelectNextDeck()
         {
@@ -74,14 +76,14 @@ namespace ConsoleBalatro.UI.EngineUI
 
         private void MoveStakeSelection(int direction)
         {
-            SelectedStakeIndex = (SelectedStakeIndex + direction + StakePlaceholders.Count) % StakePlaceholders.Count;
+            SelectedStakeIndex = (SelectedStakeIndex + direction + StakeChoices.Count) % StakeChoices.Count;
         }
 
         private void ClampSelections()
         {
             if (SelectedDeckIndex < 0 || SelectedDeckIndex >= DeckNames.Count)
                 SelectedDeckIndex = 0;
-            if (SelectedStakeIndex < 0 || SelectedStakeIndex >= StakePlaceholders.Count)
+            if (SelectedStakeIndex < 0 || SelectedStakeIndex >= StakeChoices.Count)
                 SelectedStakeIndex = 0;
         }
 
@@ -136,10 +138,10 @@ namespace ConsoleBalatro.UI.EngineUI
             DrawBox(stakeX, stakeY, StakePanelWidth, 12, "STAKES");
             WriteLine(stakeX + 2, stakeY + 2, "Current:", StakePanelWidth - 4);
             WriteLine(stakeX + 2, stakeY + 3, $"> {SelectedStakeName}", StakePanelWidth - 4);
-            WriteLine(stakeX + 2, stakeY + 5, "Stake selection", StakePanelWidth - 4);
-            WriteLine(stakeX + 2, stakeY + 6, "coming soon.", StakePanelWidth - 4);
-            WriteLine(stakeX + 2, stakeY + 8, "Up/Down will", StakePanelWidth - 4);
-            WriteLine(stakeX + 2, stakeY + 9, "change stakes.", StakePanelWidth - 4);
+            WriteLine(stakeX + 2, stakeY + 5, CanSelectCurrentStake ? "Playable" : "Locked", StakePanelWidth - 4);
+            WriteLine(stakeX + 2, stakeY + 6, $"Beaten: {UnlockManager.GetStakesBeatenCountForDeck(SelectedDeckName)}", StakePanelWidth - 4);
+            WriteLine(stakeX + 2, stakeY + 8, UnlockManager.HasDeckStakeSticker(SelectedDeckName, SelectedStake) ? "Sticker earned" : "No sticker yet", StakePanelWidth - 4);
+            WriteLine(stakeX + 2, stakeY + 9, "Up/Down change", StakePanelWidth - 4);
         }
 
         private void DrawFooter()
@@ -147,7 +149,7 @@ namespace ConsoleBalatro.UI.EngineUI
             var deckCount = DeckNames.Count;
             var positionText = deckCount == 0 ? "0 / 0" : $"{SelectedDeckIndex + 1} / {deckCount}";
             WriteLine(ContentMargin, Height - 3, $"<-- Previous    {positionText}    Next -->", Width - (ContentMargin * 2));
-            var enterText = CanSelectCurrentDeck ? "Enter: start run with this deck/stake" : "Enter: locked deck cannot be selected";
+            var enterText = CanSelectCurrentDeck && CanSelectCurrentStake ? "Enter: start run with this deck/stake" : "Enter: locked deck/stake cannot be selected";
             WriteLine(ContentMargin, Height - 2, enterText, Width - (ContentMargin * 2));
         }
 

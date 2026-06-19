@@ -16,11 +16,13 @@ namespace ConsoleBalatro.Engine
 {
     public static class FlowHandler
     {
-        //BASE chip amount (Small blind amt)
-        //Big blind is 1.5x, Boss is 2x
-        //Index is ante (0 is for 0 OR lower)
-        //NOTE: Higher stakes will need a different arr.
-        //NOTE: Endless mode, and chips/score at large, will require bigger datatype than int.
+        /// <summary>
+        /// In the basic White stake, this is the base ante chip amount.
+        /// Small blind=1x amount, Big blind = 1.5x, Boss = 2x (unless in exception list)
+        /// Index = ante, except lower than 0 which is just 0.
+        /// </summary>
+        /// TODO: Implement endless/up to ante 16.
+        /// TODO: need bigger datatype than int. That's a separate, BIG can of worms.
         public static List<int> BaseAnteChipAmounts = new()
         {
             100,
@@ -34,6 +36,9 @@ namespace ConsoleBalatro.Engine
             50000,
         };
 
+        /// <summary>
+        /// Base chip amount per-ante for Green stake.
+        /// </summary>
         public static List<int> GreenStakeAnteChipAmounts = new()
         {
             100,
@@ -47,6 +52,9 @@ namespace ConsoleBalatro.Engine
             100000,
         };
 
+        /// <summary>
+        /// Base chip amount per-ante for Purple stake and above.
+        /// </summary>
         public static List<int> PurpleStakeAnteChipAmounts = new()
         {
             100,
@@ -60,6 +68,9 @@ namespace ConsoleBalatro.Engine
             200000,
         };
 
+        /// <summary>
+        /// The amount of money each blind gives for free once beaten.
+        /// </summary>
         public static Dictionary<BlindType, int> PostRoundFreeMoney = new()
         {
             {BlindType.SMALL, 3 },
@@ -67,6 +78,9 @@ namespace ConsoleBalatro.Engine
             {BlindType.BOSS, 5 },
         };
 
+        /// <summary>
+        /// Boss blinds with exceptions to their chip amount multiplier.
+        /// </summary>
         public static Dictionary<string, double> BlindSpecificChipMults = new()
         {
             ["THE WALL"] = 4,
@@ -74,20 +88,67 @@ namespace ConsoleBalatro.Engine
             ["VIOLET VESSEL"] = 6,
         };
 
+        /// <summary>
+        /// The current ante of the run.
+        /// </summary>
         public static int CurrentAnte = 0;
-        public static string CurrentDeckDbName = string.Empty;
-        public static int CurrentBaseChipAmount => GetCurrentChipScalingList()[CurrentAnte];
-        public static BlindType CurrentSelectedBlind = BlindType.SMALL;
-        public static TagType CurSmallBlindTag;
-        public static TagType CurBigBlindTag;
-        public static TagType GetTagTypeOf(BlindType b) => b == BlindType.SMALL ? CurSmallBlindTag : (b == BlindType.BIG ? CurBigBlindTag : TagType.NONE);
-        public static TagType CurrentTag => GetTagTypeOf(CurrentSelectedBlind);
-        public static string CurrentBossBlind;
-        public static bool SkipAvailable => CurrentSelectedBlind != BlindType.BOSS;
-        public static bool ShouldDrawVoucher = true;
 
+        /// <summary>
+        /// The currently equipped deck.
+        /// </summary>
+        public static string CurrentDeckDbName = string.Empty;
+
+        /// <summary>
+        /// Getter for the base chip amount of the current ante.
+        /// </summary>
+        public static int CurrentBaseChipAmount => GetCurrentChipScalingList()[CurrentAnte];
+
+        /// <summary>
+        /// The currently selected blind within the ante (small, big, or boss)
+        /// </summary>
+        public static BlindType CurrentSelectedBlind = BlindType.SMALL;
+
+        /// <summary>
+        /// The tag received for skipping the current small blind.
+        /// </summary>
+        public static TagType CurSmallBlindTag;
+
+        /// <summary>
+        /// The tag received for skipping the current big blind.
+        /// </summary>
+        public static TagType CurBigBlindTag;
+
+        /// <summary>
+        /// Get the tag received for skipping the passed blind.
+        /// </summary>
+        /// <param name="b">The blind whose tag should be retrieved.</param>
+        /// <returns>The tag of the passed blind for the current ante.</returns>
+        public static TagType GetTagTypeOf(BlindType b) => b == BlindType.SMALL ? CurSmallBlindTag : (b == BlindType.BIG ? CurBigBlindTag : TagType.NONE);
+
+        /// <summary>
+        /// Returns the tag for the currently selected blind.
+        /// </summary>
+        public static TagType CurrentTag => GetTagTypeOf(CurrentSelectedBlind);
+
+        /// <summary>
+        /// The Boss blind DB name of the boss of the current ante.
+        /// </summary>
+        public static string CurrentBossBlind;
+
+        /// <summary>
+        /// Returns a value indicating whether the player can skip the currently selected blind.
+        /// </summary>
+        public static bool SkipAvailable => CurrentSelectedBlind != BlindType.BOSS;
+
+        /// <summary>
+        /// A horrible no-good very bad way to basically just implement juggle tag. Stores temporary modifiers to be used only at the next blind, then discarded.
+        /// TODO: fix this. do it better. dummy.
+        /// </summary>
         public static EnginePlayRoundSetupArgs CurrentTempChanges = null;
 
+        /// <summary>
+        /// Initialize any global event listeners for gameplay flow.
+        /// </summary>
         public static void InitializeFlowListeners()
         {
             //XTO-DO: Might not be any flow listeners, idk. This is here if I need it.
@@ -99,6 +160,7 @@ namespace ConsoleBalatro.Engine
         private static List<int> GetCurrentChipScalingList()
         {
             //Yeah, it's the dumb way to do it, but doing an event is also pretty dumb idk.
+            //Maybe make it an event/listener later? If so just have to make sure Purple triggers AFTER green (which would be a good reason to implement event priority >:( )
             if (StakeManager.StakeActive(StakeType.PURPLE))
             {
                 return PurpleStakeAnteChipAmounts;
@@ -112,6 +174,7 @@ namespace ConsoleBalatro.Engine
             }
         }
 
+        //TODO: I think we'll end up getting rid of this whole order saving/loading. Unless I want mid-round packs, we're not doing run saving, so what's the point. 
         private static void SavePlayRoundOrderings(EngineEventArgs args)
         {
             if(args != null && args is EngineGameStateChangeArgs gsArgs && gsArgs.isPush && gsArgs.OldStatePushedOver != null && gsArgs.OldStatePushedOver.GameState == GameState.PlayRound)
@@ -124,6 +187,7 @@ namespace ConsoleBalatro.Engine
             }
         }
 
+        //TODO: Probably delete, see above todo.
         private static void RestoreSavedOrderings(EngineEventArgs args)
         {
             if(args != null && args is EngineGameStateChangeArgs gsArgs && gsArgs.isPop && gsArgs.NewStateRevealedByPop != null && gsArgs.NewStateRevealedByPop.GameState == GameState.PlayRound)
@@ -140,6 +204,7 @@ namespace ConsoleBalatro.Engine
             }
         }
 
+        //TODO: Probably delete, see above todo.
         private static void RedrawOrdered(CardZone toDrawTo, CardZone drawFrom, string order)
         {
             var trueOrder = DataManager.OrderListFromString(order);
@@ -152,6 +217,11 @@ namespace ConsoleBalatro.Engine
             DataManager.ReorderCards(toDrawTo.Cards, order);
         }
 
+        /// <summary>
+        /// Gets the number of chips required to beat the passed blind for the current ante.
+        /// </summary>
+        /// <param name="blind">Blind whose chip requirement we want</param>
+        /// <returns>The amount of chips required to beat the passed blind.</returns>
         public static int GetChipsForBlindType(BlindType blind)
         {
             var chipsMult = 1.0;
@@ -177,6 +247,10 @@ namespace ConsoleBalatro.Engine
             return args.ChipRequirementAmount;
         }
 
+        /// <summary>
+        /// Initialize a "Play Round", that is, an actual blind, in which the player must beat a score with played hands, you know the drill.
+        /// </summary>
+        /// <param name="blindType">The blind type within the current ante to initialize.</param>
         public static void InitializePlayRound(BlindType blindType)
         {
             if(blindType == BlindType.BOSS)
@@ -212,6 +286,9 @@ namespace ConsoleBalatro.Engine
             CurrentTempChanges = args;
         }
 
+        /// <summary>
+        /// Closes an open "Play Round", that is, an actual blind, moving immediately to the Post Round.
+        /// </summary>
         public static void ClosePlayRound()
         {
             if (Globals.CurrentGameState != GameState.PlayRound)
@@ -249,6 +326,10 @@ namespace ConsoleBalatro.Engine
             CurrentTempChanges = null;
         }
 
+        /// <summary>
+        /// Initializes the "Post Round", a brief round in which the player is presented with their reward money and its sources.
+        /// </summary>
+        /// <param name="postRoundMoney">A list of tuples, each representing an amount of money and its source.</param>
         public static void InitializePostRound(List<(string, int)> postRoundMoney)
         {
             EngineEventHandler.TriggerEvent(new EngineEventArgs() { MyContext = new() { Context = EventContextType.StartPostRound } });
@@ -258,6 +339,9 @@ namespace ConsoleBalatro.Engine
             Globals.PushGameState(gsObj); //TODO: context??
         }
 
+        /// <summary>
+        /// Closes the "Post Round", moving immediately to the Market Round.
+        /// </summary>
         public static void ClosePostRound()
         {
             Globals.EmitMoneyGain(Globals.CurrentGameStateObj.PostRoundMoneyToGive, null);
@@ -266,6 +350,9 @@ namespace ConsoleBalatro.Engine
             InitializeMarketRound();
         }
 
+        /// <summary>
+        /// Initializes the "Market Round", in which the player can buy from the main market, pack market, and/or voucher market.
+        /// </summary>
         public static void InitializeMarketRound()
         {
             EngineEventHandler.TriggerEvent(new EngineEventArgs() { MyContext = new() { Context = EventContextType.StartMarket } });
@@ -274,6 +361,9 @@ namespace ConsoleBalatro.Engine
             MarketGeneralManager.FillFreshMarket();
         }
 
+        /// <summary>
+        /// Closes the Market Round, moving back to blind selection.
+        /// </summary>
         public static void CloseMarketRound()
         {
             EngineEventHandler.TriggerEvent(new EngineEventArgs() { MyContext = new() { Context = EventContextType.EndMarket } });
@@ -283,30 +373,46 @@ namespace ConsoleBalatro.Engine
             InitializeBlindSelectionRound();
         }
 
+        /// <summary>
+        /// Initializes the Blind Selection Round, in which the player plays blinds and/or chooses which ones to skip.
+        /// </summary>
         public static void InitializeBlindSelectionRound()
         {
             EngineEventHandler.TriggerEvent(new EngineEventArgs() { MyContext = new() { Context = EventContextType.StartBlindSelection } });
             Globals.PushGameState(new GameStateObj() { GameState = GameState.BlindsMenu }); //TODO: context??
         }
 
+        /// <summary>
+        /// Closes the Blind Selection Round.
+        /// </summary>
         public static void CloseBlindSelectionRound()
         {
             EngineEventHandler.TriggerEvent(new EngineEventArgs() { MyContext = new() { Context = EventContextType.EndBlindSelection } });
             Globals.PopCurrGameState();
         }
 
+        /// <summary>
+        /// Initializes the Deck Selection Round, a menu in which the player chooses which deck to use this run.
+        /// </summary>
         public static void InitializeDeckSelectionRound()
         {
             EngineEventHandler.TriggerEvent(new EngineEventArgs() { MyContext = new() { Context = EventContextType.StartDeckSelection } });
             Globals.PushGameState(new GameStateObj() { GameState = GameState.DeckSelectMenu }); //TODO: context??
         }
 
+        /// <summary>
+        /// Closes the Deck Selection Round.
+        /// </summary>
         public static void CloseDeckSelectionRound()
         {
             EngineEventHandler.TriggerEvent(new EngineEventArgs() { MyContext = new() { Context = EventContextType.EndDeckSelection } });
             Globals.PopCurrGameState();
         }
 
+        /// <summary>
+        /// Opens the Pack Selection Round, in which the player has opened a pack and chooses which rewards to take.
+        /// </summary>
+        /// <param name="beingOpened">A Card representing the pack being opened.</param>
         public static void OpenPackSelectionRound(Card beingOpened)
         {
             var gsObj = new GameStateObj();
@@ -315,12 +421,18 @@ namespace ConsoleBalatro.Engine
             Globals.PushGameState(gsObj);
         }
 
+        /// <summary>
+        /// Closes the Pack Selection Round.
+        /// </summary>
         public static void ClosePackSelectionRound()
         {
             ZoneManager.ClosePackSelection();
             Globals.PopCurrGameState();
         }
 
+        /// <summary>
+        /// Ends the game, currently only in the event of a loss.
+        /// </summary>
         public static void GameOver()
         {
             Globals.ClearGameStateStack();
@@ -329,6 +441,9 @@ namespace ConsoleBalatro.Engine
             Globals.QUIT = true;
         }
 
+        /// <summary>
+        /// Increment the currently selected blind. If currently selected is the Boss, start a new Ante and select the Small Blind.
+        /// </summary>
         public static void IncrementBlind()
         {
             var oldBlind = CurrentSelectedBlind;
@@ -342,6 +457,7 @@ namespace ConsoleBalatro.Engine
                     break;
                 case BlindType.BOSS:
                     MarkCurrentStakeBeatenIfRunWon();
+                    //TODO: SHOW WIN SCREEN IF ANTE 8
                     StartNewAnte();
                     break;
             }
@@ -352,7 +468,9 @@ namespace ConsoleBalatro.Engine
             EngineEventHandler.TriggerEvent(args);
         }
 
-
+        /// <summary>
+        /// If the run was won on this ante increase, mark the relevant deck and joker stickers and save them.
+        /// </summary>
         private static void MarkCurrentStakeBeatenIfRunWon()
         {
             if (CurrentAnte == 8 && !string.IsNullOrWhiteSpace(CurrentDeckDbName))
@@ -374,6 +492,10 @@ namespace ConsoleBalatro.Engine
             }
         }
 
+        /// <summary>
+        /// Calculate all money earned by the player in the post round.
+        /// </summary>
+        /// <returns>A list of string/int pairs representing money earned and its source.</returns>
         public static List<(string, int)> CalcPostRoundMoneyWithSources()
         {
             var ret = new List<(string, int)>();
@@ -406,6 +528,9 @@ namespace ConsoleBalatro.Engine
             return ret;
         }
 
+        /// <summary>
+        /// Start a new ante. Refresh the voucher in market, reroll the boss blind, etc.
+        /// </summary>
         public static void StartNewAnte()
         {
             //Steps:
@@ -430,6 +555,10 @@ namespace ConsoleBalatro.Engine
             Globals.CurBossBlindRerollsAllowed = Globals.BaseBossBlindRerollsAllowed;
         }
 
+        /// <summary>
+        /// Reroll the boss blind for the current ante.
+        /// </summary>
+        /// <param name="isPlayerReroll">A boolean indicating whether this was a player reroll, accessible via the retcon-like vouchers.</param>
         public static void RerollBossBlind(bool isPlayerReroll = false)
         {
             if(isPlayerReroll && (Globals.CurBossBlindRerollsAllowed == 0 || !Globals.CanAfford(Globals.CurrentBossBlindRerollCost)))
@@ -459,6 +588,10 @@ namespace ConsoleBalatro.Engine
             CurrentBossBlind = targetBossBlindName;
         }
 
+        /// <summary>
+        /// Set up new skip tags for the small and big blinds, usually only called when starting a new ante.
+        /// </summary>
+        /// <param name="makeUnique">A boolean indicating whether to guarantee the two tags be unique (as in, not the same as each other) or not.</param>
         public static void InitNewTags(bool makeUnique)
         {
             var values = Enum.GetValues(typeof(TagType)).Cast<TagType>().Where(x => x != TagType.NONE).ToArray();
@@ -475,6 +608,9 @@ namespace ConsoleBalatro.Engine
             }
         }
 
+        /// <summary>
+        /// If possible, skip the currently selectede blind, incrementing selection and adding a tag.
+        /// </summary>
         public static void DoSkip()
         {
             if (!SkipAvailable)
@@ -488,6 +624,9 @@ namespace ConsoleBalatro.Engine
             IncrementBlind();
         }
 
+        /// <summary>
+        /// Start the currently selected blind, moving from blind selection round to play round.
+        /// </summary>
         public static void StartSelectedBlind()
         {
             EngineEventHandler.TriggerEvent(new EngineEventArgs() { MyContext = new EventContext() { Context = EventContextType.StartSelectedBlind } });
@@ -496,6 +635,11 @@ namespace ConsoleBalatro.Engine
             //AttemptRoundInitialize(InitializePlayRound, CurrentSelectedBlind);
         }
 
+        /// <summary>
+        /// Chooses the deck and stake to use to start the run.
+        /// </summary>
+        /// <param name="deckDBName">The DB name of the deck selected for this run.</param>
+        /// <param name="stakeChosen">The StakeType selected for this run.</param>
         public static void DeckChosen(string deckDBName, StakeType stakeChosen)
         {
             //Should only happen at the very start of a run.

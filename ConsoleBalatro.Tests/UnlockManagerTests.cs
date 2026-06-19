@@ -6,6 +6,7 @@ using ConsoleBalatro.Engine.Cards.Jokers;
 using ConsoleBalatro.Engine.Events;
 using ConsoleBalatro.Engine.Events.Args;
 using ConsoleBalatro.Engine.Stakes;
+using ConsoleBalatro.UI.EngineUI.Controls;
 using Xunit;
 
 namespace ConsoleBalatro.Tests;
@@ -77,6 +78,41 @@ public class UnlockManagerTests : TestClassBase
             Assert.True(UnlockManager.IsStakeUnlockedForDeck("RED", StakeType.RED));
             Assert.True(UnlockManager.HasDeckStakeSticker("RED", StakeType.WHITE));
             Assert.False(UnlockManager.IsStakeUnlockedForDeck("BLUE", StakeType.RED));
+        }
+        finally
+        {
+            UnlockManager.PermanentProgressSavingDisabled = true;
+            UnlockManager.SaveFilePath = originalPath;
+            UnlockManager.ResetProgressToDefaults(clearAchievementDefinitions: true);
+            DeleteTempSave(savePath);
+        }
+    }
+
+
+    [Fact]
+    public void DebugUnlockDeck_UnlocksDeckAndStakeProgress()
+    {
+        var savePath = BuildTempSavePath();
+        var originalPath = UnlockManager.SaveFilePath;
+        try
+        {
+            UnlockManager.SaveFilePath = savePath;
+            UnlockManager.PermanentProgressSavingDisabled = false;
+            UnlockManager.ResetProgressToDefaults(clearAchievementDefinitions: true);
+
+            DebugManager.ReadCommand("unlockdeck BLUE GREEN");
+
+            Assert.True(DeckDb.IsDeckUnlocked("BLUE"));
+            Assert.True(UnlockManager.IsStakeUnlockedForDeck("BLUE", StakeType.GREEN));
+            Assert.False(UnlockManager.IsStakeUnlockedForDeck("BLUE", StakeType.BLACK));
+            Assert.True(UnlockManager.HasDeckStakeSticker("BLUE", StakeType.WHITE));
+            Assert.True(UnlockManager.HasDeckStakeSticker("BLUE", StakeType.RED));
+            Assert.False(UnlockManager.HasDeckStakeSticker("BLUE", StakeType.GREEN));
+
+            DebugManager.ReadCommand("unlockdeck BLUE GREEN -beaten");
+
+            Assert.True(UnlockManager.IsStakeUnlockedForDeck("BLUE", StakeType.BLACK));
+            Assert.True(UnlockManager.HasDeckStakeSticker("BLUE", StakeType.GREEN));
         }
         finally
         {

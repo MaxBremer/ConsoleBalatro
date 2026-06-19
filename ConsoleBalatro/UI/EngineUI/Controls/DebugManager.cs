@@ -1,9 +1,11 @@
 ﻿using ConsoleBalatro.Engine;
 using ConsoleBalatro.Engine.Cards;
+using ConsoleBalatro.Engine.Cards.Decks;
 using ConsoleBalatro.Engine.Cards.Consumables;
 using ConsoleBalatro.Engine.Cards.Enums;
 using ConsoleBalatro.Engine.Cards.Jokers;
 using ConsoleBalatro.Engine.Cards.Vouchers;
+using ConsoleBalatro.Engine.Stakes;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -29,6 +31,7 @@ namespace ConsoleBalatro.UI.EngineUI.Controls
             { "OP", Op },
             { "SETMONEY", SetMoney },
             { "PERMAPROGRESS", PermanentProgress },
+            { "UNLOCKDECK", UnlockDeck },
         };
 
         private static Dictionary<string, Func<CardZone>> CardZoneGetters = new()
@@ -50,6 +53,8 @@ namespace ConsoleBalatro.UI.EngineUI.Controls
             { "SPECTRAL", ConsumableManager.SpectralNames },
             { "PLANET", ConsumableManager.PlanetsToHandType.Keys.ToList() },
             { "JOKER", JokerDb.JokerDbNames },
+            { "DECK", DeckDb.DeckDBNames },
+            { "STAKE", StakeManager.OfficialStakeOrder.Select(x => x.ToString()).ToList() },
         };
         
         public static void RunDebugCmdLine()
@@ -189,6 +194,7 @@ namespace ConsoleBalatro.UI.EngineUI.Controls
             ConsoleWriteLine("PRINT <listName> - Prints the contents of a predefined list. Valid list names are: " + string.Join(", ", GameStringLists.Keys));
             ConsoleWriteLine("SETREQ <amount> - Sets the required chips for the current blind during PlayRound state.");
             ConsoleWriteLine("PERMAPROGRESS <enable|disable|status> - Toggles whether permanent progress saves are written.");
+            ConsoleWriteLine("UNLOCKDECK <deckName> [stakeName] [-beaten] - Unlocks a deck, or unlocks stakes for that deck up to stakeName. Use -beaten to also award the stakeName sticker.");
             ConsoleWriteLine("QUIT or Q - Exits the debug command line.");
         }
 
@@ -213,6 +219,57 @@ namespace ConsoleBalatro.UI.EngineUI.Controls
             }
 
             Globals.RequiredChipsForCurrentBlind = amount;
+        }
+
+
+        private static void UnlockDeck(List<string> parameters, List<string> flags)
+        {
+            if (parameters.Count < 1 || parameters.Count > 2)
+            {
+                ConsoleWriteLine("Invalid number of parameters. Usage: unlockdeck <deckName> [stakeName] [-beaten]");
+                return;
+            }
+
+            var deckName = parameters[0].Replace("&", " ").ToUpper();
+            if (!DeckDb.DeckData.ContainsKey(deckName))
+            {
+                ConsoleWriteLine($"Unknown deck name: {deckName}");
+                return;
+            }
+
+            StakeType? targetStake = null;
+            if (parameters.Count == 2)
+            {
+                if (!Enum.TryParse(parameters[1], ignoreCase: true, out StakeType parsedStake)
+                    || !StakeManager.OfficialStakeOrder.Contains(parsedStake))
+                {
+                    ConsoleWriteLine($"Invalid stake: {parameters[1]}. Valid stakes are: {string.Join(", ", StakeManager.OfficialStakeOrder)}");
+                    return;
+                }
+                targetStake = parsedStake;
+            }
+
+            var deckWasUnlocked = DeckDb.UnlockDeck(deckName, saveImmediately: false);
+            var progressChanged = false;
+
+            if (targetStake.HasValue)
+            {
+                var targetStakeIndex = StakeManager.OfficialStakeOrder.IndexOf(targetStake.Value);
+                var highestStakeIndexToMarkBeaten = flags.Contains("BEATEN") ? targetStakeIndex : targetStakeIndex - 1;
+                for (var i = 0; i <= highestStakeIndexToMarkBeaten; i++)
+                {
+                    progressChanged |= UnlockManager.MarkDeckStakeBeaten(deckName, StakeManager.OfficialStakeOrder[i], saveImmediately: false);
+                }
+            }
+
+            if (deckWasUnlocked || progressChanged)
+            {
+                UnlockManager.SaveProgress();
+            }
+
+            var highestBeaten = UnlockManager.GetHighestBeatenStakeForDeck(deckName)?.ToString() ?? "NONE";
+            var highestPlayable = StakeManager.OfficialStakeOrder.LastOrDefault(stake => UnlockManager.IsStakeUnlockedForDeck(deckName, stake)).ToString();
+            ConsoleWriteLine($"{deckName} deck unlocked. Highest playable stake: {highestPlayable}. Highest sticker: {highestBeaten}.");
         }
 
         private static void PermanentProgress(List<string> parameters, List<string> flags)

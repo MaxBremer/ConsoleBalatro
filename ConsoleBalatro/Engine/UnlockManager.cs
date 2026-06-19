@@ -19,6 +19,7 @@ namespace ConsoleBalatro.Engine
         private static HashSet<string> CollectedJokers = new(StringComparer.OrdinalIgnoreCase);
         private static HashSet<string> CollectedConsumables = new(StringComparer.OrdinalIgnoreCase);
         private static Dictionary<string, int> DeckHighestBeatenStakeIndexes = new(StringComparer.OrdinalIgnoreCase);
+        private static Dictionary<string, int> JokerHighestBeatenStakeIndexes = new(StringComparer.OrdinalIgnoreCase);
 
         private static readonly JsonSerializerOptions SaveJsonOptions = new()
         {
@@ -63,6 +64,7 @@ namespace ConsoleBalatro.Engine
             CollectedJokers = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
             CollectedConsumables = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
             DeckHighestBeatenStakeIndexes = new Dictionary<string, int>(StringComparer.OrdinalIgnoreCase);
+            JokerHighestBeatenStakeIndexes = new Dictionary<string, int>(StringComparer.OrdinalIgnoreCase);
 
             if (clearAchievementDefinitions)
             {
@@ -162,6 +164,44 @@ namespace ConsoleBalatro.Engine
 
         public static bool IsJokerCollected(string jokerDbName) => CollectedJokers.Contains(jokerDbName);
 
+        public static StakeType? GetHighestBeatenStakeForJoker(string jokerDbName)
+        {
+            var index = GetHighestBeatenStakeIndexForJoker(jokerDbName);
+            return index >= 0 ? StakeManager.OfficialStakeOrder[index] : null;
+        }
+
+        public static bool HasJokerStakeSticker(string jokerDbName, StakeType stakeType)
+        {
+            var stakeIndex = StakeManager.OfficialStakeOrder.IndexOf(stakeType);
+            return stakeIndex >= 0 && stakeIndex <= GetHighestBeatenStakeIndexForJoker(jokerDbName);
+        }
+
+        public static bool MarkJokerStakeBeaten(string jokerDbName, StakeType stakeType, bool saveImmediately = true)
+        {
+            if (string.IsNullOrWhiteSpace(jokerDbName) || !JokerDb.JokerData.ContainsKey(jokerDbName))
+            {
+                return false;
+            }
+
+            var stakeIndex = StakeManager.OfficialStakeOrder.IndexOf(stakeType);
+            if (stakeIndex < 0 || stakeIndex <= GetHighestBeatenStakeIndexForJoker(jokerDbName))
+            {
+                return false;
+            }
+
+            JokerHighestBeatenStakeIndexes[jokerDbName] = stakeIndex;
+            if (saveImmediately)
+            {
+                SaveProgress();
+            }
+            return true;
+        }
+
+        private static int GetHighestBeatenStakeIndexForJoker(string jokerDbName)
+        {
+            return JokerHighestBeatenStakeIndexes.TryGetValue(jokerDbName, out var index) ? Math.Clamp(index, -1, StakeManager.OfficialStakeOrder.Count - 1) : -1;
+        }
+
         public static bool IsConsumableCollected(string consumableDbName) => CollectedConsumables.Contains(consumableDbName);
 
         public static bool IsCollectionComplete() => CollectedJokers.IsSupersetOf(JokerDb.JokerDbNames)
@@ -232,7 +272,7 @@ namespace ConsoleBalatro.Engine
 
             lock (SaveLock)
             {
-                var saveData = UnlockSaveData.FromCurrentState(UnlockedDecks, DeckHighestBeatenStakeIndexes, AchievedAchievements, CollectedJokers, CollectedConsumables);
+                var saveData = UnlockSaveData.FromCurrentState(UnlockedDecks, DeckHighestBeatenStakeIndexes, JokerHighestBeatenStakeIndexes, AchievedAchievements, CollectedJokers, CollectedConsumables);
                 var saveDirectory = Path.GetDirectoryName(SaveFilePath);
                 if (!string.IsNullOrWhiteSpace(saveDirectory))
                 {
@@ -300,6 +340,7 @@ namespace ConsoleBalatro.Engine
             CollectedJokers = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
             CollectedConsumables = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
             DeckHighestBeatenStakeIndexes = new Dictionary<string, int>(StringComparer.OrdinalIgnoreCase);
+            JokerHighestBeatenStakeIndexes = new Dictionary<string, int>(StringComparer.OrdinalIgnoreCase);
 
             if (saveData != null)
             {
@@ -324,6 +365,14 @@ namespace ConsoleBalatro.Engine
                 foreach (var jokerDbName in (saveData.Collection?.Jokers ?? new List<string>()).Where(JokerDb.JokerData.ContainsKey))
                 {
                     CollectedJokers.Add(jokerDbName);
+                }
+
+                foreach (var beaten in saveData.Collection?.JokerHighestBeatenStakeIndexes ?? new Dictionary<string, int>())
+                {
+                    if (JokerDb.JokerData.ContainsKey(beaten.Key))
+                    {
+                        JokerHighestBeatenStakeIndexes[beaten.Key] = Math.Clamp(beaten.Value, -1, StakeManager.OfficialStakeOrder.Count - 1);
+                    }
                 }
 
                 var allConsumableDbNames = GetAllConsumableDbNames();
@@ -462,7 +511,7 @@ namespace ConsoleBalatro.Engine
             public AchievementUnlockSaveData? Achievements { get; set; } = new();
             public CollectionSaveData? Collection { get; set; } = new();
 
-            public static UnlockSaveData FromCurrentState(IEnumerable<string> unlockedDecks, IReadOnlyDictionary<string, int> highestBeatenStakeIndexes, IEnumerable<string> achievedAchievements, IEnumerable<string> collectedJokers, IEnumerable<string> collectedConsumables)
+            public static UnlockSaveData FromCurrentState(IEnumerable<string> unlockedDecks, IReadOnlyDictionary<string, int> highestBeatenStakeIndexes, IReadOnlyDictionary<string, int> jokerHighestBeatenStakeIndexes, IEnumerable<string> achievedAchievements, IEnumerable<string> collectedJokers, IEnumerable<string> collectedConsumables)
             {
                 return new UnlockSaveData
                 {
@@ -478,6 +527,7 @@ namespace ConsoleBalatro.Engine
                     Collection = new CollectionSaveData
                     {
                         Jokers = collectedJokers.OrderBy(x => x).ToList(),
+                        JokerHighestBeatenStakeIndexes = jokerHighestBeatenStakeIndexes.OrderBy(x => x.Key).ToDictionary(x => x.Key, x => x.Value),
                         Consumables = collectedConsumables.OrderBy(x => x).ToList(),
                     },
                 };
@@ -498,6 +548,7 @@ namespace ConsoleBalatro.Engine
         private sealed class CollectionSaveData
         {
             public List<string> Jokers { get; set; } = new();
+            public Dictionary<string, int> JokerHighestBeatenStakeIndexes { get; set; } = new(StringComparer.OrdinalIgnoreCase);
             public List<string> Consumables { get; set; } = new();
         }
     }

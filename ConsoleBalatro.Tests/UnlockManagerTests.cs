@@ -88,6 +88,91 @@ public class UnlockManagerTests : TestClassBase
         }
     }
 
+    [Fact]
+    public void JokerStakeProgress_TracksHighestBeatenStakeAndPersists()
+    {
+        var savePath = BuildTempSavePath();
+        var originalPath = UnlockManager.SaveFilePath;
+        try
+        {
+            UnlockManager.SaveFilePath = savePath;
+            UnlockManager.PermanentProgressSavingDisabled = false;
+            UnlockManager.ResetProgressToDefaults(clearAchievementDefinitions: true);
+
+            Assert.Null(UnlockManager.GetHighestBeatenStakeForJoker("JIMBO"));
+            Assert.False(UnlockManager.HasJokerStakeSticker("JIMBO", StakeType.WHITE));
+
+            Assert.True(UnlockManager.MarkJokerStakeBeaten("JIMBO", StakeType.RED));
+
+            Assert.Equal(StakeType.RED, UnlockManager.GetHighestBeatenStakeForJoker("JIMBO"));
+            Assert.True(UnlockManager.HasJokerStakeSticker("JIMBO", StakeType.WHITE));
+            Assert.True(UnlockManager.HasJokerStakeSticker("JIMBO", StakeType.RED));
+            Assert.False(UnlockManager.HasJokerStakeSticker("JIMBO", StakeType.GREEN));
+
+            Assert.False(UnlockManager.MarkJokerStakeBeaten("JIMBO", StakeType.WHITE));
+            Assert.False(UnlockManager.MarkJokerStakeBeaten("NOT A JOKER", StakeType.GOLD));
+
+            UnlockManager.ResetProgressToDefaults(clearAchievementDefinitions: true);
+            Assert.Null(UnlockManager.GetHighestBeatenStakeForJoker("JIMBO"));
+
+            Assert.True(UnlockManager.LoadProgress());
+            Assert.Equal(StakeType.RED, UnlockManager.GetHighestBeatenStakeForJoker("JIMBO"));
+            Assert.True(UnlockManager.HasJokerStakeSticker("JIMBO", StakeType.RED));
+            Assert.False(UnlockManager.HasJokerStakeSticker("JIMBO", StakeType.GREEN));
+        }
+        finally
+        {
+            UnlockManager.PermanentProgressSavingDisabled = true;
+            UnlockManager.SaveFilePath = originalPath;
+            UnlockManager.ResetProgressToDefaults(clearAchievementDefinitions: true);
+            DeleteTempSave(savePath);
+        }
+    }
+
+    [Fact]
+    public void WinningAnteEightBoss_AddsStakeStickersToJokersInJokerZone()
+    {
+        var savePath = BuildTempSavePath();
+        var originalPath = UnlockManager.SaveFilePath;
+        try
+        {
+            UnlockManager.SaveFilePath = savePath;
+            UnlockManager.PermanentProgressSavingDisabled = false;
+            ResetEngineForTest();
+            UnlockManager.ResetProgressToDefaults(clearAchievementDefinitions: true);
+
+            FlowHandler.CurrentDeckDbName = "RED";
+            FlowHandler.CurrentAnte = 8;
+            FlowHandler.CurrentSelectedBlind = BlindType.BOSS;
+            StakeManager.CurrentStake = StakeType.GREEN;
+            ZoneManager.JokerZone.AddCard(JokerDb.GenerateJokerCard("JIMBO"));
+            ZoneManager.JokerZone.AddCard(JokerDb.GenerateJokerCard("JOLLY JOKER"));
+            ZoneManager.ConsumableZone.AddCard(ConsumableManager.MakeTarotCard("FOOL"));
+
+            FlowHandler.IncrementBlind();
+
+            Assert.True(UnlockManager.HasDeckStakeSticker("RED", StakeType.GREEN));
+            Assert.True(UnlockManager.HasJokerStakeSticker("JIMBO", StakeType.GREEN));
+            Assert.True(UnlockManager.HasJokerStakeSticker("JOLLY JOKER", StakeType.GREEN));
+            Assert.False(UnlockManager.HasJokerStakeSticker("ZANY JOKER", StakeType.GREEN));
+
+            UnlockManager.ResetProgressToDefaults(clearAchievementDefinitions: true);
+            Assert.False(UnlockManager.HasJokerStakeSticker("JIMBO", StakeType.GREEN));
+
+            Assert.True(UnlockManager.LoadProgress());
+            Assert.True(UnlockManager.HasJokerStakeSticker("JIMBO", StakeType.GREEN));
+            Assert.True(UnlockManager.HasJokerStakeSticker("JOLLY JOKER", StakeType.GREEN));
+        }
+        finally
+        {
+            UnlockManager.PermanentProgressSavingDisabled = true;
+            UnlockManager.SaveFilePath = originalPath;
+            UnlockManager.ResetProgressToDefaults(clearAchievementDefinitions: true);
+            ResetEngineForTest();
+            DeleteTempSave(savePath);
+        }
+    }
+
 
     [Fact]
     public void DebugUnlockDeck_UnlocksDeckAndStakeProgress()

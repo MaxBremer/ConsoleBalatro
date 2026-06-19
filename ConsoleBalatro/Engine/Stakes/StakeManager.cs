@@ -17,7 +17,7 @@ namespace ConsoleBalatro.Engine.Stakes
         public static List<StakeType> OfficialStakeOrder = new()
         {
             StakeType.WHITE,
-            StakeType.RED,
+            StakeType.RED,//no small blind money
             StakeType.GREEN,//faster req scaling
             StakeType.BLACK,//30% chance shop/pack jokers to be eternal
             StakeType.BLUE,//-1 discard

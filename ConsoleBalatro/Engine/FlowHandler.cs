@@ -1,5 +1,6 @@
 ﻿using ConsoleBalatro.Engine.Cards;
 using ConsoleBalatro.Engine.Cards.Blinds;
+using ConsoleBalatro.Engine.Cards.Consumables;
 using ConsoleBalatro.Engine.Cards.Decks;
 using ConsoleBalatro.Engine.Cards.Tags;
 using ConsoleBalatro.Engine.Events;
@@ -415,9 +416,13 @@ namespace ConsoleBalatro.Engine
         /// <param name="beingOpened">A Card representing the pack being opened.</param>
         public static void OpenPackSelectionRound(Card beingOpened)
         {
+            if (!beingOpened.isPack)
+                return;
             var gsObj = new GameStateObj();
             gsObj.GameState = GameState.SelectingPackOption;
             gsObj.TargetPack = beingOpened;
+            var packInfo = ConsumableManager.PackBasicNums[beingOpened.MyPackType];
+            gsObj.TotalNumChoicesAllowed = packInfo.NumCanBeTaken;
             Globals.PushGameState(gsObj);
         }
 

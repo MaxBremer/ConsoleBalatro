@@ -68,6 +68,9 @@ namespace ConsoleBalatro.UI.EngineUI.MarketPanels
                 ret.Add("");
                 ret.Add("SKIP PACK");
                 ret.Add("[S]");
+                ret.Add("");
+                var numRemaining = Globals.CurrentGameStateObj.TotalNumChoicesAllowed - Globals.CurrentGameStateObj.NumChoicesAlreadyMade;
+                ret.Add("Remaining: " + numRemaining + "/" + Globals.CurrentGameStateObj.TotalNumChoicesAllowed);
             }
 
             return ret;

@@ -14,6 +14,7 @@ namespace ConsoleBalatro.Engine
         //Pack-opening-related fields
         public Card TargetPack = null;
         public int NumChoicesAlreadyMade = 0;
+        public int TotalNumChoicesAllowed = 0;
 
         //Used by any state that gives money (rn just post-roudn)
         public int PostRoundMoneyToGive = 0;

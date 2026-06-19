@@ -17,6 +17,7 @@ using System.Threading.Tasks;
 using System.Runtime.CompilerServices;
 using Xunit;
 using ConsoleBalatro.Engine.Cards.Decks;
+using ConsoleBalatro.Engine.Stakes;
 
 [assembly: CollectionBehavior(DisableTestParallelization = true)]
 
@@ -49,6 +50,8 @@ namespace ConsoleBalatro.Tests
             Globals.ResetGlobalValues();
 
             FlowHandler.CurrentAnte = 0;
+            FlowHandler.CurrentDeckDbName = string.Empty;
+            StakeManager.CurrentStake = StakeType.WHITE;
             FlowHandler.CurrentSelectedBlind = BlindType.SMALL;
             FlowHandler.CurrentTempChanges = null;
             FlowHandler.CurrentBossBlind = "";

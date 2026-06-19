@@ -1,6 +1,7 @@
 ﻿using ConsoleBalatro.Engine.Cards.Consumables;
 using ConsoleBalatro.Engine.Cards.Decks;
 using ConsoleBalatro.Engine.Cards.Jokers;
+using ConsoleBalatro.Engine.Stakes;
 using ConsoleBalatro.Engine.Events;
 using ConsoleBalatro.Engine.Events.Args;
 using System.Text.Json;
@@ -17,6 +18,7 @@ namespace ConsoleBalatro.Engine
         private static HashSet<string> AchievedAchievements = new(StringComparer.OrdinalIgnoreCase);
         private static HashSet<string> CollectedJokers = new(StringComparer.OrdinalIgnoreCase);
         private static HashSet<string> CollectedConsumables = new(StringComparer.OrdinalIgnoreCase);
+        private static Dictionary<string, int> DeckHighestBeatenStakeIndexes = new(StringComparer.OrdinalIgnoreCase);
 
         private static readonly JsonSerializerOptions SaveJsonOptions = new()
         {
@@ -60,6 +62,7 @@ namespace ConsoleBalatro.Engine
             AchievedAchievements = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
             CollectedJokers = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
             CollectedConsumables = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
+            DeckHighestBeatenStakeIndexes = new Dictionary<string, int>(StringComparer.OrdinalIgnoreCase);
 
             if (clearAchievementDefinitions)
             {
@@ -93,6 +96,67 @@ namespace ConsoleBalatro.Engine
                 SaveProgress();
             }
             return true;
+        }
+
+
+        public static int GetStakesBeatenCountForDeck(string deckDbName)
+        {
+            return Math.Max(0, GetHighestBeatenStakeIndexForDeck(deckDbName) + 1);
+        }
+
+        public static StakeType? GetHighestBeatenStakeForDeck(string deckDbName)
+        {
+            var index = GetHighestBeatenStakeIndexForDeck(deckDbName);
+            return index >= 0 ? StakeManager.OfficialStakeOrder[index] : null;
+        }
+
+        public static bool HasDeckStakeSticker(string deckDbName, StakeType stakeType)
+        {
+            var stakeIndex = StakeManager.OfficialStakeOrder.IndexOf(stakeType);
+            return stakeIndex >= 0 && stakeIndex <= GetHighestBeatenStakeIndexForDeck(deckDbName);
+        }
+
+        public static bool IsStakeUnlockedForDeck(string deckDbName, StakeType stakeType)
+        {
+            if (!IsDeckUnlocked(deckDbName))
+            {
+                return false;
+            }
+
+            var stakeIndex = StakeManager.OfficialStakeOrder.IndexOf(stakeType);
+            if (stakeIndex < 0)
+            {
+                return false;
+            }
+
+            var maxUnlockedIndex = Math.Min(GetHighestBeatenStakeIndexForDeck(deckDbName) + 1, StakeManager.OfficialStakeOrder.Count - 1);
+            return stakeIndex <= maxUnlockedIndex;
+        }
+
+        public static bool MarkDeckStakeBeaten(string deckDbName, StakeType stakeType, bool saveImmediately = true)
+        {
+            if (!DeckDb.DeckData.ContainsKey(deckDbName))
+            {
+                return false;
+            }
+
+            var stakeIndex = StakeManager.OfficialStakeOrder.IndexOf(stakeType);
+            if (stakeIndex < 0 || stakeIndex <= GetHighestBeatenStakeIndexForDeck(deckDbName))
+            {
+                return false;
+            }
+
+            DeckHighestBeatenStakeIndexes[deckDbName] = stakeIndex;
+            if (saveImmediately)
+            {
+                SaveProgress();
+            }
+            return true;
+        }
+
+        private static int GetHighestBeatenStakeIndexForDeck(string deckDbName)
+        {
+            return DeckHighestBeatenStakeIndexes.TryGetValue(deckDbName, out var index) ? Math.Clamp(index, -1, StakeManager.OfficialStakeOrder.Count - 1) : -1;
         }
 
 
@@ -168,7 +232,7 @@ namespace ConsoleBalatro.Engine
 
             lock (SaveLock)
             {
-                var saveData = UnlockSaveData.FromCurrentState(UnlockedDecks, AchievedAchievements, CollectedJokers, CollectedConsumables);
+                var saveData = UnlockSaveData.FromCurrentState(UnlockedDecks, DeckHighestBeatenStakeIndexes, AchievedAchievements, CollectedJokers, CollectedConsumables);
                 var saveDirectory = Path.GetDirectoryName(SaveFilePath);
                 if (!string.IsNullOrWhiteSpace(saveDirectory))
                 {
@@ -235,12 +299,21 @@ namespace ConsoleBalatro.Engine
             AchievedAchievements = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
             CollectedJokers = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
             CollectedConsumables = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
+            DeckHighestBeatenStakeIndexes = new Dictionary<string, int>(StringComparer.OrdinalIgnoreCase);
 
             if (saveData != null)
             {
                 foreach (var deckName in (saveData.Decks?.Unlocked ?? new List<string>()).Where(DeckDb.DeckData.ContainsKey))
                 {
                     UnlockedDecks.Add(deckName);
+                }
+
+                foreach (var beaten in saveData.Decks?.HighestBeatenStakeIndexes ?? new Dictionary<string, int>())
+                {
+                    if (DeckDb.DeckData.ContainsKey(beaten.Key))
+                    {
+                        DeckHighestBeatenStakeIndexes[beaten.Key] = Math.Clamp(beaten.Value, -1, StakeManager.OfficialStakeOrder.Count - 1);
+                    }
                 }
 
                 foreach (var achievementId in (saveData.Achievements?.Achieved ?? new List<string>()).Where(x => !string.IsNullOrWhiteSpace(x)))
@@ -389,13 +462,14 @@ namespace ConsoleBalatro.Engine
             public AchievementUnlockSaveData? Achievements { get; set; } = new();
             public CollectionSaveData? Collection { get; set; } = new();
 
-            public static UnlockSaveData FromCurrentState(IEnumerable<string> unlockedDecks, IEnumerable<string> achievedAchievements, IEnumerable<string> collectedJokers, IEnumerable<string> collectedConsumables)
+            public static UnlockSaveData FromCurrentState(IEnumerable<string> unlockedDecks, IReadOnlyDictionary<string, int> highestBeatenStakeIndexes, IEnumerable<string> achievedAchievements, IEnumerable<string> collectedJokers, IEnumerable<string> collectedConsumables)
             {
                 return new UnlockSaveData
                 {
                     Decks = new DeckUnlockSaveData
                     {
                         Unlocked = unlockedDecks.OrderBy(x => x).ToList(),
+                        HighestBeatenStakeIndexes = highestBeatenStakeIndexes.OrderBy(x => x.Key).ToDictionary(x => x.Key, x => x.Value),
                     },
                     Achievements = new AchievementUnlockSaveData
                     {
@@ -413,6 +487,7 @@ namespace ConsoleBalatro.Engine
         private sealed class DeckUnlockSaveData
         {
             public List<string> Unlocked { get; set; } = new();
+            public Dictionary<string, int> HighestBeatenStakeIndexes { get; set; } = new(StringComparer.OrdinalIgnoreCase);
         }
 
         private sealed class AchievementUnlockSaveData

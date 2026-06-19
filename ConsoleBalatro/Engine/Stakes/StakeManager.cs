@@ -128,14 +128,25 @@ namespace ConsoleBalatro.Engine.Stakes
 
         public static void SetStake(StakeType stakeType)
         {
-            if(stakeType == StakeType.WHITE)
+            CurrentStake = stakeType;
+            AddStakeEffectsThrough(stakeType);
+        }
+
+        private static void AddStakeEffectsThrough(StakeType stakeType)
+        {
+            var stakeIndex = OfficialStakeOrder.IndexOf(stakeType);
+            if(stakeIndex <= 0)
             {
                 return;
             }
-            var cToAdd = new Card();
-            cToAdd.JokerData = StakeBuilders[stakeType](cToAdd);
-            ZoneManager.AddHiddenEffect(cToAdd);
-            SetStake((StakeType)((int)stakeType - 1));
+
+            for (var i = stakeIndex; i > 0; i--)
+            {
+                var stakeEffectType = OfficialStakeOrder[i];
+                var cToAdd = new Card();
+                cToAdd.JokerData = StakeBuilders[stakeEffectType](cToAdd);
+                ZoneManager.AddHiddenEffect(cToAdd);
+            }
         }
     }
 }

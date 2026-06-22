@@ -451,6 +451,16 @@ namespace ConsoleBalatro.UI.EngineUI.Controls
                     FlowHandler.DeckChosen(EngineDisplayGlobals.DeckChoiceMenu.SelectedDeckName, (StakeType)EngineDisplayGlobals.DeckChoiceMenu.SelectedStakeIndex);
             });
 
+            ret.AvailableActions.Add(ConsoleKey.Escape, _ =>
+            {
+                FlowHandler.CloseDeckSelectionRound();
+            });
+
+            ret.AvailableActions.Add(ConsoleKey.B, _ =>
+            {
+                FlowHandler.CloseDeckSelectionRound();
+            });
+
             return ret;
         }
 

@@ -150,7 +150,7 @@ namespace ConsoleBalatro.UI.EngineUI
             var positionText = deckCount == 0 ? "0 / 0" : $"{SelectedDeckIndex + 1} / {deckCount}";
             WriteLine(ContentMargin, Height - 3, $"<-- Previous    {positionText}    Next -->", Width - (ContentMargin * 2));
             var enterText = CanSelectCurrentDeck && CanSelectCurrentStake ? "Enter: start run with this deck/stake" : "Enter: locked deck/stake cannot be selected";
-            WriteLine(ContentMargin, Height - 2, enterText, Width - (ContentMargin * 2));
+            WriteLine(ContentMargin, Height - 2, $"{enterText}    B/Escape: back", Width - (ContentMargin * 2));
         }
 
         private List<string> BuildDeckArtLines(string deckName, bool unlocked)

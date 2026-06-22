@@ -1,4 +1,5 @@
 ﻿using ConsoleBalatro.Engine;
+using ConsoleBalatro.Engine.Cards.Enums;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -52,6 +53,216 @@ namespace ConsoleBalatro.Tests
             SetupBossBlind(bossDBName);
             FlowHandler.StartSelectedBlind();
             Assert.Equal(expectedChips, Globals.RequiredChipsForCurrentBlind);
+        }
+
+        [Fact]
+        public void PlayBoss_TheHook_DiscardsOnPlayAsExpected()
+        {
+            SetupBossBlind("THE HOOK");
+            var rec = CaptureDiscards();
+
+            FlowHandler.StartSelectedBlind();
+            ZoneManager.HandZone.Cards[0].ToggleSelect();
+            Globals.PlayCurrentlySelectedHand();
+            Assert.Equal(2, rec.NumCardsDiscarded);
+        }
+
+        [Fact]
+        public void PlayBoss_TheTooth_TakesMoneyAsExpected()
+        {
+            SetupBossBlind("THE TOOTH");
+
+            Globals.Money = 10;
+            FlowHandler.StartSelectedBlind();
+            PlayHand("AS,AS,AS");
+            Assert.Equal(7, Globals.Money);
+        }
+
+        [Fact]
+        public void PlayBoss_TheManacle_TakesHandsizeAsExpected()
+        {
+            SetupBossBlind("THE MANACLE");
+
+            var oldHandSize = Globals.HandSize;
+            FlowHandler.StartSelectedBlind();
+            Assert.Equal(oldHandSize - 1, Globals.HandSize);
+        }
+
+        [Fact]
+        public void PlayBoss_TheWheel_FlipsCardFacedown()
+        {
+            SetupBossBlind("THE WHEEL");
+
+            RigNextRoll(true);
+            FlowHandler.StartSelectedBlind();
+            Assert.True(ZoneManager.HandZone.Cards[0].FaceDown);
+        }
+
+        [Fact]
+        public void PlayBoss_ThePlant_FaceCardsDebuffed()
+        {
+            SetupBossBlind("THE PLANT");
+
+            FlowHandler.StartSelectedBlind();
+            EnsureFaceCard();
+
+            var targetCards = ZoneManager.HandZone.Cards.Where(c => EngineUtils.isFace(c));
+            foreach (var card in targetCards)
+            {
+                Assert.True(card.Debuffed);
+                Assert.True(card.DebuffedByBoss);
+            }
+        }
+
+        [Theory]
+        [InlineData("THE CLUB", Suit.CLUBS)]
+        [InlineData("THE GOAD", Suit.SPADES)]
+        [InlineData("THE WINDOW", Suit.DIAMONDS)]
+        [InlineData("THE HEAD", Suit.HEARTS)]
+        public void PlayBoss_SuitDebuffer_DebuffsProperSuits(string bossDbName, Suit beingDebuffed)
+        {
+            SetupBossBlind(bossDbName);
+
+            FlowHandler.StartSelectedBlind();
+            var targetCards = ZoneManager.HandZone.Cards.Where(c => c.IsSuit(beingDebuffed));
+            foreach (var c in targetCards)
+            {
+                Assert.True(c.Debuffed);
+                Assert.True(c.DebuffedByBoss);
+            }
+        }
+
+        [Fact]
+        public void PlayBoss_TheMark_FaceCardsFaceDown()
+        {
+            SetupBossBlind("THE MARK");
+
+            FlowHandler.StartSelectedBlind();
+            EnsureFaceCard();
+
+            var targetCards = ZoneManager.HandZone.Cards.Where(c => EngineUtils.isFace(c));
+            foreach (var card in targetCards)
+            {
+                Assert.True(card.FaceDown);
+            }
+        }
+
+        [Fact]
+        public void PlayBoss_TheHouse_FirstHandFaceDown()
+        {
+            SetupBossBlind("THE HOUSE");
+
+            FlowHandler.StartSelectedBlind();
+            Assert.True(ZoneManager.HandZone.Cards.All(c => c.FaceDown));
+
+            ZoneManager.HandZone.Cards[0].ToggleSelect();
+            Globals.DiscardSelectedFromHand();
+
+            var upCard = ZoneManager.HandZone.Cards[^1];
+            Assert.False(upCard.FaceDown);
+            Assert.True(ZoneManager.HandZone.Cards.Where(x => x != upCard).All(c => c.FaceDown));
+        }
+
+        [Fact]
+        public void PlayBoss_TheFish_DrawFacedownAfterHand()
+        {
+            SetupBossBlind("THE FISH");
+
+            FlowHandler.StartSelectedBlind();
+            Assert.DoesNotContain(ZoneManager.HandZone.Cards, c => c.FaceDown);
+
+            ZoneManager.HandZone.Cards[0].ToggleSelect();
+            Globals.PlayCurrentlySelectedHand();
+
+            var upCard = ZoneManager.HandZone.Cards[^1];
+            Assert.True(upCard.FaceDown);
+            Assert.DoesNotContain(ZoneManager.HandZone.Cards.Where(x => x != upCard), c => c.FaceDown);
+
+            ZoneManager.HandZone.Cards[0].ToggleSelect();
+            Globals.DiscardSelectedFromHand();
+            Assert.False(ZoneManager.HandZone.Cards[^1].FaceDown);
+        }
+
+        [Fact]
+        public void PlayBoss_TheArm_LevelsDownPlayedHand()
+        {
+            SetupBossBlind("THE ARM");
+
+            ScoreHandler.LevelUpHand(PlayedHandType.HIGHCARD);
+            ScoreHandler.LevelUpHand(PlayedHandType.TWOPAIR);
+            Assert.Equal(2, ScoreHandler.HandLevels[PlayedHandType.HIGHCARD]);
+            Assert.Equal(2, ScoreHandler.HandLevels[PlayedHandType.TWOPAIR]);
+
+            FlowHandler.StartSelectedBlind();
+            PlayHand("AS");
+            Assert.Equal(1, ScoreHandler.HandLevels[PlayedHandType.HIGHCARD]);
+            Assert.Equal(2, ScoreHandler.HandLevels[PlayedHandType.TWOPAIR]);
+
+            PlayHand("2S,2S,3S,3S");
+            Assert.Equal(1, ScoreHandler.HandLevels[PlayedHandType.HIGHCARD]);
+            Assert.Equal(1, ScoreHandler.HandLevels[PlayedHandType.TWOPAIR]);
+        }
+
+        [Fact]
+        public void PlayBoss_ThePsychic_OnlyAllowsFiveCardPlays()
+        {
+            SetupBossBlind("THE PSYCHIC");
+            var rec = CaptureScoringContributions();
+
+            FlowHandler.StartSelectedBlind();
+            PlayHand("AS");
+            Assert.Equal(0, Globals.TotalCurrentChips);
+            Assert.Empty(rec.ChipSources);
+            PlayHand("AS,AS,AS,AS");
+            Assert.Equal(0, Globals.TotalCurrentChips);
+            Assert.Empty(rec.ChipSources);
+            PlayHand("AS,5D,4D,8D,JD");
+            Assert.Equal(16, Globals.TotalCurrentChips);
+            var aSp = Assert.Single(rec.ChipSources);
+            Assert.Equal(Rank.ACE, aSp.Rank);
+
+        }
+
+        [Fact]
+        public void PlayBoss_TheMouth_AllowsOnlyOneHandType()
+        {
+            SetupBossBlind("THE MOUTH");
+            var rec = CaptureScoringContributions();
+
+            FlowHandler.StartSelectedBlind();
+            PlayHand("AS");
+            Assert.Equal(16, Globals.TotalCurrentChips);
+            Assert.Single(rec.ChipSources);
+            rec.Reset();
+            PlayHand("AS,AS,AS,AS");
+            Assert.Equal(16, Globals.TotalCurrentChips);
+            Assert.Empty(rec.ChipSources);
+            PlayHand("2S,3S");
+            Assert.Equal(24, Globals.TotalCurrentChips);
+            Assert.Single(rec.ChipSources);
+        }
+
+        [Fact]
+        public void PlayBoss_TheFlint_HalvesBaseChipsMult()
+        {
+            SetupBossBlind("THE FLINT");
+
+            FlowHandler.StartSelectedBlind();
+            Globals.RequiredChipsForCurrentBlind = 9999999;
+            PlayHand("AS");
+            //int division rounds down I think? So 5 x 1 -> 2 x 0.5 since mult is a double, plus 11, 13 / 2 = 6.
+            Assert.Equal(6, Globals.TotalCurrentChips);
+            //flush five, 160 x 16 -> 80 x 8, plus 10 from 2s, 90 x 8 = 720.
+            PlayHand("2S,2S,2S,2S,2S");
+            Assert.Equal(720 + 6, Globals.TotalCurrentChips);
+        }
+
+        private void EnsureFaceCard()
+        {
+            while (!ZoneManager.HandZone.Cards.Any(x => EngineUtils.isFace(x)))
+            {
+                ZoneManager.HandZone.DrawFrom(ZoneManager.DeckZone, ignoreSpaceLimits: true);
+            }
         }
 
         private void SetupBossBlind(string bossDBName)

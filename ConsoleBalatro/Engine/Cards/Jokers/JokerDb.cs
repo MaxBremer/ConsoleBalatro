@@ -2948,7 +2948,7 @@ namespace ConsoleBalatro.Engine.Cards.Jokers
                 ret.DescriptionBuilder = _ => "This Joker gains X" + ret.DataDict["MULTMULTGAIN"].DoubleData + " Mult every 23 [remaining: " + ret.DataDict["REMAINING"].IntData + "] cards discarded (Currently X" + ret.DataDict["MULTMULTAMOUNT"].DoubleData + " Mult)";
                 ret.Listeners.Add(new EngineEventListener() 
                 { 
-                    MyContextType = EventContextType.CardDiscardedFromHand, 
+                    MyContextType = EventContextType.CardManuallyDiscardedFromHand, 
                     MyAction = _ => 
                     { 
                         ret.DataDict["REMAINING"].IntData--; 

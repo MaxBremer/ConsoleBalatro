@@ -1855,7 +1855,7 @@ namespace ConsoleBalatro.Tests
                 EngineEventHandler.TriggerEvent(new EngineCardDiscardedFromHandArgs()
                 {
                     CardBeingDiscarded = CardFactory.PlayingCardFromDefString("AS"),
-                    MyContext = new EventContext() { Context = EventContextType.CardDiscardedFromHand }
+                    MyContext = new EventContext() { Context = EventContextType.CardManuallyDiscardedFromHand }
                 });
             }
 

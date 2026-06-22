@@ -38,7 +38,7 @@ namespace ConsoleBalatro.Engine.Events
 
         CardSuitPull,
 
-        CardDiscardedFromHand,
+        CardManuallyDiscardedFromHand,
 
         CardsSelectedForPlay,
         HandPlayedCalculated,

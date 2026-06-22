@@ -203,7 +203,7 @@ namespace ConsoleBalatro.Engine
                 var args = new EngineCardDiscardedFromHandArgs
                 {
                     CardBeingDiscarded = c,
-                    MyContext = new EventContext() { Context = EventContextType.CardDiscardedFromHand }
+                    MyContext = new EventContext() { Context = EventContextType.CardManuallyDiscardedFromHand }
                 };
                 EngineEventHandler.TriggerEvent(args);
 

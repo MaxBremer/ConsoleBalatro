@@ -148,6 +148,24 @@ namespace ConsoleBalatro.Tests
             EngineEventHandler.StartListening(listener);
         }
 
+        protected static DiscardCapture CaptureDiscards()
+        {
+            var capture = new DiscardCapture();
+
+            EngineEventHandler.StartListening(new EngineEventListener
+            {
+                MyContextType = EventContextType.CardDrawnToZone,
+                MyAction = args =>
+                {
+                    var drawArgs = Assert.IsType<EngineCardDrawnToZoneArgs>(args);
+                    if(drawArgs.ZoneDrawnTo == ZoneManager.DiscardZone)
+                        capture.CardsDiscarded.Add(drawArgs.CardBeingDrawn);
+                }
+            });
+
+            return capture;
+        }
+
         protected static ContributionCapture CaptureScoringContributions()
         {
             var capture = new ContributionCapture();
@@ -202,6 +220,13 @@ namespace ConsoleBalatro.Tests
             });
 
             return capture;
+        }
+
+        protected class DiscardCapture
+        {
+            public int NumCardsDiscarded => CardsDiscarded == null ? 0 : CardsDiscarded.Count;
+
+            public List<Card> CardsDiscarded { get; } = new();
         }
 
         protected class ContributionCapture

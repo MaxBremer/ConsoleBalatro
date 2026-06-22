@@ -279,6 +279,25 @@ namespace ConsoleBalatro.Tests
             Assert.Equal(oldHandCt - 2, ZoneManager.HandZone.Cards.Count);
         }
 
+        [Fact]
+        public void PlayBoss_TheEye_AllowsNoDuplicateHands()
+        {
+            SetupBossBlind("THE EYE");
+            var rec = CaptureScoringContributions();
+
+            FlowHandler.StartSelectedBlind();
+            PlayHand("AS");
+            Assert.Equal(16, Globals.TotalCurrentChips);
+            Assert.Single(rec.ChipSources);
+            rec.Reset();
+            PlayHand("2S");
+            Assert.Equal(16, Globals.TotalCurrentChips);
+            Assert.Empty(rec.ChipSources);
+            PlayHand("2S,2S");
+            Assert.Equal(44, Globals.TotalCurrentChips);
+            Assert.Equal(2, rec.ChipSources.Count);
+        }
+
         private void EnsureFaceCard()
         {
             while (!ZoneManager.HandZone.Cards.Any(x => EngineUtils.isFace(x)))

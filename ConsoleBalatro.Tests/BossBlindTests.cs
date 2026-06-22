@@ -257,6 +257,28 @@ namespace ConsoleBalatro.Tests
             Assert.Equal(720 + 6, Globals.TotalCurrentChips);
         }
 
+        [Fact]
+        public void PlayBoss_TheSerpent_RedrawsExactlyThree()
+        {
+            SetupBossBlind("THE SERPENT");
+
+            FlowHandler.StartSelectedBlind();
+            var oldHandCt = ZoneManager.HandZone.Cards.Count;
+            ZoneManager.HandZone.Cards[0].ToggleSelect();
+            Globals.DiscardSelectedFromHand();
+            //redrawing 3 exactly, should be +2 total, where normally would be same number.
+            Assert.Equal(oldHandCt + 2, ZoneManager.HandZone.Cards.Count);
+
+            for (int i = 0; i < 5; i++)
+            {
+                ZoneManager.HandZone.Cards[i].ToggleSelect();
+            }
+            oldHandCt = ZoneManager.HandZone.Cards.Count;
+            Globals.DiscardSelectedFromHand();
+            //again, normally, same amount. However, should now be -2, as we went down 5 plus 3.
+            Assert.Equal(oldHandCt - 2, ZoneManager.HandZone.Cards.Count);
+        }
+
         private void EnsureFaceCard()
         {
             while (!ZoneManager.HandZone.Cards.Any(x => EngineUtils.isFace(x)))

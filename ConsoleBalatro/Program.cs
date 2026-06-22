@@ -42,7 +42,7 @@ class Program
         }
         else
         {
-            FlowHandler.InitializeDeckSelectionRound();
+            FlowHandler.InitializeMainMenu();
         }
 
         EngineDisplayGlobals.PlayCachedAnimations();

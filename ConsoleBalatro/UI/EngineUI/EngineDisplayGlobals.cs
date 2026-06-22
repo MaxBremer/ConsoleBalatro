@@ -137,6 +137,10 @@ namespace ConsoleBalatro.UI.EngineUI
         /// </summary>
         public static DeckChoicesDisplay DeckChoiceMenu;
 
+        public static MainMenuDisplay MainMenu;
+
+        public static PlaceholderMenuDisplay PlaceholderMenu;
+
         //DISPLAY fields are soft mirrors of their engine counterpart;
         //basically, they exist so that their update to match the engine can be delayed for animations to play out.
         public static int DisplayRequiredChipsForBlind;
@@ -357,6 +361,22 @@ namespace ConsoleBalatro.UI.EngineUI
             DisplayPlayedHand = PlayedHandType.FLUSHFIVE;
         }
 
+        private static void SetupMainMenuState()
+        {
+            HideAllEngineEntities();
+
+            MainMenu.Visible = true;
+        }
+
+        private static void SetupPlaceholderMenuState(string title, string body)
+        {
+            HideAllEngineEntities();
+
+            PlaceholderMenu.Title = title;
+            PlaceholderMenu.Body = body;
+            PlaceholderMenu.Visible = true;
+        }
+
         private static void SetupDeckChoiceState()
         {
             HideAllEngineEntities();
@@ -445,6 +465,9 @@ namespace ConsoleBalatro.UI.EngineUI
 
             StartMenuListener(TriggerMarketSetup);
             StartMenuListener(TriggerPlayRoundSetup);
+            StartMenuListener(TriggerMainMenuSetup);
+            StartMenuListener(TriggerCollectionMenuSetup);
+            StartMenuListener(TriggerOptionsMenuSetup);
             StartMenuListener(TriggerDeckChoiceSetup);
             StartMenuListener(TriggerPackOptionSetup);
             StartMenuListener(TriggerPostRoundSetup);
@@ -496,6 +519,12 @@ namespace ConsoleBalatro.UI.EngineUI
 
             DeckChoiceMenu = new DeckChoicesDisplay(EngineDisplayConstants.DECK_CHOICE_DISPLAY_XLOC, EngineDisplayConstants.DECK_CHOICE_DISPLAY_YLOC);
             EngineDisplays.Add(DeckChoiceMenu);
+
+            MainMenu = new MainMenuDisplay(EngineDisplayConstants.MAIN_MENU_DISPLAY_XLOC, EngineDisplayConstants.MAIN_MENU_DISPLAY_YLOC);
+            EngineDisplays.Add(MainMenu);
+
+            PlaceholderMenu = new PlaceholderMenuDisplay(EngineDisplayConstants.MAIN_MENU_DISPLAY_XLOC, EngineDisplayConstants.MAIN_MENU_DISPLAY_YLOC);
+            EngineDisplays.Add(PlaceholderMenu);
 
             foreach (var dispEnt in EngineDisplays)
             {
@@ -556,6 +585,45 @@ namespace ConsoleBalatro.UI.EngineUI
                 {
                     SetupMarketState();
                     ControlManager.CurrentControlset = "MARKET";
+                    Redraw();
+                });
+            }
+        }
+
+        private static void TriggerMainMenuSetup(EngineEventArgs args)
+        {
+            if (args is EngineGameStateChangeArgs chgArgs && IsValidRoundOfState(chgArgs, GameState.MainMenu))
+            {
+                CacheAnimationAction(_ =>
+                {
+                    SetupMainMenuState();
+                    ControlManager.CurrentControlset = "MAINMENU";
+                    Redraw();
+                });
+            }
+        }
+
+        private static void TriggerCollectionMenuSetup(EngineEventArgs args)
+        {
+            if (args is EngineGameStateChangeArgs chgArgs && IsValidRoundOfState(chgArgs, GameState.CollectionMenu))
+            {
+                CacheAnimationAction(_ =>
+                {
+                    SetupPlaceholderMenuState("COLLECTION", "Collection viewer will be implemented later.");
+                    ControlManager.CurrentControlset = "PLACEHOLDERMENU";
+                    Redraw();
+                });
+            }
+        }
+
+        private static void TriggerOptionsMenuSetup(EngineEventArgs args)
+        {
+            if (args is EngineGameStateChangeArgs chgArgs && IsValidRoundOfState(chgArgs, GameState.OptionsMenu))
+            {
+                CacheAnimationAction(_ =>
+                {
+                    SetupPlaceholderMenuState("OPTIONS", "Options menu will be implemented later.");
+                    ControlManager.CurrentControlset = "PLACEHOLDERMENU";
                     Redraw();
                 });
             }

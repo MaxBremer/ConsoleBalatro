@@ -298,6 +298,37 @@ namespace ConsoleBalatro.Tests
             Assert.Equal(2, rec.ChipSources.Count);
         }
 
+        [Fact]
+        public void PlayBoss_ThePillar_PreviouslyPlayedCardsDebuffed()
+        {
+            ResetEngineForTest();
+            FlowHandler.StartNewAnte();
+            FlowHandler.InitializeBlindSelectionRound();
+            FlowHandler.CurrentBossBlind = "THE PILLAR";
+            FlowHandler.CurSmallBlindTag = Engine.Cards.Tags.TagType.HANDY;
+            FlowHandler.CurBigBlindTag = Engine.Cards.Tags.TagType.HANDY;
+            FlowHandler.DoSkip();
+            FlowHandler.StartSelectedBlind();
+
+            var targetCard = ZoneManager.HandZone.Cards[0];
+            targetCard.ToggleSelect();
+            Globals.RequiredChipsForCurrentBlind = 1;
+            Globals.PlayCurrentlySelectedHand();
+
+            FlowHandler.ClosePostRound();
+            FlowHandler.CloseMarketRound();
+            FlowHandler.StartSelectedBlind();
+
+            if (!ZoneManager.HandZone.Cards.Contains(targetCard))
+            {
+                ZoneManager.HandZone.DrawTargetFrom(ZoneManager.DeckZone, targetCard, ignoreSpaceLimits: true);
+            }
+            Assert.True(targetCard.Debuffed);
+            Assert.True(targetCard.DebuffedByBoss);
+            var notDebuffed = ZoneManager.HandZone.Cards.Where(x => x != targetCard);
+            Assert.DoesNotContain(notDebuffed, c => c.Debuffed);
+        }
+
         private void EnsureFaceCard()
         {
             while (!ZoneManager.HandZone.Cards.Any(x => EngineUtils.isFace(x)))

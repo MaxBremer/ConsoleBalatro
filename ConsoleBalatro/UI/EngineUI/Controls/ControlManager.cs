@@ -47,6 +47,8 @@ namespace ConsoleBalatro.UI.EngineUI.Controls
             AvailableControlSets.Add("BLIND", BuildBlindOptions());
             AvailableControlSets.Add("GAMEOVER", BuildEmptyOptions());
             AvailableControlSets.Add("DECKCHOICE", BuildDeckSelectOptions());
+            AvailableControlSets.Add("MAINMENU", BuildMainMenuOptions());
+            AvailableControlSets.Add("PLACEHOLDERMENU", BuildPlaceholderMenuOptions());
         }
 
         /// <summary>
@@ -347,6 +349,65 @@ namespace ConsoleBalatro.UI.EngineUI.Controls
                     FlowHandler.RerollBossBlind(isPlayerReroll: true);
                     EngineDisplayGlobals.Redraw();
                 }
+            });
+
+            return ret;
+        }
+
+        private static ControlOptionset BuildMainMenuOptions()
+        {
+            var ret = new ControlOptionset
+            {
+                SchemaName = "MainMenu"
+            };
+            AddStandardControls(ret, new());
+
+            ret.AvailableActions.Add(ConsoleKey.UpArrow, _ =>
+            {
+                EngineDisplayGlobals.MainMenu.SelectPreviousOption();
+                EngineDisplayGlobals.Redraw();
+            });
+
+            ret.AvailableActions.Add(ConsoleKey.DownArrow, _ =>
+            {
+                EngineDisplayGlobals.MainMenu.SelectNextOption();
+                EngineDisplayGlobals.Redraw();
+            });
+
+            ret.AvailableActions.Add(ConsoleKey.Enter, _ =>
+            {
+                switch (EngineDisplayGlobals.MainMenu.SelectedIndex)
+                {
+                    case 0:
+                        FlowHandler.InitializeDeckSelectionRound();
+                        break;
+                    case 1:
+                        FlowHandler.OpenCollectionMenu();
+                        break;
+                    case 2:
+                        FlowHandler.OpenOptionsMenu();
+                        break;
+                }
+            });
+
+            return ret;
+        }
+
+        private static ControlOptionset BuildPlaceholderMenuOptions()
+        {
+            var ret = new ControlOptionset
+            {
+                SchemaName = "PlaceholderMenu"
+            };
+            AddStandardControls(ret, new());
+
+            ret.AvailableActions.Add(ConsoleKey.B, _ =>
+            {
+                FlowHandler.ClosePlaceholderMenu();
+            });
+            ret.AvailableActions.Add(ConsoleKey.Escape, _ =>
+            {
+                FlowHandler.ClosePlaceholderMenu();
             });
 
             return ret;

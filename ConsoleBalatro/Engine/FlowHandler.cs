@@ -393,6 +393,30 @@ namespace ConsoleBalatro.Engine
         }
 
         /// <summary>
+        /// Initializes the main menu.
+        /// </summary>
+        public static void InitializeMainMenu()
+        {
+            Globals.PushGameState(new GameStateObj() { GameState = GameState.MainMenu });
+        }
+
+        public static void OpenCollectionMenu()
+        {
+            Globals.PushGameState(new GameStateObj() { GameState = GameState.CollectionMenu });
+        }
+
+        public static void OpenOptionsMenu()
+        {
+            Globals.PushGameState(new GameStateObj() { GameState = GameState.OptionsMenu });
+        }
+
+        public static void ClosePlaceholderMenu()
+        {
+            if (Globals.CurrentGameState == GameState.CollectionMenu || Globals.CurrentGameState == GameState.OptionsMenu)
+                Globals.PopCurrGameState();
+        }
+
+        /// <summary>
         /// Initializes the Deck Selection Round, a menu in which the player chooses which deck to use this run.
         /// </summary>
         public static void InitializeDeckSelectionRound()

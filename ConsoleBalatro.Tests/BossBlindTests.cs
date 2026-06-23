@@ -329,6 +329,72 @@ namespace ConsoleBalatro.Tests
             Assert.DoesNotContain(notDebuffed, c => c.Debuffed);
         }
 
+        [Fact]
+        public void PlayBoss_VerdantLeaf_DebuffsAllUntilJokerSold()
+        {
+            SetupBossBlind("VERDANT LEAF");
+            AddJoker("JIMBO");
+            FlowHandler.StartSelectedBlind();
+
+            Assert.True(ZoneManager.HandZone.Cards.All(c => c.Debuffed));
+            Assert.True(ZoneManager.HandZone.Cards.All(c => c.DebuffedByBoss));
+
+            ZoneManager.HandZone.Cards[0].ToggleSelect();
+            ZoneManager.HandZone.Cards[1].ToggleSelect();
+            Globals.DiscardSelectedFromHand();
+            Assert.True(ZoneManager.HandZone.Cards.All(c => c.Debuffed));
+            Assert.True(ZoneManager.HandZone.Cards.All(c => c.DebuffedByBoss));
+            Globals.PerformSell(ZoneManager.JokerZone.Cards[0], ZoneManager.JokerZone);
+            Assert.DoesNotContain(ZoneManager.HandZone.Cards, c => c.Debuffed);
+            Assert.DoesNotContain(ZoneManager.HandZone.Cards, c => c.DebuffedByBoss);
+
+            ZoneManager.HandZone.Cards[0].ToggleSelect();
+            ZoneManager.HandZone.Cards[1].ToggleSelect();
+            Globals.DiscardSelectedFromHand();
+            Assert.DoesNotContain(ZoneManager.HandZone.Cards, c => c.Debuffed);
+            Assert.DoesNotContain(ZoneManager.HandZone.Cards, c => c.DebuffedByBoss);
+        }
+
+        //TODO: Add test that ensures jokers shuffled as well as flipped.
+        [Fact]
+        public void PlayBoss_AmberAcorn_FlipsAllJokers()
+        {
+            SetupBossBlind("AMBER ACORN");
+            AddJoker("JIMBO");
+            AddJoker("PERKEO");
+            FlowHandler.StartSelectedBlind();
+            Assert.True(ZoneManager.JokerZone.Cards.All(c => c.FaceDown));
+        }
+
+        [Fact]
+        public void PlayBoss_CrimsonHeart_DebuffsDifferentRandomJokerEachRound()
+        {
+            SetupBossBlind("CRIMSON HEART");
+            AddJoker("JIMBO");
+            AddJoker("PERKEO");
+            FlowHandler.StartSelectedBlind();
+
+            var targeted = Assert.Single(ZoneManager.JokerZone.Cards, c => c.Debuffed && c.DebuffedByBoss);
+            PlayHand("AS");
+            var newTarget = Assert.Single(ZoneManager.JokerZone.Cards, c => c.Debuffed && c.DebuffedByBoss);
+            Assert.NotEqual(newTarget, targeted);
+        }
+
+        [Fact]
+        public void PlayBoss_CeruleanBell_ForcesSelectOfOneCardPerRound()
+        {
+            SetupBossBlind("CERULEAN BELL");
+            FlowHandler.StartSelectedBlind();
+
+            var forceSelect = Assert.Single(ZoneManager.HandZone.Cards, c => c.isSelected && c.ForcedSelect);
+            forceSelect.ToggleSelect();//make sure we can't deselect
+            Assert.True(forceSelect.isSelected && forceSelect.ForcedSelect);
+
+            Globals.PlayCurrentlySelectedHand();
+            var newSelect = Assert.Single(ZoneManager.HandZone.Cards, c => c.isSelected && c.ForcedSelect);
+            Assert.NotEqual(newSelect, forceSelect);
+        }
+
         private void EnsureFaceCard()
         {
             while (!ZoneManager.HandZone.Cards.Any(x => EngineUtils.isFace(x)))

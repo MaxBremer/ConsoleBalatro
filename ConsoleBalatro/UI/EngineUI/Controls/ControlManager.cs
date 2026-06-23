@@ -140,7 +140,7 @@ namespace ConsoleBalatro.UI.EngineUI.Controls
             Console.Clear();
         }
 
-        private static void AddStandardControls(ControlOptionset ret, LookZonesAvailable lookZones)
+        private static void AddStandardControls(ControlOptionset ret, LookZonesAvailable lookZones, bool deckViewAvailable = false)
         {
             if (lookZones.AnyZonesAvailable)
             {
@@ -162,6 +162,14 @@ namespace ConsoleBalatro.UI.EngineUI.Controls
                 EngineDisplayGlobals.Redraw();
             });
 
+            if (deckViewAvailable)
+            {
+                ret.AvailableActions.Add(ConsoleKey.V, _ =>
+                {
+                    ShowDeckViewMenu(CurrentControlset == "ROUND");
+                });
+            }
+
             if (Globals.ALLOW_DEBUG_COMMANDS)
             {
                 ret.AvailableActions.Add(ConsoleKey.Oem3, _ =>
@@ -171,6 +179,56 @@ namespace ConsoleBalatro.UI.EngineUI.Controls
                     EngineDisplayGlobals.Redraw();
                 });
             }
+        }
+
+        private static void ShowDeckViewMenu(bool allowCurrentStakeView)
+        {
+            EngineDisplayGlobals.DeckViewMenu.Show(allowCurrentStakeView);
+            EngineDisplayGlobals.Redraw();
+
+            var done = false;
+            while (!done)
+            {
+                var input = ReadKey();
+                switch (input.Key)
+                {
+                    case ConsoleKey.LeftArrow:
+                        EngineDisplayGlobals.DeckViewMenu.SelectPreviousCard();
+                        break;
+                    case ConsoleKey.RightArrow:
+                        EngineDisplayGlobals.DeckViewMenu.SelectNextCard();
+                        break;
+                    case ConsoleKey.UpArrow:
+                        EngineDisplayGlobals.DeckViewMenu.PreviousPage();
+                        break;
+                    case ConsoleKey.DownArrow:
+                        EngineDisplayGlobals.DeckViewMenu.NextPage();
+                        break;
+                    case ConsoleKey.F:
+                        EngineDisplayGlobals.DeckViewMenu.ToggleView();
+                        break;
+                    case ConsoleKey.D:
+                        if (EngineDisplayGlobals.DeckViewMenu.SelectedCard != null)
+                        {
+                            EngineDisplayGlobals.DisplayDetailInfoForCard(EngineDisplayGlobals.DeckViewMenu.SelectedCard);
+                            EngineDisplayGlobals.Redraw();
+                            ReadKey();
+                            EngineDisplayGlobals.HideInfoDisplay();
+                        }
+                        break;
+                    case ConsoleKey.B:
+                    case ConsoleKey.Escape:
+                        done = true;
+                        break;
+                }
+
+                if (!done)
+                    EngineDisplayGlobals.Redraw();
+            }
+
+            EngineDisplayGlobals.HideInfoDisplay();
+            EngineDisplayGlobals.DeckViewMenu.Hide();
+            EngineDisplayGlobals.Redraw();
         }
 
         private static ControlOptionset BuildPlayRoundOptions()
@@ -184,7 +242,7 @@ namespace ConsoleBalatro.UI.EngineUI.Controls
                 JokersAvailable = true,
                 ConsumablesAvailable = true,
             };
-            AddStandardControls(ret, lookZones);
+            AddStandardControls(ret, lookZones, deckViewAvailable: true);
 
             ret.AvailableActions.Add(ConsoleKey.Backspace, _ =>
             {
@@ -243,7 +301,7 @@ namespace ConsoleBalatro.UI.EngineUI.Controls
                 MainMarketAvailable = true,
                 VoucherMarketAvailable = true,
             };
-            AddStandardControls(ret, lookZones);
+            AddStandardControls(ret, lookZones, deckViewAvailable: true);
 
             ret.AvailableActions.Add(ConsoleKey.R, _ =>
             {
@@ -300,7 +358,7 @@ namespace ConsoleBalatro.UI.EngineUI.Controls
                 JokersAvailable = true,
                 ConsumablesAvailable = true,
             };
-            AddStandardControls(ret, lookZones);
+            AddStandardControls(ret, lookZones, deckViewAvailable: true);
 
 
             ret.AvailableActions.Add(ConsoleKey.C, _ =>
@@ -321,7 +379,7 @@ namespace ConsoleBalatro.UI.EngineUI.Controls
                 JokersAvailable = true,
                 ConsumablesAvailable = true,
             };
-            AddStandardControls(ret, lookZones);
+            AddStandardControls(ret, lookZones, deckViewAvailable: true);
 
             ret.AvailableActions.Add(ConsoleKey.S, _ =>
             {

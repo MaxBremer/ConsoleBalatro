@@ -141,6 +141,8 @@ namespace ConsoleBalatro.UI.EngineUI
 
         public static PlaceholderMenuDisplay PlaceholderMenu;
 
+        public static DeckViewDisplay DeckViewMenu;
+
         //DISPLAY fields are soft mirrors of their engine counterpart;
         //basically, they exist so that their update to match the engine can be delayed for animations to play out.
         public static int DisplayRequiredChipsForBlind;
@@ -525,6 +527,9 @@ namespace ConsoleBalatro.UI.EngineUI
 
             PlaceholderMenu = new PlaceholderMenuDisplay(EngineDisplayConstants.MAIN_MENU_DISPLAY_XLOC, EngineDisplayConstants.MAIN_MENU_DISPLAY_YLOC);
             EngineDisplays.Add(PlaceholderMenu);
+
+            DeckViewMenu = new DeckViewDisplay();
+            EngineDisplays.Add(DeckViewMenu);
 
             foreach (var dispEnt in EngineDisplays)
             {

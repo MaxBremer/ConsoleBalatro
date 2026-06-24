@@ -358,7 +358,7 @@ namespace ConsoleBalatro.UI.EngineUI.Controls
                 JokersAvailable = true,
                 ConsumablesAvailable = true,
             };
-            AddStandardControls(ret, lookZones, deckViewAvailable: true);
+            AddStandardControls(ret, lookZones, deckViewAvailable: false);
 
 
             ret.AvailableActions.Add(ConsoleKey.C, _ =>

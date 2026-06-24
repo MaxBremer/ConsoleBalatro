@@ -19,7 +19,7 @@ namespace ConsoleBalatro.UI.EngineUI.Controls
         private static bool QuitCmd = false;
 
         //pass in params, flags
-        public static Dictionary<string, Action<List<string>, List<string>>> Commands = new()
+        public static readonly Dictionary<string, Action<List<string>, List<string>>> Commands = new()
         {
             { "TEST", TestCommand },
             { "ADDCON", AddConsumable },
@@ -34,7 +34,7 @@ namespace ConsoleBalatro.UI.EngineUI.Controls
             { "UNLOCKDECK", UnlockDeck },
         };
 
-        private static Dictionary<string, Func<CardZone>> CardZoneGetters = new()
+        private static readonly Dictionary<string, Func<CardZone>> CardZoneGetters = new()
         {
             { "CONSUMABLE", () => ZoneManager.ConsumableZone },
             { "JOKER", () => ZoneManager.JokerZone },
@@ -47,7 +47,7 @@ namespace ConsoleBalatro.UI.EngineUI.Controls
             { "PACKOPTION", () => ZoneManager.PackOptionZone  },
         };
 
-        private static Dictionary<string, List<string>> GameStringLists = new()
+        private static readonly Dictionary<string, List<string>> GameStringLists = new()
         {
             { "TAROT", ConsumableManager.TarotNames },
             { "SPECTRAL", ConsumableManager.SpectralNames },
@@ -55,6 +55,22 @@ namespace ConsoleBalatro.UI.EngineUI.Controls
             { "JOKER", JokerDb.JokerDbNames },
             { "DECK", DeckDb.DeckDBNames },
             { "STAKE", StakeManager.OfficialStakeOrder.Select(x => x.ToString()).ToList() },
+        };
+
+        private static readonly List<string> HelpLines = new()
+        {
+            "Available commands:",
+            "TEST - A test command that prints passed parameters and flags.",
+            "ADDCON <type> <dbName> [-ignorespace] - Adds a consumable card to the consumable zone. Use -ignorespace to add even if zone is full.",
+            "ADDJOKER <jokerName> [-ignorespace] - Adds a joker card to the joker zone. Use -ignorespace to add even if zone is full.",
+            "PRINT <listName> - Prints the contents of a predefined list. Valid list names are: " + string.Join(", ", GameStringLists.Keys),
+            "SETREQ <amount> - Sets the required chips for the current blind during PlayRound state.",
+            "HELP - prints available commands. You ran it to get this list, dummy.",
+            "OP <opName> <targetZone> <targetInd|ALL> <opParams...> - Performs the passed operation, with passed params, on the card(s) specified by targetZone and targetInd. For more info, use help -op",
+            "SETMONEY <amount> - Sets the players money to the passed amount.",
+            "PERMAPROGRESS <enable|disable|status> - Toggles whether permanent progress saves are written.",
+            "UNLOCKDECK <deckName> [stakeName] [-beaten] - Unlocks a deck, or unlocks stakes for that deck up to stakeName. Use -beaten to also award the stakeName sticker.",
+            "QUIT or Q - Exits the debug command line.",
         };
         
         public static void RunDebugCmdLine()
@@ -187,15 +203,13 @@ namespace ConsoleBalatro.UI.EngineUI.Controls
 
         private static void Help(List<string> parameters, List<string> flags)
         {
-            ConsoleWriteLine("Available commands:");
-            ConsoleWriteLine("TEST - A test command that prints parameters and flags.");
-            ConsoleWriteLine("ADDCON <type> <dbName> [-ignorespace] - Adds a consumable card to the consumable zone. Use -ignorespace to add even if zone is full.");
-            ConsoleWriteLine("ADDJOKER <jokerName> [-ignorespace] - Adds a joker card to the joker zone. Use -ignorespace to add even if zone is full.");
-            ConsoleWriteLine("PRINT <listName> - Prints the contents of a predefined list. Valid list names are: " + string.Join(", ", GameStringLists.Keys));
-            ConsoleWriteLine("SETREQ <amount> - Sets the required chips for the current blind during PlayRound state.");
-            ConsoleWriteLine("PERMAPROGRESS <enable|disable|status> - Toggles whether permanent progress saves are written.");
-            ConsoleWriteLine("UNLOCKDECK <deckName> [stakeName] [-beaten] - Unlocks a deck, or unlocks stakes for that deck up to stakeName. Use -beaten to also award the stakeName sticker.");
-            ConsoleWriteLine("QUIT or Q - Exits the debug command line.");
+            if (flags.Contains("OP"))
+            {
+                ConsoleWriteLine("Haven't implemented this yet lol, no op help 4 u");
+                return;
+            }
+            foreach (var l in HelpLines)
+                ConsoleWriteLine(l);
         }
 
         private static void SetReq(List<string> parameters, List<string> flags)

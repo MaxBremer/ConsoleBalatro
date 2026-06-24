@@ -16,10 +16,24 @@ namespace ConsoleBalatro.Engine.Cards.Decks
 {
     public static class DeckDb
     {
+        /// <summary>
+        /// List of established deck DB names.
+        /// </summary>
         public static List<string> DeckDBNames => DeckData.Keys.ToList();
+
+        /// <summary>
+        /// List of deck DB names of decks that are unlocked by default, at the start of the game.
+        /// </summary>
         public static IReadOnlyCollection<string> DefaultUnlockedDeckNames { get; } = new HashSet<string>(StringComparer.OrdinalIgnoreCase) { "RED" };
+
+        /// <summary>
+        /// List of deck DB names of decks that have been unlocked.
+        /// </summary>
         public static List<string> UnlockedDeckDBNames => DeckDBNames.Where(UnlockManager.IsDeckUnlocked).ToList();
 
+        /// <summary>
+        /// Full DB of decks, alongside their builder function.
+        /// </summary>
         public static Dictionary<string, Func<Card, JokerCardDataBlock>> DeckData = new()
         {
             {
@@ -287,10 +301,25 @@ namespace ConsoleBalatro.Engine.Cards.Decks
             },
         };
 
+        /// <summary>
+        /// Returns whether the passed deck has been unlocked.
+        /// </summary>
+        /// <param name="deckDbName">The deck to be checked.</param>
+        /// <returns>A boolean value indicating whether the passed deck is unlocked.</returns>
         public static bool IsDeckUnlocked(string deckDbName) => UnlockManager.IsDeckUnlocked(deckDbName);
 
+        /// <summary>
+        /// Unlock the passed deck.
+        /// </summary>
+        /// <param name="deckDbName">DB name of the deck to be unlocked.</param>
+        /// <param name="saveImmediately">A boolean value indicating whether to save the unlock immediately.</param>
+        /// <returns>A boolean value indicating whether the deck was unlocked.</returns>
         public static bool UnlockDeck(string deckDbName, bool saveImmediately = true) => UnlockManager.UnlockDeck(deckDbName, saveImmediately);
 
+        /// <summary>
+        /// Sets the current deck of the run, "activating" it by applying its effect(s)/listener(s).
+        /// </summary>
+        /// <param name="deckDbName">The deck to activate.</param>
         public static void BecomeDeck(string deckDbName)
         {
             if (!DeckData.ContainsKey(deckDbName))

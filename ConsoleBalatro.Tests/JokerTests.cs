@@ -1939,6 +1939,7 @@ namespace ConsoleBalatro.Tests
             AddJoker("BRAINSTORM");
 
             Assert.Null(ZoneManager.JokerZone.Cards[0].JokerData.HiddenCopiedData);
+            Assert.Null(ZoneManager.JokerZone.Cards[1].JokerData.HiddenCopiedData);
         }
 
         [Fact]

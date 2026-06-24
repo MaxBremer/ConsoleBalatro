@@ -217,6 +217,7 @@ namespace ConsoleBalatro.UI.EngineUI.Controls
                         }
                         break;
                     case ConsoleKey.B:
+                    case ConsoleKey.V:
                     case ConsoleKey.Escape:
                         done = true;
                         break;

@@ -29,6 +29,8 @@ namespace ConsoleBalatro.UI.EngineUI
 
         public int DisplayXLoc => Sprite.GetLength(1) / 2;
 
+        public int NumRows { get; set; } = 1;
+
         public virtual void Shutdown()
         {
             EngineEventHandler.StopListening(MyZoneChangeListener);
@@ -120,45 +122,34 @@ namespace ConsoleBalatro.UI.EngineUI
         {
             if (args is EngineCardDrawnToZoneArgs cDArgs && args.MyContext.Context == EventContextType.CardDrawnToZone && cDArgs.ZoneDrawnTo == MyCardZone)
             {
-                /*AddCard(cDArgs.CardBeingDrawn);
-                EngineDisplayGlobals.Redraw();*/
-                EngineDisplayGlobals.CacheAnimationAction(_ =>
-                {
-                    AddCard(cDArgs.CardBeingDrawn);
-                }, 150);
+                PotentiallyAnimate(() => AddCard(cDArgs.CardBeingDrawn), 150);
             }
             else if (args is EngineCardDiscardedFromZoneArgs cDiscArgs && args.MyContext.Context == EventContextType.CardDiscarded && cDiscArgs.ZoneCardIsLeaving == MyCardZone)
             {
-                /*RemoveCard(cDiscArgs.CardBeingDiscarded);
-                EngineDisplayGlobals.Redraw();*/
-                EngineDisplayGlobals.CacheAnimationAction(_ =>
-                {
-                    RemoveCard(cDiscArgs.CardBeingDiscarded);
-                }, 150);
+                PotentiallyAnimate(() => RemoveCard(cDiscArgs.CardBeingDiscarded), 150);
             }
             else if (args is EngineCardPositionsSwappingArgs posArgs && args.MyContext.Context == EventContextType.CardPositionsSwapping && posArgs.ZoneOfSwap == MyCardZone)
             {
-
-                /*EngineDisplayGlobals.CacheAnimationAction(_ =>
-                {
-                    var firstInd = posArgs.Card1OldIndex;
-                    var secondInd = posArgs.Card2OldIndex;
-                    CardList[secondInd] = posArgs.Card1;
-                    CardList[firstInd] = posArgs.Card2;
-                    SetCardPositions();
-                    PreDisplaySetup();
-                }, 100);*/
-                EngineDisplayGlobals.CacheAnimationAction(_ =>
-                {
-                    ResetFromZoneList();
-                }, 100);
+                PotentiallyAnimate(ResetFromZoneList, 100);
             }
             else if (args.MyContext.Context == EventContextType.ZoneShuffling && args is EngineZoneShuffledArgs zoneArgs && zoneArgs.ZoneShuffling == MyCardZone)
             {
+                PotentiallyAnimate(ResetFromZoneList, 100);
+            }
+        }
+
+        private void PotentiallyAnimate(Action act, int animDelay)
+        {
+            if (Visible)
+            {
                 EngineDisplayGlobals.CacheAnimationAction(_ =>
                 {
-                    ResetFromZoneList();
-                }, 100);
+                    act();
+                }, animDelay);
+            }
+            else
+            {
+                act();
             }
         }
     }

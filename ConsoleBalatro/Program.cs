@@ -16,7 +16,7 @@ class Program
     private const int INTERFACE_HEIGHT = 29;
 
     private const bool RESET_PROGRESS_ON_START = false;
-    private const bool SKIP_TO_BLIND_SELECTION = true;
+    private const bool SKIP_TO_BLIND_SELECTION = false;
 
     public static void Main(string[] args)
     {

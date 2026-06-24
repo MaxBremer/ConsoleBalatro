@@ -23,6 +23,18 @@ namespace ConsoleBalatro.UI.EngineUI
         public StakeType SelectedStake => StakeChoices[SelectedStakeIndex];
         public string SelectedStakeName => SelectedStake.ToString();
 
+        public Dictionary<StakeType, string> StakeShortDescription = new()
+        {
+            [StakeType.WHITE] = "No changes",
+            [StakeType.RED] = "No small blind $",
+            [StakeType.GREEN] = "Faster scaling",
+            [StakeType.BLACK] = "Eternal jokers",
+            [StakeType.BLUE] = "-1 Discard",
+            [StakeType.PURPLE] = "Faster scaling",
+            [StakeType.ORANGE] = "Perishable jokers",
+            [StakeType.GOLD] = "Rental jokers",
+        };
+
         public DeckChoicesDisplay(int xLoc, int yLoc) : base(EngineDisplayConstants.DECK_CHOICE_DISPLAY_HEIGHT, EngineDisplayConstants.DECK_CHOICE_DISPLAY_WIDTH)
         {
             this.xLoc = xLoc;
@@ -138,11 +150,12 @@ namespace ConsoleBalatro.UI.EngineUI
             DrawBox(stakeX, stakeY, StakePanelWidth, 12, "STAKES");
             WriteLine(stakeX + 2, stakeY + 2, "Current:", StakePanelWidth - 4);
             WriteLine(stakeX + 2, stakeY + 3, $"> {SelectedStakeName}", StakePanelWidth - 4);
+            WriteLine(stakeX + 2, stakeY + 4, StakeShortDescription.ContainsKey(SelectedStake) ? StakeShortDescription[SelectedStake] : "Stake description");
             WriteLine(stakeX + 2, stakeY + 5, CanSelectCurrentStake ? "Playable" : "Locked", StakePanelWidth - 4);
             WriteLine(stakeX + 2, stakeY + 6, $"Beaten: {UnlockManager.GetStakesBeatenCountForDeck(SelectedDeckName)}", StakePanelWidth - 4);
             WriteLine(stakeX + 2, stakeY + 8, UnlockManager.HasDeckStakeSticker(SelectedDeckName, SelectedStake) ? "Sticker earned" : "No sticker yet", StakePanelWidth - 4);
             WriteLine(stakeX + 2, stakeY + 9, "Up/Down change", StakePanelWidth - 4);
-        }
+        } 
 
         private void DrawFooter()
         {

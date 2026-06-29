@@ -160,6 +160,7 @@ namespace ConsoleBalatro.UI.EngineUI
         public static Interface EngineInterface;
         public static List<DisplayEntity> EngineDisplays;
 
+        public static TextDisplayPanel PostRoundRewardsPanel;
         public static TextDisplayPanel InfoDisplayPanel;
         public static CardDisplay CardBeingViewed = null;
 
@@ -442,7 +443,9 @@ namespace ConsoleBalatro.UI.EngineUI
             finalStr += breakStr + "TOTAL: " + totalMoney + breakStr;
             finalStr += breakStr + "[C]ontinue";
 
-            ShowInfoDisplay(finalStr, breakStr);
+            PostRoundRewardsPanel.SetLines(finalStr, breakStr);
+            PostRoundRewardsPanel.AdjustLinesByWrapWidth(EngineDisplayConstants.INFO_PANEL_WIDTH);
+            PostRoundRewardsPanel.Visible = true;
         }
 
         private static void SetupBlindSelectionState()
@@ -497,6 +500,11 @@ namespace ConsoleBalatro.UI.EngineUI
             EngineDisplays.Add(PackMarketDisplay);
             ScoreDisplay = new ScoreDisplay();
             EngineDisplays.Add(ScoreDisplay);
+            PostRoundRewardsPanel = new TextDisplayPanel(new List<string>() { "POST-ROUND REWARDS" }, EngineDisplayConstants.TEXT_DISPLAY_MINWIDTH, EngineDisplayConstants.TEXT_DISPLAY_MINHEIGHT)
+            {
+                xLoc = EngineDisplayConstants.TEXT_DISPLAY_XLOC
+            };
+            EngineDisplays.Add(PostRoundRewardsPanel);
             InfoDisplayPanel = new TextDisplayPanel(new List<string>() { "INFO" }, EngineDisplayConstants.TEXT_DISPLAY_MINWIDTH, EngineDisplayConstants.TEXT_DISPLAY_MINHEIGHT)
             {
                 xLoc = EngineDisplayConstants.TEXT_DISPLAY_XLOC

@@ -35,6 +35,12 @@ namespace ConsoleBalatro.Engine
             20000,
             35000,
             50000,
+            //beyond here, endless mode
+            110000,
+            560000,
+            7200000,
+            300000000,
+            //TODO: BEYOND HERE, NEEDS BIGNUM. BIG IMPLEMENTATION.
         };
 
         /// <summary>
@@ -51,6 +57,11 @@ namespace ConsoleBalatro.Engine
             36000,
             60000,
             100000,
+            //endless
+            230000,
+            1100000,
+            14000000,
+            600000000,
         };
 
         /// <summary>
@@ -67,6 +78,11 @@ namespace ConsoleBalatro.Engine
             60000,
             110000,
             200000,
+            //endless
+            460000,
+            2200000,
+            29000000,
+            1200000000,//TODO: MULT BY 2 EXCEEDS INT LIMIT HERE. WILL BREAK FINALL BOSS. WHATEVER.
         };
 
         /// <summary>

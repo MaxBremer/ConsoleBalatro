@@ -46,6 +46,7 @@ namespace ConsoleBalatro.UI.EngineUI.Controls
             AvailableControlSets.Add("POSTROUND", BuildPostRoundOptions());
             AvailableControlSets.Add("BLIND", BuildBlindOptions());
             AvailableControlSets.Add("GAMEOVER", BuildEmptyOptions());
+            AvailableControlSets.Add("WIN", BuildWinOptions());
             AvailableControlSets.Add("DECKCHOICE", BuildDeckSelectOptions());
             AvailableControlSets.Add("MAINMENU", BuildMainMenuOptions());
             AvailableControlSets.Add("PLACEHOLDERMENU", BuildPlaceholderMenuOptions());
@@ -408,6 +409,31 @@ namespace ConsoleBalatro.UI.EngineUI.Controls
                     FlowHandler.RerollBossBlind(isPlayerReroll: true);
                     EngineDisplayGlobals.Redraw();
                 }
+            });
+
+            return ret;
+        }
+
+        private static ControlOptionset BuildWinOptions()
+        {
+            var ret = new ControlOptionset
+            {
+                SchemaName = "WinScreen"
+            };
+            AddStandardControls(ret, new()
+            {
+                JokersAvailable = true,
+                ConsumablesAvailable = true,
+            }, deckViewAvailable: true);
+
+            ret.AvailableActions.Add(ConsoleKey.E, _ =>
+            {
+                FlowHandler.EndWonRun();
+            });
+
+            ret.AvailableActions.Add(ConsoleKey.C, _ =>
+            {
+                FlowHandler.ContinueWonRun();
             });
 
             return ret;

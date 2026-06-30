@@ -478,6 +478,7 @@ namespace ConsoleBalatro.UI.EngineUI
             StartMenuListener(TriggerPostRoundSetup);
             StartMenuListener(TriggerBlindsSetup);
             StartMenuListener(TriggerGameOver);
+            StartMenuListener(TriggerWinSetup);
         }
 
         private static void InitializeAllDisplays()
@@ -702,6 +703,28 @@ namespace ConsoleBalatro.UI.EngineUI
                 {
                     SetupBlindSelectionState();
                     ControlManager.CurrentControlset = "BLIND";
+                    Redraw();
+                });
+            }
+        }
+
+        private static void SetupWinState()
+        {
+            HideAllEngineEntities();
+
+            JokersDisplay.Visible = true;
+            ConsumableDisplay.Visible = true;
+            ShowInfoDisplay("YOU WIN!&!&Ante 8 boss defeated.&Your deck and current Jokers earned this stake sticker.&!&[E]nd run: return to main menu&[C]ontinue: play endless mode", "&");
+        }
+
+        private static void TriggerWinSetup(EngineEventArgs args)
+        {
+            if (args is EngineGameStateChangeArgs chgArgs && IsValidRoundOfState(chgArgs, GameState.WinMenu))
+            {
+                CacheAnimationAction(_ =>
+                {
+                    SetupWinState();
+                    ControlManager.CurrentControlset = "WIN";
                     Redraw();
                 });
             }

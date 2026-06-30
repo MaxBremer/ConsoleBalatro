@@ -175,6 +175,52 @@ public class UnlockManagerTests : TestClassBase
 
 
     [Fact]
+    public void WinningAnteEightBoss_PresentsWinChoiceBeforeContinuingRun()
+    {
+        ResetEngineForTest();
+        UnlockManager.ResetProgressToDefaults(clearAchievementDefinitions: true);
+
+        FlowHandler.CurrentDeckDbName = "RED";
+        FlowHandler.CurrentAnte = 8;
+        FlowHandler.CurrentSelectedBlind = BlindType.BOSS;
+        FlowHandler.RunWinDecisionPending = false;
+        FlowHandler.HasWonCurrentRun = false;
+
+        FlowHandler.IncrementBlind();
+
+        Assert.True(FlowHandler.HasWonCurrentRun);
+        Assert.True(FlowHandler.RunWinDecisionPending);
+        Assert.Equal(9, FlowHandler.CurrentAnte);
+        Assert.Equal(BlindType.SMALL, FlowHandler.CurrentSelectedBlind);
+
+        FlowHandler.InitializePostRound(new List<(string, int)>());
+        FlowHandler.ClosePostRound();
+
+        Assert.Equal(GameState.WinMenu, Globals.CurrentGameState);
+
+        FlowHandler.ContinueWonRun();
+
+        Assert.False(FlowHandler.RunWinDecisionPending);
+        Assert.Equal(GameState.BlindsMenu, Globals.CurrentGameState);
+        Assert.Equal(9, FlowHandler.CurrentAnte);
+        Assert.Equal(BlindType.SMALL, FlowHandler.CurrentSelectedBlind);
+    }
+
+    [Fact]
+    public void AnteScaling_ReusesHighestConfiguredAmountAfterAnteTwelve()
+    {
+        ResetEngineForTest();
+        StakeManager.CurrentStake = StakeType.WHITE;
+
+        FlowHandler.CurrentAnte = 12;
+        var anteTwelveAmount = FlowHandler.CurrentBaseChipAmount;
+
+        FlowHandler.CurrentAnte = 13;
+
+        Assert.Equal(anteTwelveAmount, FlowHandler.CurrentBaseChipAmount);
+    }
+
+    [Fact]
     public void DebugUnlockDeck_UnlocksDeckAndStakeProgress()
     {
         var savePath = BuildTempSavePath();

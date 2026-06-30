@@ -19,6 +19,7 @@ namespace ConsoleBalatro.Engine
         BlindsMenu,
         ShopMenu,
         GameOverMenu,
+        WinMenu,
         PauseMenu,
 
         SelectingPackOption,

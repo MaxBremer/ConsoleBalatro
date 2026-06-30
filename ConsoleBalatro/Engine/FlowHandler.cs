@@ -118,7 +118,7 @@ namespace ConsoleBalatro.Engine
         /// <summary>
         /// Getter for the base chip amount of the current ante.
         /// </summary>
-        public static int CurrentBaseChipAmount => GetCurrentChipScalingList()[CurrentAnte];
+        public static int CurrentBaseChipAmount => GetBaseChipAmountForAnte(CurrentAnte);
 
         /// <summary>
         /// The currently selected blind within the ante (small, big, or boss)
@@ -172,6 +172,19 @@ namespace ConsoleBalatro.Engine
             //There was one! I'm a smartie :)
             EngineEventHandler.StartListening(new EngineEventListener() { MyAction = RestoreSavedOrderings, MyContextType = EventContextType.GameStatePop });
             EngineEventHandler.StartListening(new EngineEventListener() { MyAction = SavePlayRoundOrderings, MyContextType= EventContextType.GameStatePush });
+        }
+
+        public static bool HasWonCurrentRun = false;
+
+        public static bool RunWinDecisionPending = false;
+
+        private static int GetBaseChipAmountForAnte(int ante)
+        {
+            var scalingList = GetCurrentChipScalingList();
+            if (ante < 0)
+                return scalingList[0];
+
+            return scalingList[Math.Min(ante, scalingList.Count - 1)];
         }
 
         private static List<int> GetCurrentChipScalingList()
@@ -364,6 +377,13 @@ namespace ConsoleBalatro.Engine
             Globals.EmitMoneyGain(Globals.CurrentGameStateObj.PostRoundMoneyToGive, null);
             EngineEventHandler.TriggerEvent(new EngineEventArgs() { MyContext = new() { Context = EventContextType.EndPostRound } });
             Globals.PopCurrGameState();
+
+            if (RunWinDecisionPending)
+            {
+                InitializeWinRound();
+                return;
+            }
+
             InitializeMarketRound();
         }
 
@@ -414,6 +434,27 @@ namespace ConsoleBalatro.Engine
         public static void InitializeMainMenu()
         {
             Globals.PushGameState(new GameStateObj() { GameState = GameState.MainMenu });
+        }
+
+        public static void InitializeWinRound()
+        {
+            Globals.PushGameState(new GameStateObj() { GameState = GameState.WinMenu });
+        }
+
+        public static void EndWonRun()
+        {
+            RunWinDecisionPending = false;
+            Globals.ClearGameStateStack();
+            InitializeMainMenu();
+        }
+
+        public static void ContinueWonRun()
+        {
+            if (Globals.CurrentGameState == GameState.WinMenu)
+                Globals.PopCurrGameState();
+
+            RunWinDecisionPending = false;
+            InitializeBlindSelectionRound();
         }
 
         public static void OpenCollectionMenu()
@@ -502,7 +543,6 @@ namespace ConsoleBalatro.Engine
                     break;
                 case BlindType.BOSS:
                     MarkCurrentStakeBeatenIfRunWon();
-                    //TODO: SHOW WIN SCREEN IF ANTE 8
                     StartNewAnte();
                     break;
             }
@@ -529,6 +569,9 @@ namespace ConsoleBalatro.Engine
                 {
                     progressChanged |= UnlockManager.MarkJokerStakeBeaten(jokerName, StakeManager.CurrentStake, saveImmediately: false);
                 }
+
+                HasWonCurrentRun = true;
+                RunWinDecisionPending = true;
 
                 if (progressChanged)
                 {
@@ -692,6 +735,8 @@ namespace ConsoleBalatro.Engine
             if (!DeckDb.IsDeckUnlocked(deckDBName) || !UnlockManager.IsStakeUnlockedForDeck(deckDBName, stakeChosen))
                 return;
 
+            HasWonCurrentRun = false;
+            RunWinDecisionPending = false;
             CurrentDeckDbName = deckDBName;
             DeckDb.BecomeDeck(deckDBName);
             StakeManager.SetStake(stakeChosen);

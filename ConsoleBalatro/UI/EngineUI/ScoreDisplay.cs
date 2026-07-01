@@ -14,12 +14,12 @@ namespace ConsoleBalatro.UI.EngineUI
         public ScoreDisplay() : base(new List<string>(), EngineDisplayConstants.SCOREDISPLAY_WIDTH_MIN, EngineDisplayConstants.SCOREDISPLAY_HEIGHT_MIN)
         {
             ResetTextLines();
-            EngineEventHandler.StartListening(new EngineEventListener() { MyAction = OnSelectAction, MyContextType = EventContextType.CardSelect });
-            EngineEventHandler.StartListening(new EngineEventListener() { MyAction = OnTotalChipGainAction, MyContextType = EventContextType.TotalChipsGained });
-            EngineEventHandler.StartListening(new EngineEventListener() { MyAction = OnTotalChipResetAction, MyContextType = EventContextType.TotalChipsReset });
-            EngineEventHandler.StartListening(new EngineEventListener() { MyAction = OnRequirementSet, MyContextType = EventContextType.RequiredChipsSet });
-            EngineEventHandler.StartListening(new EngineEventListener() { MyAction = OnHandsChange, MyContextType = EventContextType.HandsChange });
-            EngineEventHandler.StartListening(new EngineEventListener() { MyAction = OnDiscChange, MyContextType = EventContextType.DiscardsChange });
+            EngineEventHandler.StartListening(new EngineEventListener() { MyAction = OnSelectAction, MyContextType = EventContextType.CardSelect, NonEngineListener = true });
+            EngineEventHandler.StartListening(new EngineEventListener() { MyAction = OnTotalChipGainAction, MyContextType = EventContextType.TotalChipsGained, NonEngineListener = true });
+            EngineEventHandler.StartListening(new EngineEventListener() { MyAction = OnTotalChipResetAction, MyContextType = EventContextType.TotalChipsReset, NonEngineListener = true });
+            EngineEventHandler.StartListening(new EngineEventListener() { MyAction = OnRequirementSet, MyContextType = EventContextType.RequiredChipsSet, NonEngineListener = true });
+            EngineEventHandler.StartListening(new EngineEventListener() { MyAction = OnHandsChange, MyContextType = EventContextType.HandsChange, NonEngineListener = true });
+            EngineEventHandler.StartListening(new EngineEventListener() { MyAction = OnDiscChange, MyContextType = EventContextType.DiscardsChange, NonEngineListener = true });
         }
 
         private List<string> GetMyTextLines()

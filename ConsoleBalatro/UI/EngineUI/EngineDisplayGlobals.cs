@@ -464,9 +464,9 @@ namespace ConsoleBalatro.UI.EngineUI
 
         private static void InitializeGlobalListeners()
         {
-            EngineEventHandler.StartListening(new EngineEventListener() { MyAction = DisplayAchievementUnlocked, MyContextType = EventContextType.AchievementUnlocked});
-            EngineEventHandler.StartListening(new EngineEventListener() { MyAction = DisplayChipsMultEmit, MyContextType = EventContextType.GainEmit });
-            EngineEventHandler.StartListening(new EngineEventListener() { MyAction = DisplayMoneyEmit, MyContextType = EventContextType.MoneyGainEmit });
+            EngineEventHandler.StartListening(new EngineEventListener() { MyAction = DisplayAchievementUnlocked, MyContextType = EventContextType.AchievementUnlocked, NonEngineListener = true});
+            EngineEventHandler.StartListening(new EngineEventListener() { MyAction = DisplayChipsMultEmit, MyContextType = EventContextType.GainEmit, NonEngineListener = true });
+            EngineEventHandler.StartListening(new EngineEventListener() { MyAction = DisplayMoneyEmit, MyContextType = EventContextType.MoneyGainEmit, NonEngineListener = true });
 
             StartMenuListener(TriggerMarketSetup);
             StartMenuListener(TriggerPlayRoundSetup);
@@ -478,6 +478,7 @@ namespace ConsoleBalatro.UI.EngineUI
             StartMenuListener(TriggerPostRoundSetup);
             StartMenuListener(TriggerBlindsSetup);
             StartMenuListener(TriggerGameOver);
+            StartMenuListener(TriggerWinSetup);
         }
 
         private static void InitializeAllDisplays()
@@ -585,8 +586,8 @@ namespace ConsoleBalatro.UI.EngineUI
 
         private static void StartMenuListener(Action<EngineEventArgs> listAct)
         {
-            EngineEventHandler.StartListening(new EngineEventListener() { MyAction = listAct, MyContextType = EventContextType.GameStatePop });
-            EngineEventHandler.StartListening(new EngineEventListener() { MyAction = listAct, MyContextType = EventContextType.GameStatePush });
+            EngineEventHandler.StartListening(new EngineEventListener() { MyAction = listAct, MyContextType = EventContextType.GameStatePop, NonEngineListener = true });
+            EngineEventHandler.StartListening(new EngineEventListener() { MyAction = listAct, MyContextType = EventContextType.GameStatePush, NonEngineListener = true });
         }
 
         //TODO: AGAIN, I was just snorting dumb juice when writing this. lookit all the repeated code. Make better.
@@ -702,6 +703,28 @@ namespace ConsoleBalatro.UI.EngineUI
                 {
                     SetupBlindSelectionState();
                     ControlManager.CurrentControlset = "BLIND";
+                    Redraw();
+                });
+            }
+        }
+
+        private static void SetupWinState()
+        {
+            HideAllEngineEntities();
+
+            JokersDisplay.Visible = true;
+            ConsumableDisplay.Visible = true;
+            ShowInfoDisplay("YOU WIN!&!&Ante 8 boss defeated.&Your deck and current Jokers earned this stake sticker.&!&[E]nd run: return to main menu&[C]ontinue: play endless mode", "&");
+        }
+
+        private static void TriggerWinSetup(EngineEventArgs args)
+        {
+            if (args is EngineGameStateChangeArgs chgArgs && IsValidRoundOfState(chgArgs, GameState.WinMenu))
+            {
+                CacheAnimationAction(_ =>
+                {
+                    SetupWinState();
+                    ControlManager.CurrentControlset = "WIN";
                     Redraw();
                 });
             }

@@ -27,6 +27,7 @@ namespace ConsoleBalatro.UI.EngineUI.Controls
             { "ADDVOUCHER", AddVoucher },
             { "PRINT", PrintList },
             { "SETREQ", SetReq },
+            { "SETANTE", SetAnte },
             { "HELP", Help },
             { "OP", Op },
             { "SETMONEY", SetMoney },
@@ -65,6 +66,7 @@ namespace ConsoleBalatro.UI.EngineUI.Controls
             "ADDJOKER <jokerName> [-ignorespace] - Adds a joker card to the joker zone. Use -ignorespace to add even if zone is full.",
             "PRINT <listName> - Prints the contents of a predefined list. Valid list names are: " + string.Join(", ", GameStringLists.Keys),
             "SETREQ <amount> - Sets the required chips for the current blind during PlayRound state.",
+            "SETANTE <amount> - Sets the current ante.",
             "HELP - prints available commands. You ran it to get this list, dummy.",
             "OP <opName> <targetZone> <targetInd|ALL> <opParams...> - Performs the passed operation, with passed params, on the card(s) specified by targetZone and targetInd. For more info, use help -op",
             "SETMONEY <amount> - Sets the players money to the passed amount.",
@@ -235,6 +237,22 @@ namespace ConsoleBalatro.UI.EngineUI.Controls
             Globals.RequiredChipsForCurrentBlind = amount;
         }
 
+        private static void SetAnte(List<string> parameters, List<string> flags)
+        {
+            if (parameters.Count != 1)
+            {
+                ConsoleWriteLine("Invalid number of parameters. Usage: setante <amount>");
+                return;
+            }
+
+            if (!int.TryParse(parameters[0], out int amount))
+            {
+                ConsoleWriteLine($"Invalid amount: {parameters[0]}");
+                return;
+            }
+
+            FlowHandler.CurrentAnte = amount;
+        }
 
         private static void UnlockDeck(List<string> parameters, List<string> flags)
         {

@@ -16,8 +16,8 @@ namespace ConsoleBalatro.UI.EngineUI
         public static void InitializeUIStateManager()
         {
             UIGameStateTracker = new Stack<GameStateObj>();
-            EngineEventHandler.StartListening(new EngineEventListener() { MyAction = OnGameStatePop, MyContextType = EventContextType.GameStatePop });
-            EngineEventHandler.StartListening(new EngineEventListener() { MyAction = OnGameStatePush, MyContextType = EventContextType.GameStatePush });
+            EngineEventHandler.StartListening(new EngineEventListener() { MyAction = OnGameStatePop, MyContextType = EventContextType.GameStatePop, NonEngineListener = true });
+            EngineEventHandler.StartListening(new EngineEventListener() { MyAction = OnGameStatePush, MyContextType = EventContextType.GameStatePush, NonEngineListener = true });
         }
 
         //TODO: These exist so that, if needed, I can animate this.

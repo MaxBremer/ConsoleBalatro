@@ -15,7 +15,7 @@ namespace ConsoleBalatro.UI.EngineUI
         {
             xLoc = EngineDisplayConstants.PLAYED_DISPLAY_XLOC;
             yLoc = EngineDisplayConstants.PLAYED_DISPLAY_YLOC;
-            EngineEventHandler.StartListening(new EngineEventListener() { MyAction = OnScoringHandCalced, MyContextType = EventContextType.HandPlayedCalculated });
+            EngineEventHandler.StartListening(new EngineEventListener() { MyAction = OnScoringHandCalced, MyContextType = EventContextType.HandPlayedCalculated, NonEngineListener = true });
         }
 
         public override void PreDisplaySetup()

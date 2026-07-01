@@ -22,7 +22,7 @@ namespace ConsoleBalatro.UI.EngineUI
 
         };
 
-        public static Dictionary<GameState, List<EngineDisplayType>> DisplaysShownPerState = new()//TODO: This is a good idea, but not implemented yet.
+        public static Dictionary<GameState, List<EngineDisplayType>> DisplaysShownPerState = new()//TODO: This is a good idea, but not implemented yet. Replaces a lot of repeated code in EngineDisplayGlobals.
         {
             { GameState.PlayRound, new() {EngineDisplayType.BeingPlayed, EngineDisplayType.Jokers, EngineDisplayType.Consumables, EngineDisplayType.Hand} },
         };

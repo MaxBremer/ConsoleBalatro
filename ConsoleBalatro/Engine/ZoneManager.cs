@@ -110,9 +110,6 @@ namespace ConsoleBalatro.Engine
 
         private static void InitializePlayRoundZones()
         {
-            //XTOXDOX: Hand size change changes this zones size.
-            //Ignore above; BASE hand size is only what it starts at. 
-            //HandSize is a field in both Globals and ZoneManager that does directly pull/set the MaxCapacity of handzone.
             HandZone = MakeZone("Hand", Globals.BaseHandSize);
             HandSize = Globals.BaseHandSize; //Yes, this is redundant with the above line. Live with it. It doesn't hurt anything.
             DiscardZone = MakeZone("Discard");

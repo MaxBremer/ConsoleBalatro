@@ -36,6 +36,26 @@ namespace ConsoleBalatro.Engine.Events
             CallDepth = 0;
         }
 
+        public static void ResetEventHandlerForRunEnding()
+        {
+            GeneralListeners.RemoveAll(x => !x.NonEngineListener);
+            var toRem = new List<EventContextType>();
+            foreach (var key in SpecificListeners.Keys.ToList())
+            {
+                SpecificListeners[key].RemoveAll(x => !x.NonEngineListener);
+                if(SpecificListeners[key].Count == 0) {
+                    toRem.Add(key);
+                }
+            }
+            foreach (var key in toRem)
+            {
+                SpecificListeners.Remove(key);
+            }
+            ToBeAdded.Clear();
+            ToBeRemoved.Clear();
+            SavedEvents.Clear();
+        }
+
         public static void ResetSavedEvents()
         {
             SavedEvents.Clear();

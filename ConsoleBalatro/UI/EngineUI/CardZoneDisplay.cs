@@ -16,7 +16,7 @@ namespace ConsoleBalatro.UI.EngineUI
         public CardZoneDisplay(CardZone zone, int h, int w) : base(h, w)
         {
             MyCardZone = zone;
-            MyZoneChangeListener = new EngineEventListener() { MyAction = OnCardZoneChangeAction };
+            MyZoneChangeListener = new EngineEventListener() { MyAction = OnCardZoneChangeAction, NonEngineListener = true };
             EngineEventHandler.StartListening(MyZoneChangeListener);
         }
 

@@ -48,11 +48,11 @@ namespace ConsoleBalatro.UI.EngineUI
 
         public void AddListener()
         {
-            MyListener = new EngineEventListener() { MyAction = OnCardDetailChange, MyContextType = EventContextType.CardDetailsChange };
+            MyListener = new EngineEventListener() { MyAction = OnCardDetailChange, MyContextType = EventContextType.CardDetailsChange, NonEngineListener = true };
             EngineEventHandler.StartListening(MyListener);
-            MyFlipListener = new EngineEventListener() { MyAction = OnCardFlip, MyContextType = EventContextType.CardDetailsChange };
+            MyFlipListener = new EngineEventListener() { MyAction = OnCardFlip, MyContextType = EventContextType.CardDetailsChange, NonEngineListener = true };
             EngineEventHandler.StartListening(MyFlipListener);
-            MyDebuffListener = new EngineEventListener() { MyAction = UpdateTrigger, MyContextType = EventContextType.CardDetailsChange };
+            MyDebuffListener = new EngineEventListener() { MyAction = UpdateTrigger, MyContextType = EventContextType.CardDetailsChange, NonEngineListener = true };
             EngineEventHandler.StartListening(MyDebuffListener);
         }
 

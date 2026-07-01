@@ -27,6 +27,7 @@ namespace ConsoleBalatro.UI.EngineUI
             var list = new EngineEventListener();
             list.MyContextType = EventContextType.BlindChange;
             list.MyAction = BlindChangeDone;
+            list.NonEngineListener = true;
             EngineEventHandler.StartListening(list);
         }
 

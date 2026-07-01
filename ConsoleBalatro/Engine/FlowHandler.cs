@@ -444,7 +444,7 @@ namespace ConsoleBalatro.Engine
         public static void EndWonRun()
         {
             RunWinDecisionPending = false;
-            Globals.ClearGameStateStack();
+            Globals.ResetFullEngine();
             InitializeMainMenu();
         }
 

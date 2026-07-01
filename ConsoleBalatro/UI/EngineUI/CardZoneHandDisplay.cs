@@ -20,7 +20,7 @@ namespace ConsoleBalatro.UI.EngineUI
             yLoc = Interface.Display_Height - (CardDisplay.CARD_HEIGHT + CARD_Y_OFFSET_POS + 1);
             xLoc = EngineDisplayConstants.HAND_DISPLAY_XLOC;
 
-            EngineEventHandler.StartListening(new EngineEventListener() { MyAction = OnSelectAction, MyContextType = EventContextType.CardSelect });
+            EngineEventHandler.StartListening(new EngineEventListener() { MyAction = OnSelectAction, MyContextType = EventContextType.CardSelect, NonEngineListener = true });
         }
 
         public Dictionary<Card, bool> CardIsSelectedVisually = new();

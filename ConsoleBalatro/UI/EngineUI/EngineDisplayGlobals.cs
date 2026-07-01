@@ -464,9 +464,9 @@ namespace ConsoleBalatro.UI.EngineUI
 
         private static void InitializeGlobalListeners()
         {
-            EngineEventHandler.StartListening(new EngineEventListener() { MyAction = DisplayAchievementUnlocked, MyContextType = EventContextType.AchievementUnlocked});
-            EngineEventHandler.StartListening(new EngineEventListener() { MyAction = DisplayChipsMultEmit, MyContextType = EventContextType.GainEmit });
-            EngineEventHandler.StartListening(new EngineEventListener() { MyAction = DisplayMoneyEmit, MyContextType = EventContextType.MoneyGainEmit });
+            EngineEventHandler.StartListening(new EngineEventListener() { MyAction = DisplayAchievementUnlocked, MyContextType = EventContextType.AchievementUnlocked, NonEngineListener = true});
+            EngineEventHandler.StartListening(new EngineEventListener() { MyAction = DisplayChipsMultEmit, MyContextType = EventContextType.GainEmit, NonEngineListener = true });
+            EngineEventHandler.StartListening(new EngineEventListener() { MyAction = DisplayMoneyEmit, MyContextType = EventContextType.MoneyGainEmit, NonEngineListener = true });
 
             StartMenuListener(TriggerMarketSetup);
             StartMenuListener(TriggerPlayRoundSetup);
@@ -586,8 +586,8 @@ namespace ConsoleBalatro.UI.EngineUI
 
         private static void StartMenuListener(Action<EngineEventArgs> listAct)
         {
-            EngineEventHandler.StartListening(new EngineEventListener() { MyAction = listAct, MyContextType = EventContextType.GameStatePop });
-            EngineEventHandler.StartListening(new EngineEventListener() { MyAction = listAct, MyContextType = EventContextType.GameStatePush });
+            EngineEventHandler.StartListening(new EngineEventListener() { MyAction = listAct, MyContextType = EventContextType.GameStatePop, NonEngineListener = true });
+            EngineEventHandler.StartListening(new EngineEventListener() { MyAction = listAct, MyContextType = EventContextType.GameStatePush, NonEngineListener = true });
         }
 
         //TODO: AGAIN, I was just snorting dumb juice when writing this. lookit all the repeated code. Make better.

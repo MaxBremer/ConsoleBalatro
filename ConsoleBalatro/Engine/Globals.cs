@@ -1,4 +1,5 @@
 ﻿using ConsoleBalatro.Engine.Cards;
+using ConsoleBalatro.Engine.Cards.Blinds;
 using ConsoleBalatro.Engine.Cards.Consumables;
 using ConsoleBalatro.Engine.Cards.Enums;
 using ConsoleBalatro.Engine.Cards.Vouchers;
@@ -6,6 +7,7 @@ using ConsoleBalatro.Engine.Events;
 using ConsoleBalatro.Engine.Events.Args;
 using ConsoleBalatro.Engine.Market;
 using ConsoleBalatro.Engine.Pools;
+using ConsoleBalatro.Engine.Stakes;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -267,6 +269,33 @@ namespace ConsoleBalatro.Engine
 
             EngineUtils.ResetUtilValues();
             Flags.Clear();
+        }
+
+        public static void ResetFullEngine()
+        {
+            EngineEventHandler.ResetEventHandlerForRunEnding();
+
+            ResetGlobalValues();
+            ClearGameStateStack();
+            InitializeMain();
+            ClearGameStateStack();
+            ResetGlobalValues();
+
+            FlowHandler.CurrentAnte = 0;
+            FlowHandler.CurrentDeckDbName = string.Empty;
+            StakeManager.CurrentStake = StakeType.WHITE;
+            FlowHandler.CurrentSelectedBlind = BlindType.SMALL;
+            FlowHandler.CurrentTempChanges = null;
+            FlowHandler.CurrentBossBlind = "";
+            BossBlindDb.BossBlindsAlreadyUsed.Clear();
+
+            Money = 0;
+            CurMaxInterest = 5;
+            SetStartOfRoundStats();
+            RequiredChipsForCurrentBlind = -1;
+
+            ZoneManager.HiddenBlindAttributeZone.ClearCards(false);
+            ZoneManager.OtherHiddenJokerZone.ClearCards(false);
         }
 
         /// <summary>

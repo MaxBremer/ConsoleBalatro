@@ -17,5 +17,10 @@ namespace ConsoleBalatro.Engine.Events
         public EventContextType MyContextType = EventContextType.NONE;
 
         public bool RemoveAfterTriggering = false;
+
+        /// <summary>
+        /// Indicates whether this listener is tied to the game engine or not. If not it's for the UI or controls or something, so should not be cleared when the engine is reset.
+        /// </summary>
+        public bool NonEngineListener = false;
     }
 }

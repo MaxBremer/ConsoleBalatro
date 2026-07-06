@@ -14,5 +14,6 @@ namespace ConsoleBalatro.Engine.Cards.Jokers
         public int Price;
         public JokerRarity Rarity = JokerRarity.COMMON;
         public Func<MarketEligibilityContext, bool> isEligible = _ => true;
+        public string? AchievementForUnlock = null;
     }
 }

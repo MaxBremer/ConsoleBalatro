@@ -1,1 +1,42 @@
-﻿
+﻿JOKER UNLOCK ACHIEVEMENTS:
+
+GOLDEN TICKET: Play a 5 card hand that contains only Gold cards.
+MR. BONES: Lose 5 runs.
+ACROBAT: Play 200 hands.
+SOCK AND BUSKIN: Play a total of 300 face cards.
+SWASHBUCKLER: Sell a total of 20 Joker cards.
+TROUBADOUR: Win 5 consecutive rounds by playing only 1 hand.
+CERTIFICATE: Have a Gold playing card with a Gold seal.
+SMEARED JOKER: Have at least 3 Wild Cards in your deck.
+THROWBACK: Continue a saved run from the main menu (UH OH)
+HANGING CHAD: Beat a Boss Blind with a High Card.
+ROUGH GEM: Have at least 30 cards with Diamond suit in your deck.
+BLOODSTONE: Have at least 30 cards with Heart suit in your deck.
+ARROWHEAD: Have at least 30 cards with Spade suit in your deck.
+ONYX AGATE: Have at least 30 cards with Club suit in your deck.
+GLASS JOKER: Have at least 5 Glass Cards in your deck.
+SHOWMAN: Reach Ante level 4.
+FLOWER POT: Reach Ante level 8.
+BLUEPRINT: Win a run
+WEE JOKER: Win a run in 18 or fewer play rounds.
+MERRY ANDY: Win a run in 12 or fewer play rounds.
+OOPS! ALL 6S: In one hand, earn at least 10,000 chips.
+THE IDOL: In one hand, earn at least 1000000 chips.
+SEEING DOUBLE: Play a hand that contains four 7s of Clubs.
+MATADOR: Defeat a Boss Blind in 1 hand without using any discards.
+HIT THE ROAD: Discard 5 Jacks at the same time.
+THE DUO: Win a run without playing a Pair.
+THE TRIO: Win a run without playing a Three of a Kind.
+THE FAMILY: Win a run without playing a Four of a Kind.
+THE ORDER: Win a run without playing a Straight.
+THE TRIBE: Win a run without playing a Flush.
+STUNTMAN: Earn at least 100 million Chips in a single hand.
+INVISIBLE JOKER: Win a run without ever having more than 4 Jokers.
+SATELLITE: Have at least 400$.
+SHOOT THE MOON: Play every Heart card in your deck in one round.
+DRIVERS LICENSE: Enhance 16 cards in your de3ck.
+CARTOMANCER: Discover every Tarot card (by adding them to the collection)
+ASTRONOMER: Discover every Planet card.
+BURNT JOKER: Sell 50 cards.
+BOOTSTRAPS: Have at least 2 Polychrome Jokers at the same time.
+CANIO, TRIBOULET, YORICK, CHICOT, and PERKEO: Find this Joker from the Soul card.

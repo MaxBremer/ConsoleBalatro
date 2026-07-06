@@ -423,12 +423,9 @@ namespace ConsoleBalatro.Engine.Cards.Vouchers
                             if(args is EngineOddsEstablishedForPackArgs packArgs && packArgs.PackDataBeingOpened.RelevantBuyItemType == BuyItemType.PLANET_CARD)
                             {
                                 var targetHand = ScoreHandler.MostPlayedHand;
-                                ZoneManager.PackOptionZone.AddCard(ConsumableManager.MakePlanetCard(targetHand));//TODO: Determine whether telescope can create dupes of owned.
-                                //var targetCard = MarketOptionsManager.MarketPoolsToDrawFrom[BuyItemType.PLANET_CARD].Cards.FirstOrDefault(x => x.ConsumableData.PlanetHandType == targetHand);
-                                //if(targetCard != null)
-                                //{
-                                //    ZoneManager.PackOptionZone.DrawTargetFrom(MarketOptionsManager.MarketPoolsToDrawFrom[BuyItemType.PLANET_CARD], targetCard);
-                                //}
+                                var newCard = ConsumableManager.MakePlanetCard(targetHand);
+                                ZoneManager.PackOptionZone.AddCard(newCard);//TODO: Determine whether telescope can create dupes of owned.
+                                packArgs.CardsForceAdded.Add(newCard);
                             }
                         }
                     };

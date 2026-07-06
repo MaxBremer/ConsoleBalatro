@@ -1,4 +1,5 @@
-﻿using ConsoleBalatro.Engine.Cards.Enums;
+﻿using ConsoleBalatro.Engine.Cards;
+using ConsoleBalatro.Engine.Cards.Enums;
 using ConsoleBalatro.Engine.Market;
 using System;
 using System.Collections.Generic;
@@ -13,6 +14,7 @@ namespace ConsoleBalatro.Engine.Events.Args
         public Dictionary<BuyItemType, int> Odds { get; set; }
         public PackType PackBeingOpened { get; set; }
         public Cards.Consumables.ConsumableManager.PackData PackDataBeingOpened { get; set; }
+        public List<Card> CardsForceAdded { get; set; } = new(); 
         
     }
 }

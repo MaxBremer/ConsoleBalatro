@@ -25,6 +25,7 @@ namespace ConsoleBalatro.Engine.Events
         PackSkip,
         PackOddsEstablished,
         CardDrawnToZone,
+        VISUALCardDrawnToZone,
 
         StartPlayRound,
         StartPlayRoundSetupOver,

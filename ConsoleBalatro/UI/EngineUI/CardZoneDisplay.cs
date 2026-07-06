@@ -120,7 +120,7 @@ namespace ConsoleBalatro.UI.EngineUI
 
         protected void OnCardZoneChangeAction(EngineEventArgs args)
         {
-            if (args is EngineCardDrawnToZoneArgs cDArgs && args.MyContext.Context == EventContextType.CardDrawnToZone && cDArgs.ZoneDrawnTo == MyCardZone)
+            if (args is EngineCardDrawnToZoneArgs cDArgs && args.MyContext.Context == EventContextType.VISUALCardDrawnToZone && cDArgs.ZoneDrawnTo == MyCardZone)
             {
                 PotentiallyAnimate(() => AddCard(cDArgs.CardBeingDrawn), 150);
             }

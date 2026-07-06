@@ -39,6 +39,8 @@ namespace ConsoleBalatro.Engine
                 var context = new EventContext() { Context = EventContextType.CardDrawnToZone };
                 var evArgs = new EngineCardDrawnToZoneArgs() { CardBeingDrawn = card, ZoneDrawnTo = this, ZoneDrawnFrom = zoneDrawnFrom, MyContext = context };
                 EngineEventHandler.TriggerEvent(evArgs);
+                evArgs.MyContext.Context = EventContextType.VISUALCardDrawnToZone;
+                EngineEventHandler.TriggerEvent(evArgs);
 
             }
 

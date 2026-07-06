@@ -107,6 +107,7 @@ namespace ConsoleBalatro.Engine.Pools
             Rules.Add(new VoucherPoolRules());
             Rules.Add(new PackRareReplacementRule());
             Rules.Add(new SpectralNoSoulBlackHoleRule());
+            Rules.Add(new SpecialCavendishRule());
         }
 
         public static RollableDefinition RollSingle(ContentRollRequest request)

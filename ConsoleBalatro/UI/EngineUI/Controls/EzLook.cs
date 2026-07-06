@@ -105,21 +105,23 @@ namespace ConsoleBalatro.UI.EngineUI.Controls
                     break;
                 case ConsoleKey.S:
                 case ConsoleKey.DownArrow:
-                    if (ZoneData[CurrentTargetZone].BottomZone != null && ZoneData[CurrentTargetZone].BottomZone.MyZone.Cards.Count > 0)
+                    /*if (ZoneData[CurrentTargetZone].BottomZone != null && ZoneData[CurrentTargetZone].BottomZone.MyZone.Cards.Count > 0)
                     {
                         CurrentTargetIndex = ZoneData[CurrentTargetZone].BottomZone.MyZone.Cards.Count > CurrentTargetIndex + ZoneData[CurrentTargetZone].BottomZone.OffsetFromTopZone ? CurrentTargetIndex + ZoneData[CurrentTargetZone].BottomZone.OffsetFromTopZone : ZoneData[CurrentTargetZone].BottomZone.MyZone.Cards.Count - 1;
                         CurrentTargetZone = ZoneData[CurrentTargetZone].BottomZone.MyZone;
                         RefreshTarget();
-                    }
+                    }*/
+                    AttemptMoveZone(ZoneDirection.DOWN);
                     break;
                 case ConsoleKey.W:
                 case ConsoleKey.UpArrow:
-                    if (ZoneData[CurrentTargetZone].TopZone != null && ZoneData[CurrentTargetZone].TopZone.MyZone.Cards.Count > 0)
+                    /*if (ZoneData[CurrentTargetZone].TopZone != null && ZoneData[CurrentTargetZone].TopZone.MyZone.Cards.Count > 0)
                     {
                         CurrentTargetIndex = ZoneData[CurrentTargetZone].TopZone.MyZone.Cards.Count > CurrentTargetIndex + ZoneData[CurrentTargetZone].OffsetFromTopZone ? CurrentTargetIndex + ZoneData[CurrentTargetZone].OffsetFromTopZone : ZoneData[CurrentTargetZone].TopZone.MyZone.Cards.Count - 1;
                         CurrentTargetZone = ZoneData[CurrentTargetZone].TopZone.MyZone;
                         RefreshTarget();
-                    }
+                    }*/
+                    AttemptMoveZone(ZoneDirection.UP);
                     break;
                 default:
                     break;
@@ -127,6 +129,53 @@ namespace ConsoleBalatro.UI.EngineUI.Controls
             return true;
         }
 
+        private static void AttemptMoveZone(ZoneDirection direction)
+        {
+            if (direction == ZoneDirection.UP)
+            {
+                if (ZoneData[CurrentTargetZone].TopZone != null)
+                {
+                    if (ZoneData[CurrentTargetZone].TopZone.MyZone.Cards.Count > 0)
+                    {
+                        CurrentTargetIndex = ZoneData[CurrentTargetZone].TopZone.MyZone.Cards.Count > CurrentTargetIndex + ZoneData[CurrentTargetZone].OffsetFromTopZone ? CurrentTargetIndex + ZoneData[CurrentTargetZone].OffsetFromTopZone : ZoneData[CurrentTargetZone].TopZone.MyZone.Cards.Count - 1;
+                        CurrentTargetZone = ZoneData[CurrentTargetZone].TopZone.MyZone;
+                        RefreshTarget();
+                    }
+                    else if (ZoneData[CurrentTargetZone].TopZone.TopZone != null)
+                    {
+                        CurrentTargetIndex = ZoneData[CurrentTargetZone].TopZone.TopZone.MyZone.Cards.Count > CurrentTargetIndex + ZoneData[CurrentTargetZone].OffsetFromTopZone ? CurrentTargetIndex + ZoneData[CurrentTargetZone].OffsetFromTopZone : ZoneData[CurrentTargetZone].TopZone.TopZone.MyZone.Cards.Count - 1;
+                        CurrentTargetZone = ZoneData[CurrentTargetZone].TopZone.TopZone.MyZone;
+                        RefreshTarget();
+                    }
+                }
+            }else if(direction == ZoneDirection.DOWN)
+            {
+                if (ZoneData[CurrentTargetZone].BottomZone != null)
+                {
+                    if (ZoneData[CurrentTargetZone].BottomZone.MyZone.Cards.Count > 0)
+                    {
+                        CurrentTargetIndex = ZoneData[CurrentTargetZone].BottomZone.MyZone.Cards.Count > CurrentTargetIndex + ZoneData[CurrentTargetZone].OffsetFromTopZone ? CurrentTargetIndex + ZoneData[CurrentTargetZone].OffsetFromTopZone : ZoneData[CurrentTargetZone].BottomZone.MyZone.Cards.Count - 1;
+                        CurrentTargetZone = ZoneData[CurrentTargetZone].BottomZone.MyZone;
+                        RefreshTarget();
+                    }
+                    else if (ZoneData[CurrentTargetZone].BottomZone.BottomZone != null)
+                    {
+                        CurrentTargetIndex = ZoneData[CurrentTargetZone].BottomZone.BottomZone.MyZone.Cards.Count > CurrentTargetIndex + ZoneData[CurrentTargetZone].OffsetFromTopZone ? CurrentTargetIndex + ZoneData[CurrentTargetZone].OffsetFromTopZone : ZoneData[CurrentTargetZone].BottomZone.BottomZone.MyZone.Cards.Count - 1;
+                        CurrentTargetZone = ZoneData[CurrentTargetZone].BottomZone.BottomZone.MyZone;
+                        RefreshTarget();
+                    }
+                }
+            }
+            
+        }
+
+        public enum ZoneDirection
+        {
+            UP,
+            DOWN,
+            LEFT,
+            RIGHT,
+        }
 
         public class ZoneGridData
         {
@@ -185,8 +234,16 @@ namespace ConsoleBalatro.UI.EngineUI.Controls
             var vouchMarket = new ZoneGridData(ZoneManager.VoucherMarketZone);
             var packMarket = new ZoneGridData(ZoneManager.PackMarketZone);
             BindUD(ZoneData[ZoneManager.JokerZone], mainMarket);
-            BindUD(mainMarket, vouchMarket);
-            BindLR(vouchMarket, packMarket);
+            if(ZoneManager.VoucherMarketZone.Cards.Count > 0)//TODO: Yup, here it is, gross special-case handling. What? U gonna fight me? HUh?????
+            {
+                BindUD(mainMarket, vouchMarket);
+                BindLR(vouchMarket, packMarket);
+            }else if(ZoneManager.PackMarketZone.Cards.Count > 0)
+            {
+                BindUD(mainMarket, packMarket);
+            }
+            /*BindUD(mainMarket, vouchMarket);
+            BindLR(vouchMarket, packMarket);*/
             ZoneData.Add(ZoneManager.MainMarketZone, mainMarket);
             ZoneData.Add(ZoneManager.VoucherMarketZone, vouchMarket);
             ZoneData.Add(ZoneManager.PackMarketZone, packMarket);

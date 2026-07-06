@@ -97,6 +97,11 @@ namespace ConsoleBalatro.Engine
             EngineEventHandler.TriggerEvent(args);
 
             var batchInfo = new ContentRollBatchContext();
+
+            if(args.CardsForceAdded.Count > 0)//TODO: force adding cards should be handled here, not in the listeners for the event.
+                foreach (var id in args.CardsForceAdded.Select(x => x.ConsumableData.DBName))
+                    batchInfo.GeneratedIds.Add(id);
+
             for (int i = ZoneManager.PackOptionZone.Cards.Count; i < packInfo.NumOptionsPresented; i++) //lookit my pretty lil hack i got here :)
             {
                 var type = MarketPullManager.ChooseRollItemByOdds(args.Odds);

@@ -14,12 +14,20 @@ namespace ConsoleBalatro.Engine
         private static readonly object SaveLock = new();
         private static readonly Dictionary<string, EngineEventListener> AchievementListeners = new(StringComparer.OrdinalIgnoreCase);
         private static readonly List<EngineEventListener> CollectionListeners = new();
+        private static readonly List<EngineEventListener> PersistentProgressListeners = new();
         private static HashSet<string> UnlockedDecks = new(StringComparer.OrdinalIgnoreCase);
         private static HashSet<string> AchievedAchievements = new(StringComparer.OrdinalIgnoreCase);
         private static HashSet<string> CollectedJokers = new(StringComparer.OrdinalIgnoreCase);
         private static HashSet<string> CollectedConsumables = new(StringComparer.OrdinalIgnoreCase);
         private static Dictionary<string, int> DeckHighestBeatenStakeIndexes = new(StringComparer.OrdinalIgnoreCase);
         private static Dictionary<string, int> JokerHighestBeatenStakeIndexes = new(StringComparer.OrdinalIgnoreCase);
+        private static Dictionary<string, int> PersistentProgressCounts = new(StringComparer.OrdinalIgnoreCase);
+
+        public const string LostRunsProgressKey = "LOST_RUNS";
+        public const string HandsPlayedProgressKey = "HANDS_PLAYED";
+        public const string FaceCardsPlayedProgressKey = "FACE_CARDS_PLAYED";
+        public const string JokersSoldProgressKey = "JOKERS_SOLD";
+        public const string CardsSoldProgressKey = "CARDS_SOLD";
 
         private static readonly JsonSerializerOptions SaveJsonOptions = new()
         {
@@ -58,6 +66,7 @@ namespace ConsoleBalatro.Engine
             }
             AchievementListeners.Clear();
             StopCollectionListeners();
+            StopPersistentProgressListeners();
 
             UnlockedDecks = new HashSet<string>(DeckDb.DefaultUnlockedDeckNames, StringComparer.OrdinalIgnoreCase);
             AchievedAchievements = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
@@ -65,6 +74,7 @@ namespace ConsoleBalatro.Engine
             CollectedConsumables = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
             DeckHighestBeatenStakeIndexes = new Dictionary<string, int>(StringComparer.OrdinalIgnoreCase);
             JokerHighestBeatenStakeIndexes = new Dictionary<string, int>(StringComparer.OrdinalIgnoreCase);
+            PersistentProgressCounts = new Dictionary<string, int>(StringComparer.OrdinalIgnoreCase);
 
             if (clearAchievementDefinitions)
             {
@@ -73,6 +83,7 @@ namespace ConsoleBalatro.Engine
             else
             {
                 AchievementDb.RegisterDefaultAchievements();
+                StartPersistentProgressListeners();
                 StartCollectionListeners();
                 StartUnachievedAchievementListeners();
             }
@@ -229,6 +240,13 @@ namespace ConsoleBalatro.Engine
 
         public static bool IsAchievementAchieved(string achievementId) => AchievedAchievements.Contains(achievementId);
 
+        public static int GetPersistentProgressCount(string progressKey)
+        {
+            return !string.IsNullOrWhiteSpace(progressKey) && PersistentProgressCounts.TryGetValue(progressKey, out var count)
+                ? Math.Max(0, count)
+                : 0;
+        }
+
         public static bool RegisterAchievement(string achievementId)
         {
             return RegisterAchievementListener(achievementId, EventContextType.NONE, _ => true, startListening: false);
@@ -272,7 +290,7 @@ namespace ConsoleBalatro.Engine
 
             lock (SaveLock)
             {
-                var saveData = UnlockSaveData.FromCurrentState(UnlockedDecks, DeckHighestBeatenStakeIndexes, JokerHighestBeatenStakeIndexes, AchievedAchievements, CollectedJokers, CollectedConsumables);
+                var saveData = UnlockSaveData.FromCurrentState(UnlockedDecks, DeckHighestBeatenStakeIndexes, JokerHighestBeatenStakeIndexes, AchievedAchievements, PersistentProgressCounts, CollectedJokers, CollectedConsumables);
                 var saveDirectory = Path.GetDirectoryName(SaveFilePath);
                 if (!string.IsNullOrWhiteSpace(saveDirectory))
                 {
@@ -341,6 +359,7 @@ namespace ConsoleBalatro.Engine
             CollectedConsumables = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
             DeckHighestBeatenStakeIndexes = new Dictionary<string, int>(StringComparer.OrdinalIgnoreCase);
             JokerHighestBeatenStakeIndexes = new Dictionary<string, int>(StringComparer.OrdinalIgnoreCase);
+            PersistentProgressCounts = new Dictionary<string, int>(StringComparer.OrdinalIgnoreCase);
 
             if (saveData != null)
             {
@@ -360,6 +379,14 @@ namespace ConsoleBalatro.Engine
                 foreach (var achievementId in (saveData.Achievements?.Achieved ?? new List<string>()).Where(x => !string.IsNullOrWhiteSpace(x)))
                 {
                     AchievedAchievements.Add(achievementId);
+                }
+
+                foreach (var progress in saveData.Achievements?.ProgressCounts ?? new Dictionary<string, int>())
+                {
+                    if (!string.IsNullOrWhiteSpace(progress.Key))
+                    {
+                        PersistentProgressCounts[progress.Key] = Math.Max(0, progress.Value);
+                    }
                 }
 
                 foreach (var jokerDbName in (saveData.Collection?.Jokers ?? new List<string>()).Where(JokerDb.JokerData.ContainsKey))
@@ -382,6 +409,7 @@ namespace ConsoleBalatro.Engine
                 }
             }
 
+            StartPersistentProgressListeners();
             StartCollectionListeners();
             StartUnachievedAchievementListeners();
         }
@@ -495,6 +523,74 @@ namespace ConsoleBalatro.Engine
             CollectionListeners.Clear();
         }
 
+        private static void StartPersistentProgressListeners()
+        {
+            StopPersistentProgressListeners();
+
+            PersistentProgressListeners.Add(new EngineEventListener
+            {
+                MyContextType = EventContextType.RunLost,
+                MyAction = _ => IncrementPersistentProgressCount(LostRunsProgressKey),
+            });
+            PersistentProgressListeners.Add(new EngineEventListener
+            {
+                MyContextType = EventContextType.HandPlayDone,
+                MyAction = _ => IncrementPersistentProgressCount(HandsPlayedProgressKey),
+            });
+            PersistentProgressListeners.Add(new EngineEventListener
+            {
+                MyContextType = EventContextType.CardsSelectedForPlay,
+                MyAction = args =>
+                {
+                    if (args is EngineHandPlayArgs playArgs)
+                    {
+                        IncrementPersistentProgressCount(FaceCardsPlayedProgressKey, playArgs.CardsSelected.Count(EngineUtils.isFace));
+                    }
+                },
+            });
+            PersistentProgressListeners.Add(new EngineEventListener
+            {
+                MyContextType = EventContextType.CardSell,
+                MyAction = args =>
+                {
+                    if (args is EngineCardSoldArgs soldArgs)
+                    {
+                        IncrementPersistentProgressCount(CardsSoldProgressKey);
+                        if (soldArgs.CardBeingSold.IsJoker)
+                        {
+                            IncrementPersistentProgressCount(JokersSoldProgressKey);
+                        }
+                    }
+                },
+            });
+
+            foreach (var listener in PersistentProgressListeners)
+            {
+                EngineEventHandler.StartListening(listener);
+            }
+        }
+
+        private static void StopPersistentProgressListeners()
+        {
+            foreach (var listener in PersistentProgressListeners)
+            {
+                EngineEventHandler.StopListening(listener);
+            }
+            PersistentProgressListeners.Clear();
+        }
+
+        private static void IncrementPersistentProgressCount(string progressKey, int amount = 1)
+        {
+            if (string.IsNullOrWhiteSpace(progressKey) || amount <= 0)
+            {
+                return;
+            }
+
+            PersistentProgressCounts[progressKey] = GetPersistentProgressCount(progressKey) + amount;
+            EngineEventHandler.TriggerEvent(new EngineEventArgs { MyContext = new EventContext { Context = EventContextType.AchievementProgressChanged } });
+            SaveProgress();
+        }
+
         private static HashSet<string> GetAllConsumableDbNames()
         {
             return new HashSet<string>(
@@ -511,7 +607,7 @@ namespace ConsoleBalatro.Engine
             public AchievementUnlockSaveData? Achievements { get; set; } = new();
             public CollectionSaveData? Collection { get; set; } = new();
 
-            public static UnlockSaveData FromCurrentState(IEnumerable<string> unlockedDecks, IReadOnlyDictionary<string, int> highestBeatenStakeIndexes, IReadOnlyDictionary<string, int> jokerHighestBeatenStakeIndexes, IEnumerable<string> achievedAchievements, IEnumerable<string> collectedJokers, IEnumerable<string> collectedConsumables)
+            public static UnlockSaveData FromCurrentState(IEnumerable<string> unlockedDecks, IReadOnlyDictionary<string, int> highestBeatenStakeIndexes, IReadOnlyDictionary<string, int> jokerHighestBeatenStakeIndexes, IEnumerable<string> achievedAchievements, IReadOnlyDictionary<string, int> progressCounts, IEnumerable<string> collectedJokers, IEnumerable<string> collectedConsumables)
             {
                 return new UnlockSaveData
                 {
@@ -523,6 +619,7 @@ namespace ConsoleBalatro.Engine
                     Achievements = new AchievementUnlockSaveData
                     {
                         Achieved = achievedAchievements.OrderBy(x => x).ToList(),
+                        ProgressCounts = progressCounts.OrderBy(x => x.Key).ToDictionary(x => x.Key, x => x.Value),
                     },
                     Collection = new CollectionSaveData
                     {
@@ -543,6 +640,7 @@ namespace ConsoleBalatro.Engine
         private sealed class AchievementUnlockSaveData
         {
             public List<string> Achieved { get; set; } = new();
+            public Dictionary<string, int> ProgressCounts { get; set; } = new(StringComparer.OrdinalIgnoreCase);
         }
 
         private sealed class CollectionSaveData

@@ -37,6 +37,12 @@ namespace ConsoleBalatro.Engine
         public const string Showman_UnlockId = "SHOWMAN_UNLOCK";
         public const string Flowerpot_UnlockId = "FLOWERPOT_UNLOCK";
 
+        public const string MrBones_UnlockId = "MRBONES_UNLOCK";
+        public const string Acrobat_UnlockId = "ACROBAT_UNLOCK";
+        public const string SockAndBuskin_UnlockId = "SOCKANDBUSKIN_UNLOCK";
+        public const string Swashbuckler_UnlockId = "SWASHBUCKLER_UNLOCK";
+        public const string BurntJoker_UnlockId = "BURNTJOKER_UNLOCK";
+
         public const string GoldenTicket_UnlockId = "GOLDENTICKET_UNLOCK";
         public const string SeeingDouble_UnlockId = "SEEINGDOUBLE_UNLOCK";
         public const string DriversLicense_UnlockId = "DRIVERSLICENSE_UNLOCK";
@@ -81,6 +87,38 @@ namespace ConsoleBalatro.Engine
                 "Discarded a royal flush.", 
                 EventContextType.HandDiscardDone, 
                 args => args is EngineDiscardDoneArgs discardArgs && IsRoyalFlush(discardArgs.BeingDiscarded));
+
+            RegisterPersistentCountAchievement(
+                MrBones_UnlockId,
+                "Mr. Bones Unlocked",
+                "Lose 5 runs.",
+                UnlockManager.LostRunsProgressKey,
+                5);
+            RegisterPersistentCountAchievement(
+                Acrobat_UnlockId,
+                "Acrobat Unlocked",
+                "Play 200 hands.",
+                UnlockManager.HandsPlayedProgressKey,
+                200);
+            RegisterPersistentCountAchievement(
+                SockAndBuskin_UnlockId,
+                "Sock and Buskin Unlocked",
+                "Play a total of 300 face cards.",
+                UnlockManager.FaceCardsPlayedProgressKey,
+                300);
+            RegisterPersistentCountAchievement(
+                Swashbuckler_UnlockId,
+                "Swashbuckler Unlocked",
+                "Sell a total of 20 Joker cards.",
+                UnlockManager.JokersSoldProgressKey,
+                20);
+            RegisterPersistentCountAchievement(
+                BurntJoker_UnlockId,
+                "Burnt Joker Unlocked",
+                "Sell 50 cards.",
+                UnlockManager.CardsSoldProgressKey,
+                50);
+
             RegisterAllAchievementData(
                 GoldenTicket_UnlockId,
                 "Golden Ticket Unlocked",
@@ -237,7 +275,7 @@ namespace ConsoleBalatro.Engine
                 "Bootstraps Unlocked",
                 "Have at least 2 Polychrome Jokers at the same time.",
                 EventContextType.CardDrawnToZone,
-                args => ZoneManager.JokerZone.Cards.Count(c => c.IsJoker && c.Edition == Edition.POLYCHROME) >= 2);
+                args => ZoneManager.JokerZone != null && ZoneManager.JokerZone.Cards.Count(c => c.IsJoker && c.Edition == Edition.POLYCHROME) >= 2);
         }
 
         private static void RegisterAllAchievementData(string id, string name, string desc, EventContextType contextType, Func<EngineEventArgs, bool> condition)
@@ -255,6 +293,11 @@ namespace ConsoleBalatro.Engine
         public static void RegisterChipNumAchievement(string id, string name, string desc, int chipNum)
         {
             RegisterAllAchievementData(id, name, desc, EventContextType.TotalChipsGained, args => args is EngineTotalChipsGainArgs chipArgs && chipArgs.AmountBeingGained >= chipNum);
+        }
+
+        public static void RegisterPersistentCountAchievement(string id, string name, string desc, string progressKey, int targetCount)
+        {
+            RegisterAllAchievementData(id, name, desc, EventContextType.AchievementProgressChanged, _ => UnlockManager.GetPersistentProgressCount(progressKey) >= targetCount);
         }
 
         public static void RegisterDeckCheckAchievement(string id, string name, string desc, Func<List<Card>?, bool> condition)

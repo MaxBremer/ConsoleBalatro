@@ -33,6 +33,7 @@ namespace ConsoleBalatro.Engine.Events
 
         AnteChange,
         RunWon,
+        RunLost,
 
         DrawHandfulStarted,
         DrawHandfulDone,
@@ -115,6 +116,7 @@ namespace ConsoleBalatro.Engine.Events
 
         AchievementUnlocked,
         CollectionItemAdded,
+        AchievementProgressChanged,
 
         RolledCardGenerated,
     }

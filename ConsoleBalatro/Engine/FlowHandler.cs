@@ -17,6 +17,8 @@ namespace ConsoleBalatro.Engine
 {
     public static class FlowHandler
     {
+        private static int _curAnte = 0;
+
         /// <summary>
         /// In the basic White stake, this is the base ante chip amount.
         /// Small blind=1x amount, Big blind = 1.5x, Boss = 2x (unless in exception list)
@@ -108,7 +110,18 @@ namespace ConsoleBalatro.Engine
         /// <summary>
         /// The current ante of the run.
         /// </summary>
-        public static int CurrentAnte = 0;
+        public static int CurrentAnte
+        {
+            get => _curAnte; 
+            set 
+            {
+                var oldVal = _curAnte;
+                var newVal = value;
+                var args = new EngineNewAnteArgs() { MyContext = new EventContext() { Context = EventContextType.AnteChange }, OldAnteVal = oldVal, NewAnteVal = newVal };
+                _curAnte = value;
+                EngineEventHandler.TriggerEvent(args);
+            }
+        }
 
         /// <summary>
         /// The currently equipped deck.
@@ -438,6 +451,7 @@ namespace ConsoleBalatro.Engine
 
         public static void InitializeWinRound()
         {
+            EngineEventHandler.TriggerEvent(new EngineEventArgs() { MyContext = new() { Context = EventContextType.RunWon } });
             Globals.PushGameState(new GameStateObj() { GameState = GameState.WinMenu });
         }
 

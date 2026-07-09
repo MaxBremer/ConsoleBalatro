@@ -54,8 +54,11 @@ namespace ConsoleBalatro.Engine
 
         public static Dictionary<PlayedHandType, (int, int)> CurrentHandStats = new();
 
+        public static int NumRoundsPlayedSoFar = 0;
+
         public static void InitializeHandStatTracker()
         {
+            NumRoundsPlayedSoFar = 0;
             CurrentHandStats.Clear();
             HandLevels.Clear();
             HandNumTimesPlayed.Clear();
@@ -98,6 +101,14 @@ namespace ConsoleBalatro.Engine
                 MyAction = args => {
                     if(args is EngineHandPlayDoneArgs playArgs)
                         NumHandTypePlayedThisRound[playArgs.HandTypeThatWasPlayed] += 1;
+                }
+            });
+
+            EngineEventHandler.StartListening(new EngineEventListener()
+            {
+                MyContextType = EventContextType.EndPlayRound,
+                MyAction = args => {
+                    NumRoundsPlayedSoFar += 1;
                 }
             });
         }

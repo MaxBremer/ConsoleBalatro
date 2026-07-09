@@ -31,6 +31,9 @@ namespace ConsoleBalatro.Engine.Events
         StartPlayRoundSetupOver,
         EndPlayRound,
 
+        AnteChange,
+        RunWon,
+
         DrawHandfulStarted,
         DrawHandfulDone,
 

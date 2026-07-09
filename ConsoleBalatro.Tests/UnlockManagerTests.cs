@@ -362,6 +362,124 @@ public class UnlockManagerTests : TestClassBase
 
 
     [Fact]
+    public void PersistentJokerUnlockAchievements_TrackAcrossRunsAndPersist()
+    {
+        var savePath = BuildTempSavePath();
+        var originalPath = UnlockManager.SaveFilePath;
+        try
+        {
+            UnlockManager.SaveFilePath = savePath;
+            UnlockManager.PermanentProgressSavingDisabled = false;
+            EngineEventHandler.ResetFullEventHandler();
+            UnlockManager.ResetProgressToDefaults();
+
+            for (var i = 0; i < 4; i++)
+            {
+                EngineEventHandler.TriggerEvent(new EngineEventArgs { MyContext = new EventContext { Context = EventContextType.RunLost } });
+            }
+            Assert.False(UnlockManager.IsAchievementAchieved(AchievementDb.MrBones_UnlockId));
+            EngineEventHandler.TriggerEvent(new EngineEventArgs { MyContext = new EventContext { Context = EventContextType.RunLost } });
+            Assert.True(UnlockManager.IsAchievementAchieved(AchievementDb.MrBones_UnlockId));
+
+            for (var i = 0; i < 199; i++)
+            {
+                EngineEventHandler.TriggerEvent(new EngineHandPlayDoneArgs { MyContext = new EventContext { Context = EventContextType.HandPlayDone } });
+            }
+            Assert.False(UnlockManager.IsAchievementAchieved(AchievementDb.Acrobat_UnlockId));
+            EngineEventHandler.TriggerEvent(new EngineHandPlayDoneArgs { MyContext = new EventContext { Context = EventContextType.HandPlayDone } });
+            Assert.True(UnlockManager.IsAchievementAchieved(AchievementDb.Acrobat_UnlockId));
+
+            for (var i = 0; i < 19; i++)
+            {
+                EngineEventHandler.TriggerEvent(new EngineCardSoldArgs
+                {
+                    MyContext = new EventContext { Context = EventContextType.CardSell },
+                    CardBeingSold = JokerDb.GenerateJokerCard("JIMBO"),
+                });
+            }
+            Assert.False(UnlockManager.IsAchievementAchieved(AchievementDb.Swashbuckler_UnlockId));
+            EngineEventHandler.TriggerEvent(new EngineCardSoldArgs
+            {
+                MyContext = new EventContext { Context = EventContextType.CardSell },
+                CardBeingSold = JokerDb.GenerateJokerCard("JIMBO"),
+            });
+            Assert.True(UnlockManager.IsAchievementAchieved(AchievementDb.Swashbuckler_UnlockId));
+
+            UnlockManager.ResetProgressToDefaults();
+            Assert.True(UnlockManager.LoadProgress());
+            Assert.Equal(5, UnlockManager.GetPersistentProgressCount(UnlockManager.LostRunsProgressKey));
+            Assert.Equal(200, UnlockManager.GetPersistentProgressCount(UnlockManager.HandsPlayedProgressKey));
+            Assert.Equal(20, UnlockManager.GetPersistentProgressCount(UnlockManager.JokersSoldProgressKey));
+            Assert.True(UnlockManager.IsAchievementAchieved(AchievementDb.MrBones_UnlockId));
+            Assert.True(UnlockManager.IsAchievementAchieved(AchievementDb.Acrobat_UnlockId));
+            Assert.True(UnlockManager.IsAchievementAchieved(AchievementDb.Swashbuckler_UnlockId));
+        }
+        finally
+        {
+            UnlockManager.PermanentProgressSavingDisabled = true;
+            UnlockManager.SaveFilePath = originalPath;
+            UnlockManager.ResetProgressToDefaults(clearAchievementDefinitions: true);
+            EngineEventHandler.ResetFullEventHandler();
+            DeleteTempSave(savePath);
+        }
+    }
+
+    [Fact]
+    public void PersistentJokerUnlockAchievements_TrackFaceCardsAndCardsSold()
+    {
+        var savePath = BuildTempSavePath();
+        var originalPath = UnlockManager.SaveFilePath;
+        try
+        {
+            UnlockManager.SaveFilePath = savePath;
+            UnlockManager.PermanentProgressSavingDisabled = false;
+            EngineEventHandler.ResetFullEventHandler();
+            UnlockManager.ResetProgressToDefaults();
+
+            for (var i = 0; i < 99; i++)
+            {
+                EngineEventHandler.TriggerEvent(new EngineHandPlayArgs
+                {
+                    MyContext = new EventContext { Context = EventContextType.CardsSelectedForPlay },
+                    CardsSelected = CardFactory.CardListFromDefString("KS,QS,JS", ","),
+                });
+            }
+            Assert.False(UnlockManager.IsAchievementAchieved(AchievementDb.SockAndBuskin_UnlockId));
+            EngineEventHandler.TriggerEvent(new EngineHandPlayArgs
+            {
+                MyContext = new EventContext { Context = EventContextType.CardsSelectedForPlay },
+                CardsSelected = CardFactory.CardListFromDefString("KH,QH,JH", ","),
+            });
+            Assert.True(UnlockManager.IsAchievementAchieved(AchievementDb.SockAndBuskin_UnlockId));
+
+            for (var i = 0; i < 49; i++)
+            {
+                EngineEventHandler.TriggerEvent(new EngineCardSoldArgs
+                {
+                    MyContext = new EventContext { Context = EventContextType.CardSell },
+                    CardBeingSold = CardFactory.CardListFromDefString("AS", ",").Single(),
+                });
+            }
+            Assert.False(UnlockManager.IsAchievementAchieved(AchievementDb.BurntJoker_UnlockId));
+            EngineEventHandler.TriggerEvent(new EngineCardSoldArgs
+            {
+                MyContext = new EventContext { Context = EventContextType.CardSell },
+                CardBeingSold = CardFactory.CardListFromDefString("AH", ",").Single(),
+            });
+            Assert.True(UnlockManager.IsAchievementAchieved(AchievementDb.BurntJoker_UnlockId));
+        }
+        finally
+        {
+            UnlockManager.PermanentProgressSavingDisabled = true;
+            UnlockManager.SaveFilePath = originalPath;
+            UnlockManager.ResetProgressToDefaults(clearAchievementDefinitions: true);
+            EngineEventHandler.ResetFullEventHandler();
+            DeleteTempSave(savePath);
+        }
+    }
+
+
+    [Fact]
     public void Collection_TracksJokersAndConsumables_FromEventsAndPersists()
     {
         var savePath = BuildTempSavePath();

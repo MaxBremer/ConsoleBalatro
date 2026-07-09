@@ -275,7 +275,7 @@ namespace ConsoleBalatro.Engine
                 "Bootstraps Unlocked",
                 "Have at least 2 Polychrome Jokers at the same time.",
                 EventContextType.CardDrawnToZone,
-                args => ZoneManager.JokerZone.Cards.Count(c => c.IsJoker && c.Edition == Edition.POLYCHROME) >= 2);
+                args => ZoneManager.JokerZone != null && ZoneManager.JokerZone.Cards.Count(c => c.IsJoker && c.Edition == Edition.POLYCHROME) >= 2);
         }
 
         private static void RegisterAllAchievementData(string id, string name, string desc, EventContextType contextType, Func<EngineEventArgs, bool> condition)

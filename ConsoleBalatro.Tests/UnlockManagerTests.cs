@@ -343,7 +343,7 @@ public class UnlockManagerTests : TestClassBase
                 MyContext = new EventContext { Context = EventContextType.HandDiscardDone },
                 BeingDiscarded = CardFactory.CardListFromDefString("AS,KS,QS,JS,1S", ","),
             });
-            Assert.True(UnlockManager.IsAchievementAchieved(AchievementDb.DiscardRoyalFlushAchievementId));
+            Assert.True(UnlockManager.IsAchievementAchieved(AchievementDb.Brainstorm_UnlockId));
 
             Assert.Contains(unlockedPopups, args => args.AchievementName == "Practiced Hand" && args.AchievementDesc == "Played 10 hands.");
             Assert.Contains(unlockedPopups, args => args.AchievementName == "Lil Big Score" && args.AchievementDesc.Contains("100"));

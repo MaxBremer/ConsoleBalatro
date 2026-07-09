@@ -16,7 +16,7 @@ namespace ConsoleBalatro.Engine
         public const string TenHandsPlayedAchievementId = "TEN_HANDS_PLAYED";
         public const string ScoreTenThousandAchievementId = "SCORE_10000_HAND";
 
-        public const string DiscardRoyalFlushAchievementId = "BRAINSTORM_UNLOCK";
+        public const string Brainstorm_UnlockId = "BRAINSTORM_UNLOCK";
 
         public const string Satellite_UnlockId = "SATELLITE_UNLOCK";
         public const string HitTheRoad_UnlockId = "HITTHEROAD_UNLOCK";
@@ -76,7 +76,7 @@ namespace ConsoleBalatro.Engine
                 EventContextType.HandPlayDone, 
                 args => args is EngineHandPlayDoneArgs playArgs && playArgs.CurrentTotalChips >= 100);
             RegisterAllAchievementData(
-                DiscardRoyalFlushAchievementId, 
+                Brainstorm_UnlockId, 
                 "Brainstorm Unlocked", 
                 "Discarded a royal flush.", 
                 EventContextType.HandDiscardDone, 
@@ -94,7 +94,7 @@ namespace ConsoleBalatro.Engine
                 EventContextType.CardsSelectedForPlay,
                 args => args is EngineHandPlayArgs playArgs && playArgs.CardsSelected.Count(card => card.Rank == Rank.SEVEN && card.Suit == Suit.CLUBS) >= 4);
             RegisterAllAchievementData(
-                DiscardRoyalFlushAchievementId,
+                Brainstorm_UnlockId,
                 "Hit the Road Unlocked",
                 "Discarded 5 Jacks at the same time.",
                 EventContextType.HandDiscardDone,

@@ -27,6 +27,11 @@ namespace ConsoleBalatro.Engine
 
     public static class Globals
     {
+        /// <summary>
+        /// Saveable random source owned by the current run.
+        /// </summary>
+        public static IRunRandom RunRandom { get; private set; } = ConsoleBalatro.Engine.RunRandom.CreateNewRunRandom();
+
         //CONSTANT SETTINGS
         //Should the two tags for a given ante be guaranteed to be unique or not?
         public const bool GUARANTEE_UNIQUE_TAGS = false;
@@ -274,6 +279,7 @@ namespace ConsoleBalatro.Engine
         public static void ResetFullEngine()
         {
             EngineEventHandler.ResetEventHandlerForRunEnding();
+            RunRandom = ConsoleBalatro.Engine.RunRandom.CreateNewRunRandom();
 
             ResetGlobalValues();
             ClearGameStateStack();
@@ -777,7 +783,7 @@ namespace ConsoleBalatro.Engine
         {
             var args = new EngineRandomRollArgs() { MyContext = new() { Context = EventContextType.RandomRollHappening }, CardThatIsRolling = cardCalling, Numerator = numerator, Denominator = denominator };
             EngineEventHandler.TriggerEvent(args);
-            return args.OverrideResult ?? ChooseRandomInclusive(1, args.Denominator) <= args.Numerator;
+            return args.OverrideResult ?? RunRandom.NextInclusive(1, args.Denominator) <= args.Numerator;
         }
 
         /// <summary>
@@ -788,7 +794,7 @@ namespace ConsoleBalatro.Engine
         /// <returns>The rolled integer.</returns>
         public static int ChooseRandomInclusive(int min, int max)
         {
-            return Random.Shared.Next(min, max + 1);
+            return RunRandom.NextInclusive(min, max);
         }
 
         /// <summary>

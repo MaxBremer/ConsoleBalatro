@@ -66,9 +66,7 @@ namespace ConsoleBalatro.Engine.Pools
             if (totalWeight <= 0)
                 throw new InvalidOperationException("No available rarity to roll.");
 
-            // Assume injected random in real version.
-            var random = new Random();
-            int roll = random.Next(1, totalWeight + 1);
+            int roll = Globals.randomNext(1, totalWeight + 1);
 
             int running = 0;
 

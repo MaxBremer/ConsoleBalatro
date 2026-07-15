@@ -462,8 +462,9 @@ namespace ConsoleBalatro.Engine
         public static void EndWonRun()
         {
             RunWinDecisionPending = false;
-            Globals.ResetFullEngine();
-            InitializeMainMenu();
+            /*Globals.ResetFullEngine();
+            InitializeMainMenu();*/
+            Globals.QUIT = true;
         }
 
         public static void ContinueWonRun()

@@ -714,7 +714,7 @@ namespace ConsoleBalatro.UI.EngineUI
 
             JokersDisplay.Visible = true;
             ConsumableDisplay.Visible = true;
-            ShowInfoDisplay("YOU WIN!&!&Ante 8 boss defeated.&Your deck and current Jokers earned this stake sticker.&!&[E]nd run: return to main menu&[C]ontinue: play endless mode", "&");
+            ShowInfoDisplay("YOU WIN!&!&Ante 8 boss defeated.&Your deck and current Jokers earned this stake sticker.&!&[E]nd run: save your progress and quit the game&[C]ontinue: play endless mode", "&");
         }
 
         private static void TriggerWinSetup(EngineEventArgs args)

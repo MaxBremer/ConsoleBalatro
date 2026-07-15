@@ -263,7 +263,7 @@ namespace ConsoleBalatro.Engine.Cards.Decks
                             if(args is EnginePreFinalGainArgs preCalcArgs)
                             {
                                 var splitVal = (preCalcArgs.FinalChips + preCalcArgs.FinalMult) / 2;
-                                preCalcArgs.FinalChips = (int)splitVal;
+                                preCalcArgs.FinalChips = Globals.CapChipCount(splitVal);
                                 preCalcArgs.FinalMult = splitVal;
                             }
                         }
@@ -275,7 +275,7 @@ namespace ConsoleBalatro.Engine.Cards.Decks
                         {
                             if(args is EngineGetBlindReqArgs blindArgs)
                             {
-                                blindArgs.ChipRequirementAmount *= 2;
+                                blindArgs.ChipRequirementAmount = Globals.CapChipCount(blindArgs.ChipRequirementAmount * 2);
                             }
                         }
                     });

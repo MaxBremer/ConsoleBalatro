@@ -8,6 +8,6 @@ namespace ConsoleBalatro.Engine.Events.Args
 {
     public class EngineTotalChipsGainArgs : EngineEventArgs
     {
-        public int AmountBeingGained = 0;
+        public long AmountBeingGained = 0;
     }
 }

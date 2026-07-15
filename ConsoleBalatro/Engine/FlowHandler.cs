@@ -131,7 +131,7 @@ namespace ConsoleBalatro.Engine
         /// <summary>
         /// Getter for the base chip amount of the current ante.
         /// </summary>
-        public static int CurrentBaseChipAmount => GetBaseChipAmountForAnte(CurrentAnte);
+        public static long CurrentBaseChipAmount => GetBaseChipAmountForAnte(CurrentAnte);
 
         /// <summary>
         /// The currently selected blind within the ante (small, big, or boss)
@@ -191,13 +191,17 @@ namespace ConsoleBalatro.Engine
 
         public static bool RunWinDecisionPending = false;
 
-        private static int GetBaseChipAmountForAnte(int ante)
+        private static long GetBaseChipAmountForAnte(int ante)
         {
             var scalingList = GetCurrentChipScalingList();
             if (ante < 0)
                 return scalingList[0];
 
-            return scalingList[Math.Min(ante, scalingList.Count - 1)];
+            if (ante < scalingList.Count)
+                return scalingList[ante];
+
+            var scaledAmount = scalingList[^1] * Math.Pow(2, ante - scalingList.Count + 1);
+            return Globals.CapChipCount(scaledAmount);
         }
 
         private static List<int> GetCurrentChipScalingList()
@@ -265,7 +269,7 @@ namespace ConsoleBalatro.Engine
         /// </summary>
         /// <param name="blind">Blind whose chip requirement we want</param>
         /// <returns>The amount of chips required to beat the passed blind.</returns>
-        public static int GetChipsForBlindType(BlindType blind)
+        public static long GetChipsForBlindType(BlindType blind)
         {
             var chipsMult = 1.0;
             switch (blind)
@@ -283,11 +287,11 @@ namespace ConsoleBalatro.Engine
                     break;
             }
             
-            var retAmt = (int)(CurrentBaseChipAmount * chipsMult);
+            var retAmt = Globals.CapChipCount((long)(CurrentBaseChipAmount * chipsMult));
             var args = new EngineGetBlindReqArgs() { MyContext = new EventContext() { Context = EventContextType.GetBlindChips }, ChipRequirementAmount = retAmt };
             EngineEventHandler.TriggerEvent(args);
 
-            return args.ChipRequirementAmount;
+            return Globals.CapChipCount(args.ChipRequirementAmount);
         }
 
         /// <summary>

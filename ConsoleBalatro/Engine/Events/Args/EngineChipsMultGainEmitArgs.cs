@@ -10,7 +10,7 @@ namespace ConsoleBalatro.Engine.Events.Args
     public class EngineChipsMultGainEmitArgs : EngineEventArgs
     {
         public Card SourceOfEmit;
-        public int ChipsGainEmitted = -1;
+        public long ChipsGainEmitted = -1;
         public double MultGainEmitted = -1;
         public double MultMultEmitted = -1;
     }

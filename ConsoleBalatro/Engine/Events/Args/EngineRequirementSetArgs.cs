@@ -8,6 +8,6 @@ namespace ConsoleBalatro.Engine.Events.Args
 {
     public class EngineRequirementSetArgs : EngineEventArgs
     {
-        public int RequirementBeingSet = 0;
+        public long RequirementBeingSet = 0;
     }
 }

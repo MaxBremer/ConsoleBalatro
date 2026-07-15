@@ -8,7 +8,7 @@ namespace ConsoleBalatro.Engine.Events.Args
 {
     public class EnginePreFinalGainArgs : EngineEventArgs
     {
-        public int FinalChips { get; set; }
+        public long FinalChips { get; set; }
         public double FinalMult { get; set; }
     }
 }

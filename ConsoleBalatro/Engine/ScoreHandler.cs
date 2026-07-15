@@ -203,10 +203,10 @@ namespace ConsoleBalatro.Engine
         {
             var preCalcArgs = new EnginePreFinalGainArgs() { MyContext = new EventContext() { Context = EventContextType.PreFinalGainCheck }, FinalChips = Globals.CurrentChips, FinalMult = Globals.CurrentMult };
             EngineEventHandler.TriggerEvent(preCalcArgs);
-            int amountBeingAdded = (int)(preCalcArgs.FinalChips * preCalcArgs.FinalMult);
+            long amountBeingAdded = Globals.CapChipCount(preCalcArgs.FinalChips * preCalcArgs.FinalMult);
             var gainArgs = new EngineTotalChipsGainArgs() { AmountBeingGained = amountBeingAdded, MyContext = new EventContext() { Context = EventContextType.TotalChipsGained } };
             EngineEventHandler.TriggerEvent(gainArgs);
-            Globals.TotalCurrentChips += gainArgs.AmountBeingGained;
+            Globals.TotalCurrentChips = Globals.CapChipCount(Globals.TotalCurrentChips + gainArgs.AmountBeingGained);
 
             Globals.CurrentMult = 0;
             Globals.CurrentChips = 0;

@@ -48,7 +48,7 @@ namespace ConsoleBalatro.UI.EngineUI
             }
             ret.Add("");
             ret.Add("Chips:");
-            ret.Add(FlowHandler.GetChipsForBlindType(MyBlind).ToString());
+            ret.Add(Globals.FormatChipCount(FlowHandler.GetChipsForBlindType(MyBlind)));
 
             if(MyBlind != BlindType.BOSS)
             {

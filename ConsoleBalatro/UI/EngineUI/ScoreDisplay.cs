@@ -32,11 +32,11 @@ namespace ConsoleBalatro.UI.EngineUI
             ret.Add("CURRENT BLIND");
             ret.Add("");
 
-            ret.Add(EngineDisplayGlobals.DisplayRequiredChipsForBlind.ToString());
+            ret.Add(Globals.FormatChipCount(EngineDisplayGlobals.DisplayRequiredChipsForBlind));
             ret.Add("");
             ret.Add("TOTAL CHIPS");
 
-            ret.Add(EngineDisplayGlobals.DisplayTotalCurrentChips.ToString());
+            ret.Add(Globals.FormatChipCount(EngineDisplayGlobals.DisplayTotalCurrentChips));
             ret.Add("");
             ret.Add("MONEY");
             ret.Add(EngineDisplayGlobals.DisplayMoney.ToString() + "$");
@@ -54,7 +54,7 @@ namespace ConsoleBalatro.UI.EngineUI
                 var curMult = EngineDisplayGlobals.DisplayHandMult;
                 ret.Add(curSelHand.ToString());
 
-                ret.Add(curChips + " X " + curMult.ToString("F2"));
+                ret.Add(Globals.FormatChipCount(curChips) + " X " + curMult.ToString("F2"));
             }
 
             ret.Add("");
@@ -130,7 +130,7 @@ namespace ConsoleBalatro.UI.EngineUI
             {
                 EngineDisplayGlobals.CacheAnimationAction(_ =>
                 {
-                    EngineDisplayGlobals.DisplayTotalCurrentChips += gainArgs.AmountBeingGained;
+                    EngineDisplayGlobals.DisplayTotalCurrentChips = Globals.CapChipCount(EngineDisplayGlobals.DisplayTotalCurrentChips + gainArgs.AmountBeingGained);
                     EngineDisplayGlobals.ResetPlayedHand();
                 });
             }

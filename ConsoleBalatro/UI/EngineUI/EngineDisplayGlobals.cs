@@ -145,15 +145,15 @@ namespace ConsoleBalatro.UI.EngineUI
 
         //DISPLAY fields are soft mirrors of their engine counterpart;
         //basically, they exist so that their update to match the engine can be delayed for animations to play out.
-        public static int DisplayRequiredChipsForBlind;
-        public static int DisplayTotalCurrentChips;
+        public static long DisplayRequiredChipsForBlind;
+        public static long DisplayTotalCurrentChips;
 
         public static int DisplayHandsRemaining;
         public static int DisplayDiscardsRemaining;
 
         public static int DisplayMoney = 0;
 
-        public static int DisplayHandChips;
+        public static long DisplayHandChips;
         public static double DisplayHandMult;
         public static PlayedHandType DisplayPlayedHand;
 
@@ -803,7 +803,7 @@ namespace ConsoleBalatro.UI.EngineUI
                     }
                     if(gainArgs.ChipsGainEmitted > 0)
                     {
-                        DisplayHandChips += gainArgs.ChipsGainEmitted;
+                        DisplayHandChips = Globals.CapChipCount(DisplayHandChips + gainArgs.ChipsGainEmitted);
                     }else if(gainArgs.MultGainEmitted > 0)
                     {
                         DisplayHandMult += gainArgs.MultGainEmitted;

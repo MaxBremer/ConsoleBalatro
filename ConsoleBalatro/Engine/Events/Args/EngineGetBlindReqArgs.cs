@@ -8,6 +8,6 @@ namespace ConsoleBalatro.Engine.Events.Args
 {
     public class EngineGetBlindReqArgs : EngineEventArgs
     {
-        public int ChipRequirementAmount { get; set; }
+        public long ChipRequirementAmount { get; set; }
     }
 }

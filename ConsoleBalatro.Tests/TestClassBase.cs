@@ -231,10 +231,10 @@ namespace ConsoleBalatro.Tests
 
         protected class ContributionCapture
         {
-            public int ChipsFromEmits { get; set; }
+            public long ChipsFromEmits { get; set; }
             public double MultFromEmits { get; set; }
             public double MultMultFromEmits { get; set; } = 1d;
-            public int FinalTotalGain { get; set; }
+            public long FinalTotalGain { get; set; }
             public List<Card> ChipSources { get; } = new();
             public List<Card> MultSources { get; } = new();
             public List<Card> MultMultSources { get; } = new();

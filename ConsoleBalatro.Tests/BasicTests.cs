@@ -64,4 +64,32 @@ public class BasicTests : TestClassBase
         Assert.Equal(1, record.MultMultFromEmits);
         Assert.Empty(record.MultMultSources);
     }
+
+    [Fact]
+    public void ChipCounts_CanStoreTrillionSizedValues()
+    {
+        ScoreHandler.ResetScoresPostRound();
+        Globals.CurrentChips = 1_000_000_000_000;
+        Globals.CurrentMult = 2;
+
+        ScoreHandler.FinalPlayChipsCalc();
+
+        Assert.Equal(2_000_000_000_000, Globals.TotalCurrentChips);
+        ScoreHandler.ResetScoresPostRound();
+    }
+
+    [Fact]
+    public void ChipCounts_CapAndFormatAtMaximum()
+    {
+        ScoreHandler.ResetScoresPostRound();
+        Globals.CurrentChips = Globals.MaxChipCount;
+        Globals.CurrentMult = 2;
+
+        ScoreHandler.FinalPlayChipsCalc();
+
+        Assert.Equal(Globals.MaxChipCount, Globals.TotalCurrentChips);
+        Assert.Equal("infinite", Globals.FormatChipCount(Globals.TotalCurrentChips));
+        ScoreHandler.ResetScoresPostRound();
+    }
+
 }

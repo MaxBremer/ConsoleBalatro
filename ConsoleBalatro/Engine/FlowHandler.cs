@@ -10,6 +10,7 @@ using ConsoleBalatro.Engine.Stakes;
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Numerics;
 using System.Text;
 using System.Threading.Tasks;
 
@@ -25,7 +26,7 @@ namespace ConsoleBalatro.Engine
         /// Index = ante, except lower than 0 which is just 0.
         /// </summary>
         /// TODO: Implement endless/up to ante 16.
-        public static List<long> BaseAnteChipAmounts = new()
+        public static List<BigInteger> BaseAnteChipAmounts = new()
         {
             100,
             300,
@@ -50,7 +51,7 @@ namespace ConsoleBalatro.Engine
         /// <summary>
         /// Base chip amount per-ante for Green stake.
         /// </summary>
-        public static List<long> GreenStakeAnteChipAmounts = new()
+        public static List<BigInteger> GreenStakeAnteChipAmounts = new()
         {
             100,
             300,
@@ -71,7 +72,7 @@ namespace ConsoleBalatro.Engine
         /// <summary>
         /// Base chip amount per-ante for Purple stake and above.
         /// </summary>
-        public static List<long> PurpleStakeAnteChipAmounts = new()
+        public static List<BigInteger> PurpleStakeAnteChipAmounts = new()
         {
             100,
             300,
@@ -133,7 +134,7 @@ namespace ConsoleBalatro.Engine
         /// <summary>
         /// Getter for the base chip amount of the current ante.
         /// </summary>
-        public static long CurrentBaseChipAmount => GetBaseChipAmountForAnte(CurrentAnte);
+        public static BigInteger CurrentBaseChipAmount => GetBaseChipAmountForAnte(CurrentAnte);
 
         /// <summary>
         /// The currently selected blind within the ante (small, big, or boss)
@@ -193,7 +194,7 @@ namespace ConsoleBalatro.Engine
 
         public static bool RunWinDecisionPending = false;
 
-        private static long GetBaseChipAmountForAnte(int ante)
+        private static BigInteger GetBaseChipAmountForAnte(int ante)
         {
             var scalingList = GetCurrentChipScalingList();
             if (ante < 0)
@@ -203,11 +204,11 @@ namespace ConsoleBalatro.Engine
                 return scalingList[ante];
 
             //Did... did I add this? Did AI write this? Did a ghost write this? I do not remember adding post-scalingList default scaling at all.... but I guess it happened :shrug: seems good idk
-            var scaledAmount = scalingList[^1] * Math.Pow(2, ante - scalingList.Count + 1);
+            var scaledAmount = (double)scalingList[^1] * Math.Pow(2, ante - scalingList.Count + 1);
             return Globals.CapChipCount(scaledAmount);
         }
 
-        private static List<long> GetCurrentChipScalingList()
+        private static List<BigInteger> GetCurrentChipScalingList()
         {
             //Yeah, it's the dumb way to do it, but doing an event is also pretty dumb idk.
             //Maybe make it an event/listener later? If so just have to make sure Purple triggers AFTER green (which would be a good reason to implement event priority >:( )
@@ -272,7 +273,7 @@ namespace ConsoleBalatro.Engine
         /// </summary>
         /// <param name="blind">Blind whose chip requirement we want</param>
         /// <returns>The amount of chips required to beat the passed blind.</returns>
-        public static long GetChipsForBlindType(BlindType blind)
+        public static BigInteger GetChipsForBlindType(BlindType blind)
         {
             var chipsMult = 1.0;
             switch (blind)
@@ -290,7 +291,7 @@ namespace ConsoleBalatro.Engine
                     break;
             }
             
-            var retAmt = Globals.CapChipCount((long)(CurrentBaseChipAmount * chipsMult));
+            var retAmt = Globals.CapChipCount((double)CurrentBaseChipAmount * chipsMult);
             var args = new EngineGetBlindReqArgs() { MyContext = new EventContext() { Context = EventContextType.GetBlindChips }, ChipRequirementAmount = retAmt };
             EngineEventHandler.TriggerEvent(args);
 

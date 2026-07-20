@@ -3,6 +3,7 @@ using ConsoleBalatro.Engine.Events.Args;
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Numerics;
 using System.Security.Cryptography.X509Certificates;
 using System.Text;
 using System.Threading.Tasks;
@@ -12,7 +13,7 @@ namespace ConsoleBalatro.Engine
     public static class ScoreHandler
     {
         // It always goes Chips X Mult
-        public static Dictionary<PlayedHandType, (int, int)> BaseHandScores = new()
+        public static Dictionary<PlayedHandType, (BigInteger, int)> BaseHandScores = new()
         {
             { PlayedHandType.HIGHCARD, (5, 1) },
             { PlayedHandType.PAIR, (10, 2) },
@@ -36,7 +37,7 @@ namespace ConsoleBalatro.Engine
 
         public static PlayedHandType MostPlayedHand => HandNumTimesPlayed.OrderByDescending(kvp => kvp.Value).First().Key;
 
-        public static Dictionary<PlayedHandType, (int, int)> HandBuffAmounts = new()
+        public static Dictionary<PlayedHandType, (BigInteger, int)> HandBuffAmounts = new()
         {
             { PlayedHandType.HIGHCARD, (10, 1) },
             { PlayedHandType.PAIR, (15, 1) },
@@ -52,7 +53,7 @@ namespace ConsoleBalatro.Engine
             { PlayedHandType.FLUSHFIVE, (50, 3) },
         };
 
-        public static Dictionary<PlayedHandType, (int, int)> CurrentHandStats = new();
+        public static Dictionary<PlayedHandType, (BigInteger, int)> CurrentHandStats = new();
 
         public static int NumRoundsPlayedSoFar = 0;
 
@@ -128,7 +129,7 @@ namespace ConsoleBalatro.Engine
             var multBuff = HandBuffAmounts[handType].Item2;
             var oldChips = CurrentHandStats[handType].Item1;
             var oldMult = CurrentHandStats[handType].Item2;
-            var finalChipVal = CurrentHandStats[handType].Item1 + chipBuff;
+            var finalChipVal = Globals.CapChipCount(CurrentHandStats[handType].Item1 + chipBuff);
             var finalMultVal = CurrentHandStats[handType].Item2 + multBuff;
 
             //TODO: probably emit event
@@ -162,7 +163,7 @@ namespace ConsoleBalatro.Engine
             var multBuff = HandBuffAmounts[handType].Item2;
             var oldChips = CurrentHandStats[handType].Item1;
             var oldMult = CurrentHandStats[handType].Item2;
-            var finalChipVal = CurrentHandStats[handType].Item1 - chipBuff;
+            var finalChipVal = Globals.CapChipCount(CurrentHandStats[handType].Item1 - chipBuff);
             var finalMultVal = CurrentHandStats[handType].Item2 - multBuff;
 
             //TODO: probably emit event
@@ -195,7 +196,7 @@ namespace ConsoleBalatro.Engine
             var scoreArgs = new EngineSettingBaseHandScoreArgs() { MyContext = new() { Context = EventContextType.SettingBaseChipsMult}, BaseChipAmount = targetScorePair.Item1, BaseMultAmount = (double)targetScorePair.Item2 };
             EngineEventHandler.TriggerEvent(scoreArgs);
 
-            Globals.CurrentChips = scoreArgs.BaseChipAmount;
+            Globals.CurrentChips = Globals.CapChipCount(scoreArgs.BaseChipAmount);
             Globals.CurrentMult = scoreArgs.BaseMultAmount;
         }
 
@@ -203,7 +204,7 @@ namespace ConsoleBalatro.Engine
         {
             var preCalcArgs = new EnginePreFinalGainArgs() { MyContext = new EventContext() { Context = EventContextType.PreFinalGainCheck }, FinalChips = Globals.CurrentChips, FinalMult = Globals.CurrentMult };
             EngineEventHandler.TriggerEvent(preCalcArgs);
-            long amountBeingAdded = Globals.CapChipCount(preCalcArgs.FinalChips * preCalcArgs.FinalMult);
+            BigInteger amountBeingAdded = Globals.CapChipCount((double)preCalcArgs.FinalChips * preCalcArgs.FinalMult);
             var gainArgs = new EngineTotalChipsGainArgs() { AmountBeingGained = amountBeingAdded, MyContext = new EventContext() { Context = EventContextType.TotalChipsGained } };
             EngineEventHandler.TriggerEvent(gainArgs);
             Globals.TotalCurrentChips = Globals.CapChipCount(Globals.TotalCurrentChips + gainArgs.AmountBeingGained);

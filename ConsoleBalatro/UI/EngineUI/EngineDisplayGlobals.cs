@@ -12,6 +12,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Net.NetworkInformation;
+using System.Numerics;
 using System.Text;
 using System.Threading.Tasks;
 using static System.Net.Mime.MediaTypeNames;
@@ -145,15 +146,15 @@ namespace ConsoleBalatro.UI.EngineUI
 
         //DISPLAY fields are soft mirrors of their engine counterpart;
         //basically, they exist so that their update to match the engine can be delayed for animations to play out.
-        public static long DisplayRequiredChipsForBlind;
-        public static long DisplayTotalCurrentChips;
+        public static BigInteger DisplayRequiredChipsForBlind;
+        public static BigInteger DisplayTotalCurrentChips;
 
         public static int DisplayHandsRemaining;
         public static int DisplayDiscardsRemaining;
 
         public static int DisplayMoney = 0;
 
-        public static long DisplayHandChips;
+        public static BigInteger DisplayHandChips;
         public static double DisplayHandMult;
         public static PlayedHandType DisplayPlayedHand;
 

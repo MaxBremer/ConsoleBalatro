@@ -12,6 +12,7 @@ using ConsoleBalatro.Engine.Pools.Rules;
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Numerics;
 using System.Text;
 using System.Threading.Tasks;
 using System.Runtime.CompilerServices;
@@ -231,10 +232,10 @@ namespace ConsoleBalatro.Tests
 
         protected class ContributionCapture
         {
-            public long ChipsFromEmits { get; set; }
+            public BigInteger ChipsFromEmits { get; set; }
             public double MultFromEmits { get; set; }
             public double MultMultFromEmits { get; set; } = 1d;
-            public long FinalTotalGain { get; set; }
+            public BigInteger FinalTotalGain { get; set; }
             public List<Card> ChipSources { get; } = new();
             public List<Card> MultSources { get; } = new();
             public List<Card> MultMultSources { get; } = new();

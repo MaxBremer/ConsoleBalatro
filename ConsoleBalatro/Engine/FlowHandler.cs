@@ -25,8 +25,7 @@ namespace ConsoleBalatro.Engine
         /// Index = ante, except lower than 0 which is just 0.
         /// </summary>
         /// TODO: Implement endless/up to ante 16.
-        /// TODO: need bigger datatype than int. That's a separate, BIG can of worms.
-        public static List<int> BaseAnteChipAmounts = new()
+        public static List<long> BaseAnteChipAmounts = new()
         {
             100,
             300,
@@ -41,14 +40,17 @@ namespace ConsoleBalatro.Engine
             110000,
             560000,
             7200000,
-            300000000,
-            //TODO: BEYOND HERE, NEEDS BIGNUM. BIG IMPLEMENTATION.
+            300_000_000,
+            47_000_000_000,
+            29_000_000_000_000,
+            77_000_000_000_000_000,
+            //860_000_000_000_000_000_000, //Ante 16
         };
 
         /// <summary>
         /// Base chip amount per-ante for Green stake.
         /// </summary>
-        public static List<int> GreenStakeAnteChipAmounts = new()
+        public static List<long> GreenStakeAnteChipAmounts = new()
         {
             100,
             300,
@@ -69,7 +71,7 @@ namespace ConsoleBalatro.Engine
         /// <summary>
         /// Base chip amount per-ante for Purple stake and above.
         /// </summary>
-        public static List<int> PurpleStakeAnteChipAmounts = new()
+        public static List<long> PurpleStakeAnteChipAmounts = new()
         {
             100,
             300,
@@ -200,11 +202,12 @@ namespace ConsoleBalatro.Engine
             if (ante < scalingList.Count)
                 return scalingList[ante];
 
+            //Did... did I add this? Did AI write this? Did a ghost write this? I do not remember adding post-scalingList default scaling at all.... but I guess it happened :shrug: seems good idk
             var scaledAmount = scalingList[^1] * Math.Pow(2, ante - scalingList.Count + 1);
             return Globals.CapChipCount(scaledAmount);
         }
 
-        private static List<int> GetCurrentChipScalingList()
+        private static List<long> GetCurrentChipScalingList()
         {
             //Yeah, it's the dumb way to do it, but doing an event is also pretty dumb idk.
             //Maybe make it an event/listener later? If so just have to make sure Purple triggers AFTER green (which would be a good reason to implement event priority >:( )

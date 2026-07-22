@@ -12,15 +12,12 @@ using ConsoleBalatro.UI.EngineUI.Controls;
 
 class Program
 {
-    private const int INTERFACE_WIDTH = 120;
-    private const int INTERFACE_HEIGHT = 29;
-
     private const bool RESET_PROGRESS_ON_START = false;
     private const bool SKIP_TO_BLIND_SELECTION = false;
 
     public static void Main(string[] args)
     {
-        var inte = new Interface(INTERFACE_WIDTH, INTERFACE_HEIGHT);
+        var inte = new Interface(EngineDisplayConstants.INTERFACE_WIDTH, EngineDisplayConstants.INTERFACE_HEIGHT);
 
         Console.CursorVisible = false;
         Globals.InitializeMain();

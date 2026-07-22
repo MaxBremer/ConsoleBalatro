@@ -8,6 +8,9 @@ namespace ConsoleBalatro.UI.EngineUI
 {
     public static class EngineDisplayConstants
     {
+        public const int INTERFACE_WIDTH = 120;
+        public const int INTERFACE_HEIGHT = 29;
+
         //height, width, xpos, ypos
         public const int MAIN_MARKET_HEIGHT = 7;
         public const int MAIN_MARKET_WIDTH = 50;

@@ -204,7 +204,11 @@ namespace ConsoleBalatro.Engine
         {
             var preCalcArgs = new EnginePreFinalGainArgs() { MyContext = new EventContext() { Context = EventContextType.PreFinalGainCheck }, FinalChips = Globals.CurrentChips, FinalMult = Globals.CurrentMult };
             EngineEventHandler.TriggerEvent(preCalcArgs);
-            BigInteger amountBeingAdded = Globals.CapChipCount((double)preCalcArgs.FinalChips * preCalcArgs.FinalMult);
+
+            //We use scaled multiplication to multiply the BigInt chip count by the double mult while preserving at least three decimal digits.
+            long scale = 1000;
+            BigInteger scaledMult = (BigInteger)(preCalcArgs.FinalMult * scale);
+            BigInteger amountBeingAdded = Globals.CapChipCount((preCalcArgs.FinalChips * scaledMult) / scale);
             var gainArgs = new EngineTotalChipsGainArgs() { AmountBeingGained = amountBeingAdded, MyContext = new EventContext() { Context = EventContextType.TotalChipsGained } };
             EngineEventHandler.TriggerEvent(gainArgs);
             Globals.TotalCurrentChips = Globals.CapChipCount(Globals.TotalCurrentChips + gainArgs.AmountBeingGained);

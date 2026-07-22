@@ -2,6 +2,7 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Numerics;
 using System.Text;
 using System.Threading.Tasks;
 
@@ -14,7 +15,7 @@ namespace ConsoleBalatro.Engine.Events.Args
         public List<Card> CardsSelected = new();
         public List<Card> CardsInScoringHand = new();
 
-        public int BaseChipsForCalc;
+        public BigInteger BaseChipsForCalc;
         public double BaseMultForCalc;
 
         public bool CancelScoring = false;

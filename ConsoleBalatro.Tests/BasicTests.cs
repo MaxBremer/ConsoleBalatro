@@ -1,6 +1,7 @@
 using ConsoleBalatro.Engine;
 using ConsoleBalatro.Engine.Cards;
 using ConsoleBalatro.Engine.Cards.Enums;
+using System.Numerics;
 using Xunit;
 
 namespace ConsoleBalatro.Tests;
@@ -90,6 +91,19 @@ public class BasicTests : TestClassBase
         Assert.Equal(Globals.MaxChipCount, Globals.TotalCurrentChips);
         Assert.Equal("infinite", Globals.FormatChipCount(Globals.TotalCurrentChips));
         ScoreHandler.ResetScoresPostRound();
+    }
+
+    [Fact]
+    public void ChipCounts_SupportAndCapAtOneSextillion()
+    {
+        var oneSextillion = BigInteger.Parse("1000000000000000000000");
+
+        Assert.Equal(oneSextillion, Globals.MaxChipCount);
+        Assert.Equal(oneSextillion - 1, Globals.CapChipCount(oneSextillion - 1));
+        Assert.Equal(oneSextillion, Globals.CapChipCount(oneSextillion + 1));
+
+        Globals.RequiredChipsForCurrentBlind = oneSextillion + 1;
+        Assert.Equal(oneSextillion, Globals.RequiredChipsForCurrentBlind);
     }
 
 }

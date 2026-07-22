@@ -11,6 +11,7 @@ using ConsoleBalatro.Engine.Stakes;
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Numerics;
 using System.Text;
 using System.Threading.Tasks;
 
@@ -45,28 +46,28 @@ namespace ConsoleBalatro.Engine
         //Enables the key commands for A) debug command line, and B) debug-only rerolls like pack market reroll, voucher market reroll, etc.
         public const bool ALLOW_DEBUG_COMMANDS = true;
 
-        public const long MaxChipCount = 100_000_000_000_000;
+        public static readonly BigInteger MaxChipCount = BigInteger.Parse("1000000000000000000000");
 
-        public static long CapChipCount(double chipCount)
+        public static BigInteger CapChipCount(double chipCount)
         {
             if (double.IsNaN(chipCount) || chipCount <= 0)
                 return 0;
 
-            if (chipCount >= MaxChipCount)
+            if (double.IsPositiveInfinity(chipCount) || chipCount >= (double)MaxChipCount)
                 return MaxChipCount;
 
-            return (long)chipCount;
+            return new BigInteger(chipCount);
         }
 
-        public static long CapChipCount(long chipCount)
+        public static BigInteger CapChipCount(BigInteger chipCount)
         {
             if (chipCount <= 0)
                 return 0;
 
-            return Math.Min(chipCount, MaxChipCount);
+            return BigInteger.Min(chipCount, MaxChipCount);
         }
 
-        public static string FormatChipCount(long chipCount)
+        public static string FormatChipCount(BigInteger chipCount)
         {
             if (chipCount >= MaxChipCount)
                 return "infinite";
@@ -74,17 +75,17 @@ namespace ConsoleBalatro.Engine
             return chipCount.ToString();
         }
 
-        private static long _reqChipsBlind = -1;
+        private static BigInteger _reqChipsBlind = -1;
 
         //The pre-calculation values of current chips and mult.
         //By pre-calculation like literally before they're multiplied together to get the final chips.
-        public static long CurrentChips = 0;
+        public static BigInteger CurrentChips = 0;
         public static double CurrentMult = 0;
 
         public static double DiscountMultiplier = 1.0;//For price discounting effects
 
         //The "number to beat" for the current blind.
-        public static long RequiredChipsForCurrentBlind
+        public static BigInteger RequiredChipsForCurrentBlind
         {
             get => _reqChipsBlind;
             set
@@ -107,7 +108,7 @@ namespace ConsoleBalatro.Engine
 
         //Total chips built up in the current round;
         //Tracked until you either clear the requirement or you lose, then reset for next round.
-        public static long TotalCurrentChips = 0;
+        public static BigInteger TotalCurrentChips = 0;
 
         //Money-related fields.
         public static int Money = 4;
@@ -321,7 +322,11 @@ namespace ConsoleBalatro.Engine
             FlowHandler.CurrentSelectedBlind = BlindType.SMALL;
             FlowHandler.CurrentTempChanges = null;
             FlowHandler.CurrentBossBlind = "";
+            FlowHandler.RunWinDecisionPending = false;
+            FlowHandler.HasWonCurrentRun = false;
+
             BossBlindDb.BossBlindsAlreadyUsed.Clear();
+            
 
             Money = 0;
             CurMaxInterest = 5;
@@ -507,7 +512,7 @@ namespace ConsoleBalatro.Engine
         /// </summary>
         /// <param name="chipsNum">The number of chips to be gained.</param>
         /// <param name="src">The card that caused this chip gain.</param>
-        public static void EmitChipsAdd(long chipsNum, Card src)
+        public static void EmitChipsAdd(BigInteger chipsNum, Card src)
         {
             var emitArgs = new EngineChipsMultGainEmitArgs() { ChipsGainEmitted = chipsNum, MyContext = new EventContext() { Context = EventContextType.GainEmit }, SourceOfEmit = src };
             EngineEventHandler.TriggerEvent(emitArgs);

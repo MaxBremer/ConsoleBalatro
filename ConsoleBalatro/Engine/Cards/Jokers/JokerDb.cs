@@ -1248,7 +1248,7 @@ namespace ConsoleBalatro.Engine.Cards.Jokers
                     MyAction = args =>
                     {
                         if (args is EngineCardPreTriggerArgs triggerArgs && ZoneManager.CurrentlyBeingPlayedZone.Cards.Contains(triggerArgs.CardAboutToTrigger))
-                            triggerArgs.CardAboutToTrigger.ChipsBase += ret.DataDict["CHIPGAIN"].IntData;
+                            triggerArgs.CardAboutToTrigger.ChipsBase = Globals.CapChipCount(triggerArgs.CardAboutToTrigger.ChipsBase + ret.DataDict["CHIPGAIN"].IntData);
                     },
                 });
                 return ret;
@@ -2339,7 +2339,7 @@ namespace ConsoleBalatro.Engine.Cards.Jokers
                     MyContextType = EventContextType.HandPlayDone,
                     MyAction = args =>
                     {
-                        if (args is EngineHandPlayDoneArgs h && Globals.CurHandsRemaining == 0 && h.CurrentTotalChips < h.RequiredChipsForBlind && h.RequiredChipsForBlind > 0 && h.CurrentTotalChips >= (h.RequiredChipsForBlind * 0.25))
+                        if (args is EngineHandPlayDoneArgs h && Globals.CurHandsRemaining == 0 && h.CurrentTotalChips < h.RequiredChipsForBlind && h.RequiredChipsForBlind > 0 && h.CurrentTotalChips * 4 >= h.RequiredChipsForBlind)
                         {
                             h.PreventGameOverAndWinBlind = true;
                             if (c.MyZone == ZoneManager.JokerZone)

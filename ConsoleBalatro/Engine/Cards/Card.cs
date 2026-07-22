@@ -8,6 +8,7 @@ using ConsoleBalatro.Engine.Events.Args;
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Numerics;
 using System.Reflection.Metadata.Ecma335;
 using System.Text;
 using System.Threading.Tasks;
@@ -32,7 +33,7 @@ namespace ConsoleBalatro.Engine.Cards
 
         public Edition Edition = Edition.BASE;
         public Seal Seal = Seal.NONE;
-        public int ChipsBase = 0;
+        public BigInteger ChipsBase = 0;
         //NOTE: By default game rules, the below 2 are always 0 for playing cards. Editions and enhancements are handled by a global listener.
         //This is only for later/"modded" features, or for some jokers.
         //Maybe base jimbo joker? Things like that? ...are there any other things like that? Cavendish/banana?

@@ -132,7 +132,7 @@ namespace ConsoleBalatro.Engine
                 EventContextType.CardsSelectedForPlay,
                 args => args is EngineHandPlayArgs playArgs && playArgs.CardsSelected.Count(card => card.Rank == Rank.SEVEN && card.Suit == Suit.CLUBS) >= 4);
             RegisterAllAchievementData(
-                Brainstorm_UnlockId,
+                HitTheRoad_UnlockId,
                 "Hit the Road Unlocked",
                 "Discarded 5 Jacks at the same time.",
                 EventContextType.HandDiscardDone,

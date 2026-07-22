@@ -49,7 +49,7 @@ namespace ConsoleBalatro.Engine.Cards.Blinds
             get 
             {
                 List<string> validOpts = new List<string>();
-                if(FlowHandler.CurrentAnte % 8 == 0)
+                if(FlowHandler.CurrentAnte % 8 == 0)//should this be moved to FlowHandler? Feels like the kind of thing that maybe should be FlowHandler...
                 {
                     validOpts.AddRange(BigBossBlinds);
                 }

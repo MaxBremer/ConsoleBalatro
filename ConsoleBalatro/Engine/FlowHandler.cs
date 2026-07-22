@@ -199,7 +199,7 @@ namespace ConsoleBalatro.Engine
         /// <summary>
         /// The Boss blind DB name of the boss of the current ante.
         /// </summary>
-        public static string CurrentBossBlind;
+        public static string CurrentBossBlind = "";
 
         /// <summary>
         /// Returns a value indicating whether the player can skip the currently selected blind.
@@ -208,6 +208,7 @@ namespace ConsoleBalatro.Engine
 
         /// <summary>
         /// A horrible no-good very bad way to basically just implement juggle tag. Stores temporary modifiers to be used only at the next blind, then discarded.
+        /// Did it this way so in theory other similar things could do this. But they don't. Just juggle tag.
         /// TODO: fix this. do it better. dummy.
         /// </summary>
         public static EnginePlayRoundSetupArgs CurrentTempChanges = null;
@@ -219,8 +220,9 @@ namespace ConsoleBalatro.Engine
         {
             //XTOXDO: Might not be any flow listeners, idk. This is here if I need it.
             //There was one! I'm a smartie :)
-            EngineEventHandler.StartListening(new EngineEventListener() { MyAction = RestoreSavedOrderings, MyContextType = EventContextType.GameStatePop });
-            EngineEventHandler.StartListening(new EngineEventListener() { MyAction = SavePlayRoundOrderings, MyContextType= EventContextType.GameStatePush });
+            //Ok we don't really use these at all...... so I removed them.... no more smartie :'(
+            //EngineEventHandler.StartListening(new EngineEventListener() { MyAction = RestoreSavedOrderings, MyContextType = EventContextType.GameStatePop });
+            //EngineEventHandler.StartListening(new EngineEventListener() { MyAction = SavePlayRoundOrderings, MyContextType= EventContextType.GameStatePush });
         }
 
         public static bool HasWonCurrentRun = false;
@@ -244,7 +246,7 @@ namespace ConsoleBalatro.Engine
         private static List<BigInteger> GetCurrentChipScalingList()
         {
             //Yeah, it's the dumb way to do it, but doing an event is also pretty dumb idk.
-            //Maybe make it an event/listener later? If so just have to make sure Purple triggers AFTER green (which would be a good reason to implement event priority >:( )
+            //Maybe make it an event/listener later? If so just have to make sure Purple triggers AFTER green (which would be a good reason to implement event priority >:( like u should have already >:( )
             if (StakeManager.StakeActive(StakeType.PURPLE))
             {
                 return PurpleStakeAnteChipAmounts;
@@ -499,6 +501,7 @@ namespace ConsoleBalatro.Engine
         public static void EndWonRun()
         {
             RunWinDecisionPending = false;
+            //Resetting is banned, just quit the game. Lol.
             /*Globals.ResetFullEngine();
             InitializeMainMenu();*/
             Globals.QUIT = true;
@@ -690,7 +693,6 @@ namespace ConsoleBalatro.Engine
             CurrentAnte += 1;
 
             //Roll a new boss blind
-            //TODO: final boss blinds
             RerollBossBlind();
 
             //Set up new skip tags
@@ -716,7 +718,8 @@ namespace ConsoleBalatro.Engine
 
             //Select new Boss Blind
             string targetBossBlindName;
-            //TODO: Account for the big boss blinds at the end.
+            //Right now, BossBlindDb accounts for final/"finisher" boss blinds and only gives us those if ante is divisible by 8
+            //possibly should be moved to here.
             if (BossBlindDb.AvailableBossBlinds.Count == 0)
             {
                 //If no boss options available, reset the pool.
@@ -780,7 +783,6 @@ namespace ConsoleBalatro.Engine
             EngineEventHandler.TriggerEvent(new EngineEventArgs() { MyContext = new EventContext() { Context = EventContextType.StartSelectedBlind } });
             CloseBlindSelectionRound();
             InitializePlayRound(CurrentSelectedBlind);
-            //AttemptRoundInitialize(InitializePlayRound, CurrentSelectedBlind);
         }
 
         /// <summary>

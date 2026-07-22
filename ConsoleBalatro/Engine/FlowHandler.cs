@@ -45,7 +45,16 @@ namespace ConsoleBalatro.Engine
             47_000_000_000,
             29_000_000_000_000,
             77_000_000_000_000_000,
-            //860_000_000_000_000_000_000, //Ante 16
+            86 * BigInteger.Pow(10, 19), //Ante 16
+            42 * BigInteger.Pow(10, 24),
+            92 * BigInteger.Pow(10, 29),
+            92 * BigInteger.Pow(10, 35),
+            43 * BigInteger.Pow(10, 42),
+            97 * BigInteger.Pow(10, 49),
+            1 * BigInteger.Pow(10, 59),
+            58 * BigInteger.Pow(10, 66),
+            16 * BigInteger.Pow(10, 76), //Ante 24. For my sanity, we're stopping here; auto-scaling can handle it after this
+            //TODO: BigInteger can technically go as high as you want it... should we manually implement naneinf?
         };
 
         /// <summary>
@@ -63,10 +72,22 @@ namespace ConsoleBalatro.Engine
             60000,
             100000,
             //endless
-            230000,
-            1100000,
-            14000000,
-            600000000,
+            230_000,
+            1_100_000,
+            14_000_000,
+            600_000_000,
+            94_000_000_000,
+            58 * BigInteger.Pow(10, 12),
+            15 * BigInteger.Pow(10, 16),
+            17 * BigInteger.Pow(10, 20), //Ante 16
+            84 * BigInteger.Pow(10, 24),
+            18 * BigInteger.Pow(10, 30),
+            18 * BigInteger.Pow(10, 36),
+            86 * BigInteger.Pow(10, 42),
+            19 * BigInteger.Pow(10, 50),
+            21 * BigInteger.Pow(10, 58),
+            11 * BigInteger.Pow(10, 67),
+            33 * BigInteger.Pow(10, 76), //Ante 24
         };
 
         /// <summary>
@@ -84,10 +105,22 @@ namespace ConsoleBalatro.Engine
             110000,
             200000,
             //endless
-            460000,
-            2200000,
-            29000000,
-            1200000000,//TODO: MULT BY 2 EXCEEDS INT LIMIT HERE. WILL BREAK FINALL BOSS. WHATEVER.
+            460_000,
+            2_200_000,
+            29_000_000,
+            1_200_000_000,
+            18 * BigInteger.Pow(10, 10),
+            11 * BigInteger.Pow(10, 13),
+            30 * BigInteger.Pow(10, 16),
+            34 * BigInteger.Pow(10, 20), //Ante 16
+            16 * BigInteger.Pow(10, 25),
+            37 * BigInteger.Pow(10, 30),
+            37 * BigInteger.Pow(10, 36),
+            17 * BigInteger.Pow(10, 43),
+            38 * BigInteger.Pow(10, 50),
+            42 * BigInteger.Pow(10, 58),
+            23 * BigInteger.Pow(10, 67),
+            66 * BigInteger.Pow(10, 76), //Ante 24
         };
 
         /// <summary>
@@ -184,7 +217,7 @@ namespace ConsoleBalatro.Engine
         /// </summary>
         public static void InitializeFlowListeners()
         {
-            //XTO-DO: Might not be any flow listeners, idk. This is here if I need it.
+            //XTOXDO: Might not be any flow listeners, idk. This is here if I need it.
             //There was one! I'm a smartie :)
             EngineEventHandler.StartListening(new EngineEventListener() { MyAction = RestoreSavedOrderings, MyContextType = EventContextType.GameStatePop });
             EngineEventHandler.StartListening(new EngineEventListener() { MyAction = SavePlayRoundOrderings, MyContextType= EventContextType.GameStatePush });
@@ -380,7 +413,7 @@ namespace ConsoleBalatro.Engine
         /// <summary>
         /// Initializes the "Post Round", a brief round in which the player is presented with their reward money and its sources.
         /// </summary>
-        /// <param name="postRoundMoney">A list of tuples, each representing an amount of money and its source.</param>
+        /// <param name="postRoundMoney">A list of tuples, each representing an amount of money and its source. Yeah it kinda sucks that the source is just a string, but whatever.</param>
         public static void InitializePostRound(List<(string, int)> postRoundMoney)
         {
             EngineEventHandler.TriggerEvent(new EngineEventArgs() { MyContext = new() { Context = EventContextType.StartPostRound } });
@@ -578,7 +611,7 @@ namespace ConsoleBalatro.Engine
         }
 
         /// <summary>
-        /// If the run was won on this ante increase, mark the relevant deck and joker stickers and save them.
+        /// If the run was won on this ante increment, mark the relevant deck and joker stickers and save them.
         /// </summary>
         private static void MarkCurrentStakeBeatenIfRunWon()
         {
@@ -587,7 +620,7 @@ namespace ConsoleBalatro.Engine
                 var progressChanged = UnlockManager.MarkDeckStakeBeaten(CurrentDeckDbName, StakeManager.CurrentStake, saveImmediately: false);
 
                 foreach (var jokerName in ZoneManager.JokerZone.Cards
-                    .Where(card => card.IsJoker && !card.IsVoucher && !card.IsTag && !string.IsNullOrWhiteSpace(card.JokerData?.DBName))
+                    .Where(card => card.IsJoker && !string.IsNullOrWhiteSpace(card.JokerData?.DBName))
                     .Select(card => card.JokerData!.DBName)
                     .Distinct(StringComparer.OrdinalIgnoreCase))
                 {
@@ -628,8 +661,11 @@ namespace ConsoleBalatro.Engine
                 ret.Add(("Hands Remaining", Globals.CurHandsRemaining));
             }
 
-            var gatherArgs = new EngineGatherPostRoundMoneyArgs() { ExistingSources = ret };
-            gatherArgs.MyContext = new EventContext() { Context = EventContextType.GatherPostRoundMoney };
+            var gatherArgs = new EngineGatherPostRoundMoneyArgs
+            {
+                ExistingSources = ret,
+                MyContext = new EventContext() { Context = EventContextType.GatherPostRoundMoney }
+            };
             EngineEventHandler.TriggerEvent(gatherArgs);
 
             foreach (var jokerPair in gatherArgs.JokersContributed)

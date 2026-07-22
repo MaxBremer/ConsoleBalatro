@@ -28,6 +28,17 @@ namespace ConsoleBalatro.Engine
         public const string FaceCardsPlayedProgressKey = "FACE_CARDS_PLAYED";
         public const string JokersSoldProgressKey = "JOKERS_SOLD";
         public const string CardsSoldProgressKey = "CARDS_SOLD";
+        //new ones
+        public const string ShopDollarsProgressKey = "DOLLARS_SPENT_AT_SHOP";
+        public const string ShopRerollsProgressKey = "REROLLS";
+        public const string TarotsUsedFromPacksProgressKey = "PACK_TAROTS";
+        public const string TarotsBoughtFromShopProgressKey = "SHOP_TAROTS";
+        public const string PlanetsUsedFromPacksProgressKey = "PACK_PLANETS";
+        public const string PlanetsBoughtFromShopProgressKey = "SHOP_PLANETS";
+        public const string PlayingCardsBoughtFromShopProgressKey = "SHOP_PLAYING_CARDS";
+        public const string CardsPlayedProgressKey = "CARDS_PLAYED";
+        public const string CardsDiscardedProgressKey = "CARDS_DISCARDED";
+        public const string BlanksRedeemedProgressKey = "BLANKS";
 
         private static readonly JsonSerializerOptions SaveJsonOptions = new()
         {

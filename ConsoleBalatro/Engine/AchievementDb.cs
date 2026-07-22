@@ -253,7 +253,7 @@ namespace ConsoleBalatro.Engine
             RegisterDeckCheckAchievement(
                 GlassJoker_UnlockId,
                 "Glass Joker Unlocked",
-                "Have at least5 Glass cards in your deck.",
+                "Have at least 5 Glass cards in your deck.",
                 cards => cards != null && cards.Count(card => card.Enhancement == Enhancement.GLASS) >= 5);
             RegisterDeckCheckAchievement(
                 SmearedJoker_UnlockId,

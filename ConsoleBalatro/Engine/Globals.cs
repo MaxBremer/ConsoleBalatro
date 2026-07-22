@@ -322,7 +322,11 @@ namespace ConsoleBalatro.Engine
             FlowHandler.CurrentSelectedBlind = BlindType.SMALL;
             FlowHandler.CurrentTempChanges = null;
             FlowHandler.CurrentBossBlind = "";
+            FlowHandler.RunWinDecisionPending = false;
+            FlowHandler.HasWonCurrentRun = false;
+
             BossBlindDb.BossBlindsAlreadyUsed.Clear();
+            
 
             Money = 0;
             CurMaxInterest = 5;

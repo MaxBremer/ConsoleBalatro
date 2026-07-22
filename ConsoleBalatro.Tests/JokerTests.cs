@@ -10,6 +10,7 @@ using ConsoleBalatro.Engine.Market;
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Numerics;
 using System.Text;
 using System.Threading.Tasks;
 using Xunit;
@@ -1508,7 +1509,13 @@ namespace ConsoleBalatro.Tests
             var moneyBefore = Globals.Money;
             PlayHand(hand);
             Assert.Equal(moneyBefore + moneyAdded, Globals.Money);
-            Assert.Equal(chipsAdded, s.record.ChipsFromEmits - ZoneManager.HiddenPlayZone.Cards.Sum(c => c.ChipsBase));
+            BigInteger chipBaseSum = new BigInteger(0);
+            foreach (var c in ZoneManager.HiddenPlayZone.Cards)
+            {
+                chipBaseSum += c.ChipsBase;
+            }
+            //Assert.Equal(chipsAdded, s.record.ChipsFromEmits - ZoneManager.HiddenPlayZone.Cards.Sum(c => c.ChipsBase));
+            Assert.Equal(chipsAdded, s.record.ChipsFromEmits - chipBaseSum);
             Assert.Equal(multAdded, s.record.MultFromEmits);
         }
 

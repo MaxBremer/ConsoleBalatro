@@ -42,7 +42,8 @@ namespace ConsoleBalatro.Tests
 
         public void ResetEngineForTest()
         {
-            EngineEventHandler.ResetFullEventHandler();
+            Globals.ResetFullEngine();
+            /*EngineEventHandler.ResetFullEventHandler();
 
             Globals.ResetGlobalValues();
             Globals.ClearGameStateStack();
@@ -64,7 +65,7 @@ namespace ConsoleBalatro.Tests
             Globals.RequiredChipsForCurrentBlind = -1;
 
             ZoneManager.HiddenBlindAttributeZone.ClearCards(false);
-            ZoneManager.OtherHiddenJokerZone.ClearCards(false);
+            ZoneManager.OtherHiddenJokerZone.ClearCards(false);*/
         }
 
         public void ResetToBlindSelection(bool returnVoucher = false)

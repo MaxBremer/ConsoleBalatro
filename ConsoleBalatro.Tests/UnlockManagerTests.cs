@@ -2,6 +2,7 @@
 using ConsoleBalatro.Engine.Cards;
 using ConsoleBalatro.Engine.Cards.Decks;
 using ConsoleBalatro.Engine.Cards.Consumables;
+using ConsoleBalatro.Engine.Cards.Blinds;
 using ConsoleBalatro.Engine.Cards.Jokers;
 using ConsoleBalatro.Engine.Events;
 using ConsoleBalatro.Engine.Events.Args;
@@ -537,6 +538,72 @@ public class UnlockManagerTests : TestClassBase
         }
     }
 
+
+    [Fact]
+    public void MoneyTreeAchievement_RequiresTenConsecutiveMaxInterestRounds()
+    {
+        EngineEventHandler.ResetFullEventHandler();
+        UnlockManager.ResetProgressToDefaults();
+        Globals.CurMaxInterest = 5;
+        Globals.Money = 25;
+        List<(string, int)> list = null;
+        for (var i = 0; i < 9; i++)
+        {
+            list = FlowHandler.CalcPostRoundMoneyWithSources();
+        }
+        Assert.False(UnlockManager.IsAchievementAchieved(AchievementDb.MoneyTree_UnlockId));
+
+        Globals.Money = 24;
+        list = FlowHandler.CalcPostRoundMoneyWithSources();
+        Globals.Money = 25;
+        for (var i = 0; i < 9; i++)
+        {
+            list = FlowHandler.CalcPostRoundMoneyWithSources();
+        }
+        Assert.False(UnlockManager.IsAchievementAchieved(AchievementDb.MoneyTree_UnlockId));
+
+        list = FlowHandler.CalcPostRoundMoneyWithSources();
+        Assert.True(UnlockManager.IsAchievementAchieved(AchievementDb.MoneyTree_UnlockId));
+    }
+
+    [Fact]
+    public void BossBlindCollection_PersistsAndUnlocksRetconAfterTwentyFiveDiscoveries()
+    {
+        var savePath = BuildTempSavePath();
+        var originalPath = UnlockManager.SaveFilePath;
+        try
+        {
+            UnlockManager.SaveFilePath = savePath;
+            UnlockManager.PermanentProgressSavingDisabled = false;
+            EngineEventHandler.ResetFullEventHandler();
+            UnlockManager.ResetProgressToDefaults();
+
+            var bossBlinds = BossBlindDb.BossBlindNames.Take(25).ToList();
+            foreach (var bossBlind in bossBlinds.Take(24))
+            {
+                Assert.True(UnlockManager.AddBossBlindToCollection(bossBlind));
+            }
+            Assert.False(UnlockManager.IsAchievementAchieved(AchievementDb.Retcon_UnlockId));
+
+            Assert.True(UnlockManager.AddBossBlindToCollection(bossBlinds[24]));
+            Assert.Equal(25, UnlockManager.CollectedBossBlindCount);
+            Assert.True(UnlockManager.IsBossBlindCollected(bossBlinds[0]));
+            Assert.True(UnlockManager.IsAchievementAchieved(AchievementDb.Retcon_UnlockId));
+
+            UnlockManager.ResetProgressToDefaults();
+            Assert.True(UnlockManager.LoadProgress());
+            Assert.Equal(25, UnlockManager.CollectedBossBlindCount);
+            Assert.True(UnlockManager.IsBossBlindCollected(bossBlinds[0]));
+        }
+        finally
+        {
+            UnlockManager.PermanentProgressSavingDisabled = true;
+            UnlockManager.SaveFilePath = originalPath;
+            UnlockManager.ResetProgressToDefaults(clearAchievementDefinitions: true);
+            EngineEventHandler.ResetFullEventHandler();
+            DeleteTempSave(savePath);
+        }
+    }
 
     [Fact]
     public void PermanentProgressSavingDisabled_AllowsProgressButSkipsFileWrites()

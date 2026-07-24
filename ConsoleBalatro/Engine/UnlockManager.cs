@@ -1,4 +1,5 @@
 ﻿using ConsoleBalatro.Engine.Cards.Consumables;
+using ConsoleBalatro.Engine.Cards.Blinds;
 using ConsoleBalatro.Engine.Cards.Decks;
 using ConsoleBalatro.Engine.Cards.Jokers;
 using ConsoleBalatro.Engine.Stakes;
@@ -19,6 +20,7 @@ namespace ConsoleBalatro.Engine
         private static HashSet<string> AchievedAchievements = new(StringComparer.OrdinalIgnoreCase);
         private static HashSet<string> CollectedJokers = new(StringComparer.OrdinalIgnoreCase);
         private static HashSet<string> CollectedConsumables = new(StringComparer.OrdinalIgnoreCase);
+        private static HashSet<string> CollectedBossBlinds = new(StringComparer.OrdinalIgnoreCase);
         private static Dictionary<string, int> DeckHighestBeatenStakeIndexes = new(StringComparer.OrdinalIgnoreCase);
         private static Dictionary<string, int> JokerHighestBeatenStakeIndexes = new(StringComparer.OrdinalIgnoreCase);
         private static Dictionary<string, int> PersistentProgressCounts = new(StringComparer.OrdinalIgnoreCase);
@@ -56,9 +58,11 @@ namespace ConsoleBalatro.Engine
         public static IReadOnlyCollection<string> RegisteredAchievementIds => AchievementDb.RegisteredAchievementIds;
         public static IReadOnlyCollection<string> CollectedJokerDbNames => CollectedJokers.OrderBy(x => x).ToList();
         public static IReadOnlyCollection<string> CollectedConsumableDbNames => CollectedConsumables.OrderBy(x => x).ToList();
+        public static IReadOnlyCollection<string> CollectedBossBlindDbNames => CollectedBossBlinds.OrderBy(x => x).ToList();
         public static int CollectedJokerCount => CollectedJokers.Count;
         public static int CollectedConsumableCount => CollectedConsumables.Count;
-        public static int CollectionCount => CollectedJokerCount + CollectedConsumableCount;
+        public static int CollectedBossBlindCount => CollectedBossBlinds.Count;
+        public static int CollectionCount => CollectedJokerCount + CollectedConsumableCount + CollectedBossBlindCount;
         // When true, unlocks, achievements, and collection progress still update in memory, but are not written to the permanent save file.
         public static bool PermanentProgressSavingDisabled { get; set; } = false;
 
@@ -82,6 +86,7 @@ namespace ConsoleBalatro.Engine
             AchievedAchievements = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
             CollectedJokers = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
             CollectedConsumables = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
+            CollectedBossBlinds = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
             DeckHighestBeatenStakeIndexes = new Dictionary<string, int>(StringComparer.OrdinalIgnoreCase);
             JokerHighestBeatenStakeIndexes = new Dictionary<string, int>(StringComparer.OrdinalIgnoreCase);
             PersistentProgressCounts = new Dictionary<string, int>(StringComparer.OrdinalIgnoreCase);
@@ -226,7 +231,8 @@ namespace ConsoleBalatro.Engine
         public static bool IsConsumableCollected(string consumableDbName) => CollectedConsumables.Contains(consumableDbName);
 
         public static bool IsCollectionComplete() => CollectedJokers.IsSupersetOf(JokerDb.JokerDbNames)
-            && CollectedConsumables.IsSupersetOf(GetAllConsumableDbNames());
+            && CollectedConsumables.IsSupersetOf(GetAllConsumableDbNames())
+            && CollectedBossBlinds.IsSupersetOf(BossBlindDb.BossBlindNames);
 
         public static bool AddJokerToCollection(string jokerDbName, bool saveImmediately = true)
         {
@@ -246,6 +252,18 @@ namespace ConsoleBalatro.Engine
             }
 
             return AddCollectionItem(CollectedConsumables, consumableDbName, saveImmediately);
+        }
+
+        public static bool IsBossBlindCollected(string bossBlindDbName) => CollectedBossBlinds.Contains(bossBlindDbName);
+
+        public static bool AddBossBlindToCollection(string bossBlindDbName, bool saveImmediately = true)
+        {
+            if (string.IsNullOrWhiteSpace(bossBlindDbName) || !BossBlindDb.BossBlindData.ContainsKey(bossBlindDbName))
+            {
+                return false;
+            }
+
+            return AddCollectionItem(CollectedBossBlinds, bossBlindDbName, saveImmediately);
         }
 
         public static bool IsAchievementAchieved(string achievementId) => AchievedAchievements.Contains(achievementId);
@@ -300,7 +318,7 @@ namespace ConsoleBalatro.Engine
 
             lock (SaveLock)
             {
-                var saveData = UnlockSaveData.FromCurrentState(UnlockedDecks, DeckHighestBeatenStakeIndexes, JokerHighestBeatenStakeIndexes, AchievedAchievements, PersistentProgressCounts, CollectedJokers, CollectedConsumables);
+                var saveData = UnlockSaveData.FromCurrentState(UnlockedDecks, DeckHighestBeatenStakeIndexes, JokerHighestBeatenStakeIndexes, AchievedAchievements, PersistentProgressCounts, CollectedJokers, CollectedConsumables, CollectedBossBlinds);
                 var saveDirectory = Path.GetDirectoryName(SaveFilePath);
                 if (!string.IsNullOrWhiteSpace(saveDirectory))
                 {
@@ -367,6 +385,7 @@ namespace ConsoleBalatro.Engine
             AchievedAchievements = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
             CollectedJokers = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
             CollectedConsumables = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
+            CollectedBossBlinds = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
             DeckHighestBeatenStakeIndexes = new Dictionary<string, int>(StringComparer.OrdinalIgnoreCase);
             JokerHighestBeatenStakeIndexes = new Dictionary<string, int>(StringComparer.OrdinalIgnoreCase);
             PersistentProgressCounts = new Dictionary<string, int>(StringComparer.OrdinalIgnoreCase);
@@ -416,6 +435,11 @@ namespace ConsoleBalatro.Engine
                 foreach (var consumableDbName in (saveData.Collection?.Consumables ?? new List<string>()).Where(allConsumableDbNames.Contains))
                 {
                     CollectedConsumables.Add(consumableDbName);
+                }
+
+                foreach (var bossBlindDbName in (saveData.Collection?.BossBlinds ?? new List<string>()).Where(BossBlindDb.BossBlindData.ContainsKey))
+                {
+                    CollectedBossBlinds.Add(bossBlindDbName);
                 }
             }
 
@@ -683,7 +707,7 @@ namespace ConsoleBalatro.Engine
             public AchievementUnlockSaveData? Achievements { get; set; } = new();
             public CollectionSaveData? Collection { get; set; } = new();
 
-            public static UnlockSaveData FromCurrentState(IEnumerable<string> unlockedDecks, IReadOnlyDictionary<string, int> highestBeatenStakeIndexes, IReadOnlyDictionary<string, int> jokerHighestBeatenStakeIndexes, IEnumerable<string> achievedAchievements, IReadOnlyDictionary<string, int> progressCounts, IEnumerable<string> collectedJokers, IEnumerable<string> collectedConsumables)
+            public static UnlockSaveData FromCurrentState(IEnumerable<string> unlockedDecks, IReadOnlyDictionary<string, int> highestBeatenStakeIndexes, IReadOnlyDictionary<string, int> jokerHighestBeatenStakeIndexes, IEnumerable<string> achievedAchievements, IReadOnlyDictionary<string, int> progressCounts, IEnumerable<string> collectedJokers, IEnumerable<string> collectedConsumables, IEnumerable<string> collectedBossBlinds)
             {
                 return new UnlockSaveData
                 {
@@ -702,6 +726,7 @@ namespace ConsoleBalatro.Engine
                         Jokers = collectedJokers.OrderBy(x => x).ToList(),
                         JokerHighestBeatenStakeIndexes = jokerHighestBeatenStakeIndexes.OrderBy(x => x.Key).ToDictionary(x => x.Key, x => x.Value),
                         Consumables = collectedConsumables.OrderBy(x => x).ToList(),
+                        BossBlinds = collectedBossBlinds.OrderBy(x => x).ToList(),
                     },
                 };
             }
@@ -724,6 +749,7 @@ namespace ConsoleBalatro.Engine
             public List<string> Jokers { get; set; } = new();
             public Dictionary<string, int> JokerHighestBeatenStakeIndexes { get; set; } = new(StringComparer.OrdinalIgnoreCase);
             public List<string> Consumables { get; set; } = new();
+            public List<string> BossBlinds { get; set; } = new();
         }
     }
 }

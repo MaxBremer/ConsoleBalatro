@@ -991,7 +991,8 @@ namespace ConsoleBalatro.Engine.Cards.Consumables
                 ConsumableDBName = c.ConsumableData.DBName,
                 HandOfItemUsed = c.ConsumableData.PlanetHandType,
                 TypeUsed = c.ConsumableData.Type,
-                BuyItemUsed = c.ConsumableData.BuyType
+                BuyItemUsed = c.ConsumableData.BuyType,
+                ZoneUsedFrom = zoneFrom,
             };
             EngineEventHandler.TriggerEvent(args);
 

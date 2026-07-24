@@ -1,6 +1,7 @@
 ﻿using ConsoleBalatro.Engine.Cards;
 using ConsoleBalatro.Engine.Cards.Consumables;
 using ConsoleBalatro.Engine.Events;
+using ConsoleBalatro.Engine.Events.Args;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -51,6 +52,7 @@ namespace ConsoleBalatro.Engine.Market
             {
                 return;
             }
+            var costPaid = Globals.CurrentRerollCost;
             Globals.EmitMoneyLoss(Globals.CurrentRerollCost, Globals.RerollButtonCard, false);
             if (Globals.ChaosClownFreeRerollAvailable && Globals.CurrentRerollCost == 0)
             {
@@ -70,6 +72,8 @@ namespace ConsoleBalatro.Engine.Market
             }
 
             FillMainMarket();
+
+            EngineEventHandler.TriggerEvent(new EngineShopRerollArgs() { CostPaid = costPaid });
         }
 
         //Tho in game player can't actually refresh pack market, this is for debug.

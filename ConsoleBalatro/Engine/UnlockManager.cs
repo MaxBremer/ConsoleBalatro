@@ -28,7 +28,6 @@ namespace ConsoleBalatro.Engine
         public const string FaceCardsPlayedProgressKey = "FACE_CARDS_PLAYED";
         public const string JokersSoldProgressKey = "JOKERS_SOLD";
         public const string CardsSoldProgressKey = "CARDS_SOLD";
-        //new ones
         public const string ShopDollarsProgressKey = "DOLLARS_SPENT_AT_SHOP";
         public const string ShopRerollsProgressKey = "REROLLS";
         public const string TarotsUsedFromPacksProgressKey = "PACK_TAROTS";
@@ -554,9 +553,7 @@ namespace ConsoleBalatro.Engine
                 MyAction = args =>
                 {
                     if (args is EngineHandPlayArgs playArgs)
-                    {
                         IncrementPersistentProgressCount(FaceCardsPlayedProgressKey, playArgs.CardsSelected.Count(EngineUtils.isFace));
-                    }
                 },
             });
             PersistentProgressListeners.Add(new EngineEventListener
@@ -568,17 +565,78 @@ namespace ConsoleBalatro.Engine
                     {
                         IncrementPersistentProgressCount(CardsSoldProgressKey);
                         if (soldArgs.CardBeingSold.IsJoker)
-                        {
                             IncrementPersistentProgressCount(JokersSoldProgressKey);
-                        }
                     }
                 },
             });
+            PersistentProgressListeners.Add(new EngineEventListener
+            {
+                MyContextType = EventContextType.CardPurchased,
+                MyAction = args =>
+                {
+                    if(args is EngineCardPurchasedArgs buyArgs)
+                    {
+                        IncrementPersistentProgressCount(ShopDollarsProgressKey, buyArgs.AmountPaid);
+                        if (buyArgs.BeingPurchased.isConsumable)
+                        {
+                            if(buyArgs.BeingPurchased.ConsumableData.Type == ConsumableType.TAROT)
+                                IncrementPersistentProgressCount(TarotsBoughtFromShopProgressKey);
+                            else if(buyArgs.BeingPurchased.ConsumableData.Type == ConsumableType.PLANET)
+                                IncrementPersistentProgressCount(PlanetsBoughtFromShopProgressKey);
+                        }
+                        else if (buyArgs.BeingPurchased.isPlayingCard)
+                            IncrementPersistentProgressCount(PlayingCardsBoughtFromShopProgressKey);
+                        else if (buyArgs.BeingPurchased.IsVoucher && buyArgs.BeingPurchased.JokerData != null && buyArgs.BeingPurchased.JokerData.DBName == "BLANK")
+                            IncrementPersistentProgressCount(BlanksRedeemedProgressKey);
+                    }
+                }
+            });
+            PersistentProgressListeners.Add(new EngineEventListener
+            {
+                MyContextType = EventContextType.MarketRerolled,
+                MyAction = _ =>
+                {
+                    IncrementPersistentProgressCount(ShopRerollsProgressKey);
+                }
+            });
+            PersistentProgressListeners.Add(new EngineEventListener
+            {
+                MyContextType = EventContextType.ConsumableUsed,
+                MyAction = args =>
+                {
+                    if(args is EngineConsumableUseArgs conArgs)
+                    {
+                        if(conArgs.ZoneUsedFrom == ZoneManager.PackOptionZone)
+                        {
+                            if(conArgs.TypeUsed == ConsumableType.TAROT)
+                                IncrementPersistentProgressCount(TarotsUsedFromPacksProgressKey);
+                            else if(conArgs.TypeUsed == ConsumableType.PLANET)
+                                IncrementPersistentProgressCount(PlanetsUsedFromPacksProgressKey);
+                        }
+                    }
+                }
+            });
+            PersistentProgressListeners.Add(new EngineEventListener
+            {
+                MyContextType = EventContextType.HandPlayedCalculated,
+                MyAction = args =>
+                {
+                    if(args is EngineHandPlayArgs handArgs)
+                        IncrementPersistentProgressCount(CardsPlayedProgressKey, handArgs.CardsSelected.Count);
+                }
+            });
+            PersistentProgressListeners.Add(new EngineEventListener
+            {
+                MyContextType = EventContextType.HandDiscardDone,
+                MyAction = args =>
+                {
+                    if(args is EngineDiscardDoneArgs discArgs)
+                        IncrementPersistentProgressCount(CardsDiscardedProgressKey, discArgs.BeingDiscarded.Count);
+                }
+            });
 
             foreach (var listener in PersistentProgressListeners)
-            {
                 EngineEventHandler.StartListening(listener);
-            }
         }
 
         private static void StopPersistentProgressListeners()

@@ -2845,7 +2845,7 @@ namespace ConsoleBalatro.Engine.Cards.Jokers
                         card.BuyCostOverride = 0;
                 };
                 ret.Listeners.Add(new EngineEventListener() { MyContextType = EventContextType.StartMarket, MyAction = _ => applyCosts() });
-                ret.Listeners.Add(new EngineEventListener() { MyContextType = EventContextType.Reroll, MyAction = _ => applyCosts() });
+                ret.Listeners.Add(new EngineEventListener() { MyContextType = EventContextType.MarketRerolled, MyAction = _ => applyCosts() });
                 ret.OnJokerGainEffs.Add(applyCosts);
                 ret.OnJokerRemovalEffs.Add(() =>
                 {

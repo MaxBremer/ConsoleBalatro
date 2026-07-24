@@ -270,6 +270,7 @@ namespace ConsoleBalatro.Engine
                 "Driver's License Unlocked",
                 "Enhance 16 cards in your deck.",
                 cards => cards != null && cards.Count(card => card.Enhancement != Enhancement.NONE) >= 16);
+
             RegisterAllAchievementData(
                 Bootstraps_UnlockId,
                 "Bootstraps Unlocked",

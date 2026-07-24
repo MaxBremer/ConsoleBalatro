@@ -700,7 +700,10 @@ namespace ConsoleBalatro.Engine
             //no-Zone purchases can occur, such as a buyAndUse, which will handle its own discard.
             if (zoneGoingTo != null && zoneFrom != null)
                 zoneGoingTo.DrawTargetFrom(zoneFrom, beingPurchased);
-            EmitMoneyLoss(beingPurchased.BuyCost, beingPurchased, true);
+            var amtToPay = beingPurchased.BuyCost;
+            var args = new EngineCardPurchasedArgs() { BeingPurchased = beingPurchased, ZoneGoingTo = zoneGoingTo, AmountPaid = amtToPay };
+            EngineEventHandler.TriggerEvent(args);
+            EmitMoneyLoss(amtToPay, beingPurchased, true);
             //TODO: Should this really be done here? Doesn't feel right.
             //Maybe add extra conditional here? In case a pack consumable can be bought without open.
             if (beingPurchased.isPack)

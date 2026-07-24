@@ -15,5 +15,6 @@ namespace ConsoleBalatro.Engine.Events.Args
         public PlayedHandType HandOfItemUsed;
         public string ConsumableName;
         public string ConsumableDBName;
+        public CardZone ZoneUsedFrom;
     }
 }

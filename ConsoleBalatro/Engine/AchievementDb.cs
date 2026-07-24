@@ -70,6 +70,8 @@ namespace ConsoleBalatro.Engine
         public const string PlanetTycoon_UnlockId = "PLANET_TYCOON_UNLOCK";
         public const string Antimatter_UnlockId = "ANTIMATTER_UNLOCK";
         public const string Illusion_UnlockId = "ILLUSION_UNLOCK";
+        public const string MoneyTree_UnlockId = "MONEY_TREE_UNLOCK";
+        public const string Retcon_UnlockId = "RETCON_UNLOCK";
         //Upgraded vouchers, non-progress-based
         public const string Liquidation_UnlockId = "LIQUIDATION_UNLOCK";
         public const string GlowUp_UnlockId = "GLOW_UP_UNLOCK";
@@ -379,7 +381,40 @@ namespace ConsoleBalatro.Engine
                 "Reduce your hand size down to 5 cards.",
                 EventContextType.HandSizeChanged,
                 args => args is EngineHandSizeChangeArgs handArgs && handArgs.NewHandSize <= 5);
+            RegisterAllAchievementData(
+                MoneyTree_UnlockId,
+                "Money Tree Unlocked",
+                "Max out the interest per round earnings for ten consecutive rounds.",
+                EventContextType.EndPlayRound,
+                _ => UpdateMoneyTreeInterestStreak());
+            RegisterAllAchievementData(
+                Retcon_UnlockId,
+                "Retcon Unlocked",
+                "Discover 25 Blinds.",
+                EventContextType.CollectionItemAdded,
+                _ => UnlockManager.CollectedBossBlindCount >= 25);
 
+        }
+
+        private static int MoneyTreeInterestStreak;
+
+        public static void ResetMoneyTreeInterestStreak()
+        {
+            MoneyTreeInterestStreak = 0;
+        }
+
+        private static bool UpdateMoneyTreeInterestStreak()
+        {
+            if (Globals.Money / 5 >= Globals.CurMaxInterest)
+            {
+                MoneyTreeInterestStreak++;
+            }
+            else
+            {
+                MoneyTreeInterestStreak = 0;
+            }
+
+            return MoneyTreeInterestStreak >= 10;
         }
 
         private static void RegisterAllAchievementData(string id, string name, string desc, EventContextType contextType, Func<EngineEventArgs, bool> condition)

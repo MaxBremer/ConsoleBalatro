@@ -18,7 +18,22 @@ namespace ConsoleBalatro.Engine.Cards.Vouchers
 
         public static Dictionary<string, string> VoucherUnlockAchieves = new()
         {
-
+            ["NACHO TONG"] = AchievementDb.NachoTong_UnlockId,
+            ["RECYCLOMANCY"] = AchievementDb.Recyclomancy_UnlockId,
+            ["MONEY TREE"] = AchievementDb.MoneyTree_UnlockId,
+            ["ANTIMATTER"] = AchievementDb.Antimatter_UnlockId,
+            ["PETROGLYPH"] = AchievementDb.Petroglyph_UnlockId,
+            ["PALETTE"] = AchievementDb.Palette_UnlockId,
+            ["OVERSTOCK PLUS"] = AchievementDb.OverstockPlus_UnlockId,
+            ["REROLL GLUT"] = AchievementDb.RerollGlut_UnlockId,
+            ["LIQUIDATION"] = AchievementDb.Liquidation_UnlockId,
+            ["OMEN GLOBE"] = AchievementDb.OmenGlobe_UnlockId,
+            ["OBSERVATORY"] = AchievementDb.Observatory_UnlockId,
+            ["GLOW UP"] = AchievementDb.GlowUp_UnlockId,
+            ["RETCON"] = AchievementDb.Retcon_UnlockId,
+            ["TAROT TYCOON"] = AchievementDb.TarotTycoon_UnlockId,
+            ["PLANET TYCOON"] = AchievementDb.PlanetTycoon_UnlockId,
+            ["ILLUSION"] = AchievementDb.Illusion_UnlockId,
         };
 
         public static Dictionary<string, Func<Card, JokerCardDataBlock>> VoucherData = new()

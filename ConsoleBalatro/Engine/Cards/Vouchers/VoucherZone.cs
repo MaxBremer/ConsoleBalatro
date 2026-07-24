@@ -77,7 +77,9 @@ namespace ConsoleBalatro.Engine.Cards.Vouchers
             }
 
             //TODO: This should probably be handled by an event listener instead of being hardcoded here.
-            if (!string.IsNullOrEmpty(jokerCard.JokerData.SuccessorVoucherDBName))
+            if (!string.IsNullOrEmpty(jokerCard.JokerData.SuccessorVoucherDBName) && 
+                ((!VoucherDb.VoucherUnlockAchieves.ContainsKey(jokerCard.JokerData.SuccessorVoucherDBName)) 
+                || UnlockManager.IsAchievementAchieved(VoucherDb.VoucherUnlockAchieves[jokerCard.JokerData.SuccessorVoucherDBName])))
             {
                 MarketOptionsManager.AddToVoucherPool(jokerCard.JokerData.SuccessorVoucherDBName);
             }

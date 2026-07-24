@@ -546,23 +546,23 @@ public class UnlockManagerTests : TestClassBase
         UnlockManager.ResetProgressToDefaults();
         Globals.CurMaxInterest = 5;
         Globals.Money = 25;
-
+        List<(string, int)> list = null;
         for (var i = 0; i < 9; i++)
         {
-            EngineEventHandler.TriggerEvent(new EngineEventArgs { MyContext = new EventContext { Context = EventContextType.EndPlayRound } });
+            list = FlowHandler.CalcPostRoundMoneyWithSources();
         }
         Assert.False(UnlockManager.IsAchievementAchieved(AchievementDb.MoneyTree_UnlockId));
 
         Globals.Money = 24;
-        EngineEventHandler.TriggerEvent(new EngineEventArgs { MyContext = new EventContext { Context = EventContextType.EndPlayRound } });
+        list = FlowHandler.CalcPostRoundMoneyWithSources();
         Globals.Money = 25;
         for (var i = 0; i < 9; i++)
         {
-            EngineEventHandler.TriggerEvent(new EngineEventArgs { MyContext = new EventContext { Context = EventContextType.EndPlayRound } });
+            list = FlowHandler.CalcPostRoundMoneyWithSources();
         }
         Assert.False(UnlockManager.IsAchievementAchieved(AchievementDb.MoneyTree_UnlockId));
 
-        EngineEventHandler.TriggerEvent(new EngineEventArgs { MyContext = new EventContext { Context = EventContextType.EndPlayRound } });
+        list = FlowHandler.CalcPostRoundMoneyWithSources();
         Assert.True(UnlockManager.IsAchievementAchieved(AchievementDb.MoneyTree_UnlockId));
     }
 

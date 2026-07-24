@@ -385,8 +385,8 @@ namespace ConsoleBalatro.Engine
                 MoneyTree_UnlockId,
                 "Money Tree Unlocked",
                 "Max out the interest per round earnings for ten consecutive rounds.",
-                EventContextType.EndPlayRound,
-                _ => UpdateMoneyTreeInterestStreak());
+                EventContextType.GatherPostRoundMoney,
+                UpdateMoneyTreeInterestStreak);
             RegisterAllAchievementData(
                 Retcon_UnlockId,
                 "Retcon Unlocked",
@@ -403,18 +403,25 @@ namespace ConsoleBalatro.Engine
             MoneyTreeInterestStreak = 0;
         }
 
-        private static bool UpdateMoneyTreeInterestStreak()
+        private static bool UpdateMoneyTreeInterestStreak(EngineEventArgs args)
         {
-            if (Globals.Money / 5 >= Globals.CurMaxInterest)
+            if(args is EngineGatherPostRoundMoneyArgs moneyArgs && moneyArgs.ExistingSources.Any(x => x.Item1 == "Interest"))
             {
-                MoneyTreeInterestStreak++;
+                var potentialSource = moneyArgs.ExistingSources.First(x => x.Item1 == "Interest");
+                if(potentialSource.Item2 >= Globals.CurMaxInterest)
+                {
+                    MoneyTreeInterestStreak++;
+                }
+                else
+                {
+                    MoneyTreeInterestStreak = 0;
+                }
+                return MoneyTreeInterestStreak >= 10;
             }
             else
             {
-                MoneyTreeInterestStreak = 0;
+                return false;
             }
-
-            return MoneyTreeInterestStreak >= 10;
         }
 
         private static void RegisterAllAchievementData(string id, string name, string desc, EventContextType contextType, Func<EngineEventArgs, bool> condition)

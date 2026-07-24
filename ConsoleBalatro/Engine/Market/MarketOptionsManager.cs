@@ -14,19 +14,6 @@ namespace ConsoleBalatro.Engine.Market
 {
     public static class MarketOptionsManager
     {
-        private static List<PlayedHandType> DefaultPlanetsAvailable = new()
-        {
-            PlayedHandType.HIGHCARD,
-            PlayedHandType.PAIR,
-            PlayedHandType.TWOPAIR,
-            PlayedHandType.THREEOFAKIND,
-            PlayedHandType.FOUROFAKIND,
-            PlayedHandType.FLUSH,
-            PlayedHandType.FULLHOUSE,
-            PlayedHandType.STRAIGHT,
-            PlayedHandType.STRAIGHTFLUSH,
-        };
-
         public static List<PlayedHandType> HiddenPlanets => HiddenPlanetsRevealed.Keys.ToList();
 
         public static Dictionary<PlayedHandType, bool> HiddenPlanetsRevealed = new()
@@ -208,14 +195,6 @@ namespace ConsoleBalatro.Engine.Market
             }
         }
 
-        public static void ShufflePools()
-        {
-            foreach (var pool in MarketPoolsToDrawFrom.Values)
-            {
-                pool.Shuffle();
-            }
-        }
-
         public static void RevealHiddenPlanet(PlayedHandType handType)
         {
             /*MarketPoolsToDrawFrom[BuyItemType.PLANET_CARD].DrawTargetFrom(SpecialPool_HiddenPlanets, SpecialPool_HiddenPlanets.Cards.First(x => x.ConsumableData.PlanetHandType == handType), invisibleAdd: true);
@@ -335,43 +314,11 @@ namespace ConsoleBalatro.Engine.Market
             }
         }
 
-        public static void DrawTargetMarketItem(BuyItemType itemType, CardZone zoneToDrawTo, Card targetCard, bool applyMarketModifiers = false)
-        {
-            //TODO: When duplicates allowed, draw from some static pool.
-            var cardDrawn = zoneToDrawTo.DrawTargetFromAndReturn(MarketPoolsToDrawFrom[itemType], targetCard);
-
-            //TODO: Wow this is so gross. Look at that nesting.
-            //like I get why I did it but... please. make it better.
-            if (applyMarketModifiers && cardDrawn != null)
-            {
-                //First, editions. Later maybe others?
-                if (RandomEditionOdds.ContainsKey(itemType) && cardDrawn.Edition == Edition.BASE)
-                {
-                    foreach (var ed in RandomEditionOdds[itemType].Keys)
-                    {
-                        if (Globals.randomNext(1000) < RandomEditionOdds[itemType][ed])
-                        {
-                            cardDrawn.Edition = ed;
-                            break; //Not do this? later rolls override?
-                        }
-                    }
-                }
-            }
-        }
-
         public static void DrawMarketItems(List<BuyItemType> itemTypes, CardZone zoneToDrawTo)
         {
             foreach (var type in itemTypes)
             {
                 DrawMarketItem(type, zoneToDrawTo);
-            }
-        }
-
-        public static void DrawItemsByMainMarketOddsUntilFull(CardZone zoneToDrawTo, bool applyMarketModifiers = false)
-        {
-            while (zoneToDrawTo.HasRoom)
-            {
-                DrawItemsByMainMarketOdds(1, zoneToDrawTo, applyMarketModifiers);
             }
         }
 
@@ -407,28 +354,6 @@ namespace ConsoleBalatro.Engine.Market
                 }
                 DrawMarketItem(chosenType, zoneToDrawTo, applyMarketModifiers: applyMarketModifiers);
             }
-        }
-
-        public static void DrawNumMarketItems(BuyItemType itemType, int itemNum, CardZone drawTo)
-        {
-            var passList = new List<BuyItemType>();
-            for (int i = 0; i < itemNum; i++)
-            {
-                passList.Add(itemType);
-            }
-            DrawMarketItems(passList, drawTo);
-        }
-
-        public static Card PullRandomJokerFromPool(JokerRarity? rarity, bool removeFromPool = false)
-        {
-            var pool = rarity == JokerRarity.LEGENDARY ? SpecialPool_LegendaryJokers : MarketPoolsToDrawFrom[BuyItemType.JOKER];
-            var valid = pool.Cards.Where(x => x.IsJoker && (!rarity.HasValue || x.JokerData.Rarity == rarity.Value)).ToList();
-            if (valid.Count == 0)
-                return Globals.USE_DEFAULT_JOKER_IF_POOL_EMPTY ? JokerDb.GenerateDefaultJokerCard() : null;
-            var chosen = valid[Globals.randomNext(valid.Count)];
-            if (removeFromPool)
-                pool.RemoveCard(chosen);
-            return chosen;
         }
     }
 

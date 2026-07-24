@@ -52,7 +52,11 @@ namespace ConsoleBalatro.Engine
             }
             set
             {
-                HandZone.MaxCapacity = value;
+                var oldHandCap = HandZone.MaxCapacity;
+                var newHandCap = value;
+                HandZone.MaxCapacity = newHandCap;
+                var args = new EngineHandSizeChangeArgs() { NewHandSize = newHandCap, OldHandSize = oldHandCap };
+                EngineEventHandler.TriggerEvent(args);
             }
         }
 

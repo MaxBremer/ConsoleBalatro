@@ -81,6 +81,9 @@ namespace ConsoleBalatro.Engine.Cards.Vouchers
             {
                 MarketOptionsManager.AddToVoucherPool(jokerCard.JokerData.SuccessorVoucherDBName);
             }
+
+            var args = new EngineVoucherRedeemedArgs() { BeingRedeemed = jokerCard };
+            EngineEventHandler.TriggerEvent(args);
         }
 
         private void RemoveVoucherEffs(Card jokerCard)

@@ -59,6 +59,23 @@ namespace ConsoleBalatro.Engine
         public const string MerryAndy_UnlockId = "MERRYANDY_UNLOCK";
         public const string Bootstraps_UnlockId = "BOOTSTRAPS_UNLOCK";
 
+        //Upgraded vouchers, progress-based
+        public const string OverstockPlus_UnlockId = "OVERSTOCK_PLUS_UNLOCK";
+        public const string RerollGlut_UnlockId = "REROLL_GLUT_UNLOCK";
+        public const string OmenGlobe_UnlockId = "OMEN_GLOBE_UNLOCK";
+        public const string Observatory_UnlockId = "OBSERVATORY_UNLOCK";
+        public const string NachoTong_UnlockId = "NACHO_TONG_UNLOCK";
+        public const string Recyclomancy_UnlockId = "RECYCLOMANCY_UNLOCK";
+        public const string TarotTycoon_UnlockId = "TAROT_TYCOON_UNLOCK";
+        public const string PlanetTycoon_UnlockId = "PLANET_TYCOON_UNLOCK";
+        public const string Antimatter_UnlockId = "ANTIMATTER_UNLOCK";
+        public const string Illusion_UnlockId = "ILLUSION_UNLOCK";
+        //Upgraded vouchers, non-progress-based
+        public const string Liquidation_UnlockId = "LIQUIDATION_UNLOCK";
+        public const string GlowUp_UnlockId = "GLOW_UP_UNLOCK";
+        public const string Petroglyph_UnlockId = "PETROGLYPH_UNLOCK";
+        public const string Palette_UnlockId = "PALETTE_UNLOCK";
+
         static AchievementDb()
         {
             RegisterDefaultAchievements();
@@ -277,6 +294,92 @@ namespace ConsoleBalatro.Engine
                 "Have at least 2 Polychrome Jokers at the same time.",
                 EventContextType.CardDrawnToZone,
                 args => ZoneManager.JokerZone != null && ZoneManager.JokerZone.Cards.Count(c => c.IsJoker && c.Edition == Edition.POLYCHROME) >= 2);
+
+            RegisterPersistentCountAchievement(
+                OverstockPlus_UnlockId,
+                "Overstock Plus Unlocked",
+                "Spend a total of $2500 in the shop.",
+                UnlockManager.ShopDollarsProgressKey,
+                2500);
+            RegisterPersistentCountAchievement(
+                RerollGlut_UnlockId,
+                "Reroll Glut Unlocked",
+                "Reroll the shop a total of 100 times.",
+                UnlockManager.ShopRerollsProgressKey,
+                100);
+            RegisterPersistentCountAchievement(
+                OmenGlobe_UnlockId,
+                "Omen Globe Unlocked",
+                "Use a total of 25 Tarot cards from booster packs.",
+                UnlockManager.TarotsUsedFromPacksProgressKey,
+                25);
+            RegisterPersistentCountAchievement(
+                Observatory_UnlockId,
+                "Observatory Unlocked",
+                "Use a total of 25 Planet cards from booster packs.",
+                UnlockManager.PlanetsUsedFromPacksProgressKey,
+                25);
+            RegisterPersistentCountAchievement(
+                NachoTong_UnlockId,
+                "Nacho Tong Unlocked",
+                "Play a total of 2500 cards.",
+                UnlockManager.CardsPlayedProgressKey,
+                2500);
+            RegisterPersistentCountAchievement(
+                Recyclomancy_UnlockId,
+                "Recyclomancy Unlocked",
+                "Discard a total of 2500 cards.",
+                UnlockManager.CardsDiscardedProgressKey,
+                2500);
+            RegisterPersistentCountAchievement(
+                TarotTycoon_UnlockId,
+                "Tarot Tycoon Unlocked",
+                "Buy a total of 50 Tarot cards from the shop.",
+                UnlockManager.TarotsBoughtFromShopProgressKey,
+                50);
+            RegisterPersistentCountAchievement(
+                PlanetTycoon_UnlockId,
+                "Planet Tycoon Unlocked",
+                "Buy a total of 50 Planet cards from the shop.",
+                UnlockManager.PlanetsBoughtFromShopProgressKey,
+                50);
+            RegisterPersistentCountAchievement(
+                Antimatter_UnlockId,
+                "Antimatter Unlocked",
+                "Redeem Blank a total of 10 times.",
+                UnlockManager.BlanksRedeemedProgressKey,
+                10);
+            RegisterPersistentCountAchievement(
+                Illusion_UnlockId,
+                "Illusion Unlocked",
+                "Buy a total of 20 Playing cards from the shop.",
+                UnlockManager.PlayingCardsBoughtFromShopProgressKey,
+                20);
+            RegisterAllAchievementData(
+                Liquidation_UnlockId,
+                "Liquidation Unlocked",
+                "Redeem at least 10 Voucher cards in one run.",
+                EventContextType.VoucherRedeemed,
+                args => ZoneManager.ActiveVoucherZone != null && ZoneManager.ActiveVoucherZone.Cards.Count >= 10);
+            RegisterAllAchievementData(
+                GlowUp_UnlockId,
+                "Glow Up Unlocked",
+                "Have at least 5 Joker cards with Foil, Holographic, Polychrome, or Negative effect.",
+                EventContextType.CardDetailsChange,
+                args => args is EngineCardDetailsChangeArgs detArgs && detArgs.CardBeingChanged.IsJoker && ZoneManager.JokerZone.Cards.Contains(detArgs.CardBeingChanged) && detArgs.isEditionChange && detArgs.isAfter && ZoneManager.JokerZone.Cards.Count(x => x.Edition != Edition.BASE) >= 5);
+            RegisterAllAchievementData(
+                Petroglyph_UnlockId,
+                "Petroglyph Unlocked",
+                "Reach Ante level 12.",
+                EventContextType.AnteChange,
+                args => args is EngineNewAnteArgs anteArgs && anteArgs.NewAnteVal == 12);
+            RegisterAllAchievementData(
+                Palette_UnlockId,
+                "Palette Unlocked",
+                "Reduce your hand size down to 5 cards.",
+                EventContextType.HandSizeChanged,
+                args => args is EngineHandSizeChangeArgs handArgs && handArgs.NewHandSize <= 5);
+
         }
 
         private static void RegisterAllAchievementData(string id, string name, string desc, EventContextType contextType, Func<EngineEventArgs, bool> condition)

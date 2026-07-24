@@ -119,6 +119,10 @@ namespace ConsoleBalatro.Engine.Events
         AchievementProgressChanged,
 
         RolledCardGenerated,
+
+        VoucherRedeemed,
+
+        HandSizeChanged,
     }
     public class EventContext
     {

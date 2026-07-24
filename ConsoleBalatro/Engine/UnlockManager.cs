@@ -586,8 +586,6 @@ namespace ConsoleBalatro.Engine
                         }
                         else if (buyArgs.BeingPurchased.isPlayingCard)
                             IncrementPersistentProgressCount(PlayingCardsBoughtFromShopProgressKey);
-                        else if (buyArgs.BeingPurchased.IsVoucher && buyArgs.BeingPurchased.JokerData != null && buyArgs.BeingPurchased.JokerData.DBName == "BLANK")
-                            IncrementPersistentProgressCount(BlanksRedeemedProgressKey);
                     }
                 }
             });
@@ -632,6 +630,15 @@ namespace ConsoleBalatro.Engine
                 {
                     if(args is EngineDiscardDoneArgs discArgs)
                         IncrementPersistentProgressCount(CardsDiscardedProgressKey, discArgs.BeingDiscarded.Count);
+                }
+            });
+            PersistentProgressListeners.Add(new EngineEventListener
+            {
+                MyContextType = EventContextType.VoucherRedeemed,
+                MyAction = args =>
+                {
+                    if (args is EngineVoucherRedeemedArgs voucherArgs && voucherArgs.BeingRedeemed.JokerData != null && voucherArgs.BeingRedeemed.JokerData.DBName == "BLANK")
+                        IncrementPersistentProgressCount(BlanksRedeemedProgressKey);
                 }
             });
 

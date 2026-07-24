@@ -16,6 +16,11 @@ namespace ConsoleBalatro.Engine.Cards.Vouchers
     {
         public static Dictionary<string, string> VoucherDependants = new();
 
+        public static Dictionary<string, string> VoucherUnlockAchieves = new()
+        {
+
+        };
+
         public static Dictionary<string, Func<Card, JokerCardDataBlock>> VoucherData = new()
         {
             {

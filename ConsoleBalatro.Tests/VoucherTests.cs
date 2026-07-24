@@ -29,6 +29,9 @@ namespace ConsoleBalatro.Tests
             //Turns out pool has all vouchers but one after reset, so when that one lines up test fails. Why?
             //CAUSE ONE VOUCHER IS DRAWN TO THE VOUCHER MARKET ZONE AT START OF BLIND U BIG DUMMY.
 
+            if (VoucherDb.VoucherUnlockAchieves.ContainsKey(newName.ToUpper()))
+                UnlockManager.MarkAchievementAchieved(VoucherDb.VoucherUnlockAchieves[newName.ToUpper()], saveImmediately: false);
+
             Assert.True(VoucherIsInMarket(oldName));
             Assert.False(VoucherIsInMarket(newName));
             AddVoucher(oldName);
@@ -74,6 +77,9 @@ namespace ConsoleBalatro.Tests
             var oldDisc = Globals.MaxDiscardsPerRound;
             var oldVoucher = "Hieroglyph";
             var newVoucher = "Petroglyph";
+
+            if (VoucherDb.VoucherUnlockAchieves.ContainsKey(newVoucher.ToUpper()))
+                UnlockManager.MarkAchievementAchieved(VoucherDb.VoucherUnlockAchieves[newVoucher.ToUpper()], saveImmediately: false);
             Assert.False(VoucherIsInMarket(newVoucher));
             Assert.True(VoucherIsInMarket(oldVoucher));
             AddVoucher(oldVoucher);
@@ -103,6 +109,8 @@ namespace ConsoleBalatro.Tests
             var oldMarketSize = ZoneManager.MainMarketZone.MaxCapacity;
             var oldVoucher = "Overstock";
             var newVoucher = "Overstock Plus";
+            if (VoucherDb.VoucherUnlockAchieves.ContainsKey(newVoucher.ToUpper()))
+                UnlockManager.MarkAchievementAchieved(VoucherDb.VoucherUnlockAchieves[newVoucher.ToUpper()], saveImmediately: false);
 
             Assert.Equal(2, ZoneManager.MainMarketZone.Cards.Count);
             ZoneManager.DestroyCard(ZoneManager.MainMarketZone.Cards[0]);
@@ -140,6 +148,8 @@ namespace ConsoleBalatro.Tests
             var oldVoucher = "Clearance Sale";
             var newVoucher = "Liquidation";
 
+            if (VoucherDb.VoucherUnlockAchieves.ContainsKey(newVoucher.ToUpper()))
+                UnlockManager.MarkAchievementAchieved(VoucherDb.VoucherUnlockAchieves[newVoucher.ToUpper()], saveImmediately: false);
             Assert.False(VoucherIsInMarket(newVoucher));
             Assert.True(VoucherIsInMarket(oldVoucher));
             AddVoucher(oldVoucher);
@@ -163,6 +173,8 @@ namespace ConsoleBalatro.Tests
             var oldVoucher = "Crystal Ball";
             var newVoucher = "Omen Globe";
 
+            if (VoucherDb.VoucherUnlockAchieves.ContainsKey(newVoucher.ToUpper()))
+                UnlockManager.MarkAchievementAchieved(VoucherDb.VoucherUnlockAchieves[newVoucher.ToUpper()], saveImmediately: false);
             Assert.False(VoucherIsInMarket(newVoucher));
             Assert.True(VoucherIsInMarket(oldVoucher));
             AddVoucher(oldVoucher);
@@ -202,6 +214,8 @@ namespace ConsoleBalatro.Tests
             for (int i = 0; i < 5; i++)
             {
                 ResetToFirstShop();
+                if (VoucherDb.VoucherUnlockAchieves.ContainsKey("OBSERVATORY"))
+                    UnlockManager.MarkAchievementAchieved(VoucherDb.VoucherUnlockAchieves["OBSERVATORY"], saveImmediately: false);
                 Assert.False(VoucherIsInMarket("Observatory"));
                 Assert.True(VoucherIsInMarket("Telescope"));
                 AddVoucher("Telescope");
@@ -218,15 +232,19 @@ namespace ConsoleBalatro.Tests
         {
             ResetToFirstBlindPlayRound(resetVoucher: true);
             var record = CaptureScoringContributions();
+            var newVoucher = "Observatory";
+            var oldVoucher = "Telescope";
+            if (VoucherDb.VoucherUnlockAchieves.ContainsKey(newVoucher.ToUpper()))
+                UnlockManager.MarkAchievementAchieved(VoucherDb.VoucherUnlockAchieves[newVoucher.ToUpper()], saveImmediately: false);
 
-            Assert.False(VoucherIsInMarket("Observatory"));
-            Assert.True(VoucherIsInMarket("Telescope"));
-            AddVoucher("Telescope");
-            Assert.True(VoucherIsInMarket("Observatory"));
-            Assert.False(VoucherIsInMarket("Telescope"));
-            AddVoucher("Observatory");
-            Assert.False(VoucherIsInMarket("Observatory"));
-            Assert.False(VoucherIsInMarket("Telescope"));
+            Assert.False(VoucherIsInMarket(newVoucher));
+            Assert.True(VoucherIsInMarket(oldVoucher));
+            AddVoucher(oldVoucher);
+            Assert.True(VoucherIsInMarket(newVoucher));
+            Assert.False(VoucherIsInMarket(oldVoucher));
+            AddVoucher(newVoucher);
+            Assert.False(VoucherIsInMarket(newVoucher));
+            Assert.False(VoucherIsInMarket(oldVoucher));
 
             PlayHand("AS");
             Assert.Empty(record.MultMultSources);
@@ -248,6 +266,8 @@ namespace ConsoleBalatro.Tests
         {
             ResetToBlindSelection(returnVoucher: true);
             List<int> oldOdds = new List<int>() { GetOdds(Edition.POLYCHROME), GetOdds(Edition.FOIL), GetOdds(Edition.HOLOGRAPHIC) };
+            if (VoucherDb.VoucherUnlockAchieves.ContainsKey("GLOW UP"))
+                UnlockManager.MarkAchievementAchieved(VoucherDb.VoucherUnlockAchieves["GLOW UP"], saveImmediately: false);
             Assert.False(VoucherIsInMarket("Glow Up"));
             Assert.True(VoucherIsInMarket("Hone"));
             AddVoucher("Hone");
@@ -319,6 +339,8 @@ namespace ConsoleBalatro.Tests
         private void TestIncreasingIntVouchers(Func<int> getVal, string oldVoucher, string newVoucher, int firstIncrement = 1, int secondIncrement = 2)
         {
             var oldVal = getVal();
+            if (VoucherDb.VoucherUnlockAchieves.ContainsKey(newVoucher.ToUpper()))
+                UnlockManager.MarkAchievementAchieved(VoucherDb.VoucherUnlockAchieves[newVoucher.ToUpper()], saveImmediately: false);
             Assert.False(VoucherIsInMarket(newVoucher));
             Assert.True(VoucherIsInMarket(oldVoucher));
             AddVoucher(oldVoucher);

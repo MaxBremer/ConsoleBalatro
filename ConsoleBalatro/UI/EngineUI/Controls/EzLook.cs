@@ -1,5 +1,6 @@
 ﻿using ConsoleBalatro.Engine;
 using ConsoleBalatro.Engine.Cards;
+using ConsoleBalatro.Engine.Cards.Consumables;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -39,7 +40,7 @@ namespace ConsoleBalatro.UI.EngineUI.Controls
             while (continueEzLook)
             {
                 var pressed = ControlManager.ReadKey();
-                continueEzLook = MovementKeyPressed(pressed.Key);
+                continueEzLook = KeyPressed(pressed.Key, ref currentControls);
                 EngineDisplayGlobals.Redraw();
             }
 
@@ -63,8 +64,42 @@ namespace ConsoleBalatro.UI.EngineUI.Controls
             }
             CurrentTarget = CurrentTargetZone.Cards[CurrentTargetIndex];
             EngineDisplayGlobals.GlobalCardDisplays[CurrentTarget].SetDisplaySelectLevel(3);
-            EngineDisplayGlobals.DisplayDetailInfoForCard(CurrentTarget);
+            DisplayDetailInfoForCurrentTarget();
             EngineDisplayGlobals.Redraw();
+        }
+
+        private static void DisplayDetailInfoForCurrentTarget()
+        {
+            var detailText = CurrentTarget.DetailedInfoDisplay(null);
+            var actionText = GetContextualActionPrompt(CurrentTarget);
+            if (!string.IsNullOrEmpty(actionText))
+            {
+                detailText += Card.CardInfoDoubleDivider + actionText;
+            }
+            EngineDisplayGlobals.ShowInfoDisplay(detailText, Card.CardInfoLineDivider);
+        }
+
+        private static string GetContextualActionPrompt(Card target)
+        {
+            if (CanChooseCurrentPackOption(target))
+            {
+                return "[Enter] Choose";
+            }
+            if (CanPurchaseCurrentMarketCard(target))
+            {
+                return "[Enter] Buy";
+            }
+            return string.Empty;
+        }
+
+        //Return val indicates whether to continue ez look.
+        public static bool KeyPressed(ConsoleKey key, ref ControlOptionset currentControls)
+        {
+            if (key == ConsoleKey.Enter)
+            {
+                return ContextualActionPressed(ref currentControls);
+            }
+            return MovementKeyPressed(key);
         }
 
         //Return val indicates whether to continue ez look.
@@ -127,6 +162,92 @@ namespace ConsoleBalatro.UI.EngineUI.Controls
                     break;
             }
             return true;
+        }
+
+        private static bool ContextualActionPressed(ref ControlOptionset currentControls)
+        {
+            var target = CurrentTarget;
+            if (CanChooseCurrentPackOption(target))
+            {
+                var willEndPack = IsLastPackOptionChoice();
+                PackActions.PackOptionSelectionMade(target);
+                EngineDisplayGlobals.HideInfoDisplay();
+                EngineDisplayGlobals.PlayCachedAnimations();
+                if (willEndPack || Globals.CurrentGameState != GameState.SelectingPackOption)
+                {
+                    return false;
+                }
+                return RefreshEzLookForCurrentControlset(ref currentControls);
+            }
+
+            if (CanPurchaseCurrentMarketCard(target))
+            {
+                Globals.PerformPurchaseByType(target);
+                EngineDisplayGlobals.HideInfoDisplay();
+                EngineDisplayGlobals.PlayCachedAnimations();
+                return RefreshEzLookForCurrentControlset(ref currentControls);
+            }
+
+            return true;
+        }
+
+        private static bool RefreshEzLookForCurrentControlset(ref ControlOptionset currentControls)
+        {
+            if (ControlManager.AvailableControlSets.ContainsKey(ControlManager.CurrentControlset))
+            {
+                currentControls = ControlManager.AvailableControlSets[ControlManager.CurrentControlset];
+            }
+            SetupZoneDataFor(currentControls);
+            if (CurrentTargetZone == null || !ZoneData.ContainsKey(CurrentTargetZone) || CurrentTargetZone.Cards.Count == 0)
+            {
+                CurrentTargetZone = ZoneData.Keys.FirstOrDefault(x => x.Cards.Any());
+                CurrentTargetIndex = 0;
+            }
+            else if (CurrentTargetIndex >= CurrentTargetZone.Cards.Count)
+            {
+                CurrentTargetIndex = CurrentTargetZone.Cards.Count - 1;
+            }
+
+            if (CurrentTargetZone != null)
+            {
+                RefreshTarget();
+                return true;
+            }
+            return false;
+        }
+
+        private static bool CanChooseCurrentPackOption(Card target)
+        {
+            return target != null
+                && Globals.CurrentGameState == GameState.SelectingPackOption
+                && target.MyZone == ZoneManager.PackOptionZone
+                && PackActions.CanAcceptPackOption(target);
+        }
+
+        private static bool CanPurchaseCurrentMarketCard(Card target)
+        {
+            return target != null
+                && Globals.CurrentGameState == GameState.ShopMenu
+                && IsMarketZone(target.MyZone)
+                && Globals.CanBePurchased(target);
+        }
+
+        private static bool IsMarketZone(CardZone zone)
+        {
+            return zone == ZoneManager.MainMarketZone
+                || zone == ZoneManager.PackMarketZone
+                || zone == ZoneManager.VoucherMarketZone;
+        }
+
+        private static bool IsLastPackOptionChoice()
+        {
+            if (Globals.CurrentGameState != GameState.SelectingPackOption)
+            {
+                return false;
+            }
+            var packInfo = ConsumableManager.PackBasicNums[Globals.CurrentGameStateObj.TargetPack.MyPackType];
+            return packInfo.NumCanBeTaken <= Globals.CurrentGameStateObj.NumChoicesAlreadyMade + 1
+                || ZoneManager.PackOptionZone.Cards.Count <= 1;
         }
 
         private static void AttemptMoveZone(ZoneDirection direction)

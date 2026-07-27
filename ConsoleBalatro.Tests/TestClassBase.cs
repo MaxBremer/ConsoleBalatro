@@ -43,29 +43,6 @@ namespace ConsoleBalatro.Tests
         public void ResetEngineForTest()
         {
             Globals.ResetFullEngine();
-            /*EngineEventHandler.ResetFullEventHandler();
-
-            Globals.ResetGlobalValues();
-            Globals.ClearGameStateStack();
-            Globals.InitializeMain();
-            Globals.ClearGameStateStack();
-            Globals.ResetGlobalValues();
-
-            FlowHandler.CurrentAnte = 0;
-            FlowHandler.CurrentDeckDbName = string.Empty;
-            StakeManager.CurrentStake = StakeType.WHITE;
-            FlowHandler.CurrentSelectedBlind = BlindType.SMALL;
-            FlowHandler.CurrentTempChanges = null;
-            FlowHandler.CurrentBossBlind = "";
-            BossBlindDb.BossBlindsAlreadyUsed.Clear();
-
-            Globals.Money = 0;
-            Globals.CurMaxInterest = 5;
-            Globals.SetStartOfRoundStats();
-            Globals.RequiredChipsForCurrentBlind = -1;
-
-            ZoneManager.HiddenBlindAttributeZone.ClearCards(false);
-            ZoneManager.OtherHiddenJokerZone.ClearCards(false);*/
         }
 
         public void ResetToBlindSelection(bool returnVoucher = false)
@@ -259,25 +236,21 @@ namespace ConsoleBalatro.Tests
         public void AddTarot(string tarotName)
         {
             ZoneManager.ConsumableZone.AddCard(ConsumableManager.MakeTarotCard(tarotName.ToUpper()));
-            //ZoneManager.ConsumableZone.DrawTargetFrom(MarketOptionsManager.MarketPoolsToDrawFrom[BuyItemType.TAROT_CARD], MarketOptionsManager.MarketPoolsToDrawFrom[BuyItemType.TAROT_CARD].Cards.First(x => x.ConsumableData.ConsumableName == tarotName));
         }
 
         public void AddSpectral(string spectralName)
         {
             ZoneManager.ConsumableZone.AddCard(ConsumableManager.MakeSpectralCard(spectralName.ToUpper()));
-            //ZoneManager.ConsumableZone.DrawTargetFrom(MarketOptionsManager.MarketPoolsToDrawFrom[BuyItemType.SPECTRAL_CARD], MarketOptionsManager.MarketPoolsToDrawFrom[BuyItemType.SPECTRAL_CARD].Cards.First(x => x.ConsumableData.ConsumableName == spectralName));
         }
 
         public void AddVoucher(string voucherName)
         {
             ZoneManager.ActiveVoucherZone.AddCard(VoucherDb.MakeVoucherCard(voucherName.ToUpper()));
-            //ZoneManager.ActiveVoucherZone.DrawTargetFrom(MarketOptionsManager.MarketPoolsToDrawFrom[BuyItemType.VOUCHER], MarketOptionsManager.MarketPoolsToDrawFrom[BuyItemType.VOUCHER].Cards.First(x => x.isVoucher && x.JokerData.JokerName == voucherName));
         }
 
         public bool VoucherIsInMarket(string voucherName)
         {
             return VoucherPoolRules.CurrentValidVouchers.Contains(voucherName.ToUpper()) && !ZoneManager.ActiveVoucherZone.Cards.Any(c => c.IsVoucher && c.JokerData.DBName == voucherName.ToUpper());
-            //return MarketOptionsManager.MarketPoolsToDrawFrom[BuyItemType.VOUCHER].Cards.Any(x => x.isVoucher && x.JokerData.JokerName == voucherName);
         }
 
         public void UseCon() => ConsumableManager.UseConsumable(ZoneManager.ConsumableZone.Cards[0]);

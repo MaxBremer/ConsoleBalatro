@@ -9,6 +9,38 @@ namespace ConsoleBalatro.Tests;
 public class FlowHandlerRoundStateTests : TestClassBase
 {
     [Fact]
+    public void ReplaceCurrentGameState_ChangesTopAtomicallyAndPreservesBaseState()
+    {
+        ResetEngineForTest();
+        Globals.PushGameState(new GameStateObj { GameState = GameState.MainMenu });
+        Globals.PushGameState(new GameStateObj { GameState = GameState.BlindsMenu });
+
+        EngineGameStateChangeArgs? observedReplacement = null;
+        var revealedMainMenu = false;
+        EngineEventHandler.StartListening(new EngineEventListener
+        {
+            MyContextType = EventContextType.GameStateReplace,
+            MyAction = args => observedReplacement = args as EngineGameStateChangeArgs,
+        });
+        EngineEventHandler.StartListening(new EngineEventListener
+        {
+            MyContextType = EventContextType.GameStatePop,
+            MyAction = args => revealedMainMenu = args is EngineGameStateChangeArgs stateArgs
+                && stateArgs.NewState?.GameState == GameState.MainMenu,
+        });
+
+        Globals.ReplaceCurrentGameState(new GameStateObj { GameState = GameState.PlayRound });
+
+        Assert.Equal(2, Globals.GameStateStack.Count);
+        Assert.Equal(GameState.PlayRound, Globals.CurrentGameState);
+        Assert.False(revealedMainMenu);
+        Assert.NotNull(observedReplacement);
+        Assert.True(observedReplacement!.isReplace);
+        Assert.Equal(GameState.BlindsMenu, observedReplacement.OldState.GameState);
+        Assert.Equal(GameState.PlayRound, observedReplacement.NewState.GameState);
+    }
+
+    [Fact]
     public void MenuStart_ToBlindSelection_PushesBlindsMenuState()
     {
         ResetEngineForTest();
@@ -50,6 +82,29 @@ public class FlowHandlerRoundStateTests : TestClassBase
         Assert.Equal(Globals.MaxDiscardsPerRound, Globals.CurDiscardsRemaining);
         Assert.Equal(FlowHandler.GetChipsForBlindType(BlindType.BIG), Globals.RequiredChipsForCurrentBlind);
         Assert.Empty(ZoneManager.HiddenBlindAttributeZone.Cards);
+    }
+
+    [Fact]
+    public void BlindSelection_ToPlayRound_DoesNotRevealMainMenu()
+    {
+        ResetEngineForTest();
+        Globals.PushGameState(new GameStateObj { GameState = GameState.MainMenu });
+        Globals.PushGameState(new GameStateObj { GameState = GameState.BlindsMenu });
+
+        var visibleStateChanges = new List<GameState>();
+        void CaptureState(EngineEventArgs args)
+        {
+            if (args is EngineGameStateChangeArgs stateArgs && stateArgs.NewState != null)
+                visibleStateChanges.Add(stateArgs.NewState.GameState);
+        }
+        EngineEventHandler.StartListening(new EngineEventListener { MyContextType = EventContextType.GameStatePop, MyAction = CaptureState });
+        EngineEventHandler.StartListening(new EngineEventListener { MyContextType = EventContextType.GameStatePush, MyAction = CaptureState });
+        EngineEventHandler.StartListening(new EngineEventListener { MyContextType = EventContextType.GameStateReplace, MyAction = CaptureState });
+
+        FlowHandler.StartSelectedBlind();
+
+        Assert.Equal(new[] { GameState.PlayRound }, visibleStateChanges);
+        Assert.Equal(new[] { GameState.PlayRound, GameState.MainMenu }, Globals.GameStateStack.Select(state => state.GameState));
     }
 
     [Fact]

@@ -337,7 +337,7 @@ namespace ConsoleBalatro.Engine
         /// Initialize a "Play Round", that is, an actual blind, in which the player must beat a score with played hands, you know the drill.
         /// </summary>
         /// <param name="blindType">The blind type within the current ante to initialize.</param>
-        public static void InitializePlayRound(BlindType blindType)
+        public static void InitializePlayRound(BlindType blindType, bool replaceCurrentState = false)
         {
             if(blindType == BlindType.BOSS)
             {
@@ -347,7 +347,11 @@ namespace ConsoleBalatro.Engine
             var setupArgs = new EnginePlayRoundSetupArgs() { MyContext = new() { Context = EventContextType.StartPlayRound } };
             EngineEventHandler.TriggerEvent(setupArgs);
             ProcessTempRoundBuffs(setupArgs);
-            Globals.PushGameState(new GameStateObj() { GameState = GameState.PlayRound });
+            var playRoundState = new GameStateObj() { GameState = GameState.PlayRound };
+            if (replaceCurrentState)
+                Globals.ReplaceCurrentGameState(playRoundState);
+            else
+                Globals.PushGameState(playRoundState);
             Globals.SetStartOfRoundStats();
             ZoneManager.ShuffleDeck();
             //Scores should already be reset, as they're reset post-round.
@@ -389,8 +393,6 @@ namespace ConsoleBalatro.Engine
             EngineEventHandler.TriggerEvent(new EngineEventArgs() { MyContext = new() { Context = EventContextType.EndPlayRound } });
             UndoTempRoundBuffs();
 
-            Globals.PopCurrGameState();
-
             //BEFORE WE INCREMENT BLIND:
             //POSSIBLY CLEAR BLIND CARDS FROM HIDDEN BLIND ZONE.
             ZoneManager.HiddenBlindAttributeZone.ClearCards();
@@ -402,7 +404,7 @@ namespace ConsoleBalatro.Engine
 
             //Post-round with the money menu
 
-            InitializePostRound(postRoundMoney);
+            InitializePostRound(postRoundMoney, replaceCurrentState: true);
         }
 
         private static void UndoTempRoundBuffs()
@@ -420,13 +422,16 @@ namespace ConsoleBalatro.Engine
         /// Initializes the "Post Round", a brief round in which the player is presented with their reward money and its sources.
         /// </summary>
         /// <param name="postRoundMoney">A list of tuples, each representing an amount of money and its source. Yeah it kinda sucks that the source is just a string, but whatever.</param>
-        public static void InitializePostRound(List<(string, int)> postRoundMoney)
+        public static void InitializePostRound(List<(string, int)> postRoundMoney, bool replaceCurrentState = false)
         {
             EngineEventHandler.TriggerEvent(new EngineEventArgs() { MyContext = new() { Context = EventContextType.StartPostRound } });
             var gsObj = new GameStateObj() { GameState = GameState.PostRoundRewardsMenu };
             gsObj.PostRoundMoneySources.AddRange(postRoundMoney);
             gsObj.PostRoundMoneyToGive = gsObj.PostRoundMoneySources.Select(x => x.Item2).Sum();
-            Globals.PushGameState(gsObj); //TODO: context??
+            if (replaceCurrentState)
+                Globals.ReplaceCurrentGameState(gsObj);
+            else
+                Globals.PushGameState(gsObj); //TODO: context??
         }
 
         /// <summary>
@@ -436,24 +441,26 @@ namespace ConsoleBalatro.Engine
         {
             Globals.EmitMoneyGain(Globals.CurrentGameStateObj.PostRoundMoneyToGive, null);
             EngineEventHandler.TriggerEvent(new EngineEventArgs() { MyContext = new() { Context = EventContextType.EndPostRound } });
-            Globals.PopCurrGameState();
-
             if (RunWinDecisionPending)
             {
-                InitializeWinRound();
+                InitializeWinRound(replaceCurrentState: true);
                 return;
             }
 
-            InitializeMarketRound();
+            InitializeMarketRound(replaceCurrentState: true);
         }
 
         /// <summary>
         /// Initializes the "Market Round", in which the player can buy from the main market, pack market, and/or voucher market.
         /// </summary>
-        public static void InitializeMarketRound()
+        public static void InitializeMarketRound(bool replaceCurrentState = false)
         {
             EngineEventHandler.TriggerEvent(new EngineEventArgs() { MyContext = new() { Context = EventContextType.StartMarket } });
-            Globals.PushGameState(new GameStateObj() { GameState = GameState.ShopMenu });
+            var marketState = new GameStateObj() { GameState = GameState.ShopMenu };
+            if (replaceCurrentState)
+                Globals.ReplaceCurrentGameState(marketState);
+            else
+                Globals.PushGameState(marketState);
             
             MarketGeneralManager.FillFreshMarket();
         }
@@ -465,18 +472,20 @@ namespace ConsoleBalatro.Engine
         {
             EngineEventHandler.TriggerEvent(new EngineEventArgs() { MyContext = new() { Context = EventContextType.EndMarket } });
             MarketGeneralManager.MarketClosing();
-            Globals.PopCurrGameState();
-
-            InitializeBlindSelectionRound();
+            InitializeBlindSelectionRound(replaceCurrentState: true);
         }
 
         /// <summary>
         /// Initializes the Blind Selection Round, in which the player plays blinds and/or chooses which ones to skip.
         /// </summary>
-        public static void InitializeBlindSelectionRound()
+        public static void InitializeBlindSelectionRound(bool replaceCurrentState = false)
         {
             EngineEventHandler.TriggerEvent(new EngineEventArgs() { MyContext = new() { Context = EventContextType.StartBlindSelection } });
-            Globals.PushGameState(new GameStateObj() { GameState = GameState.BlindsMenu }); //TODO: context??
+            var blindSelectionState = new GameStateObj() { GameState = GameState.BlindsMenu };
+            if (replaceCurrentState)
+                Globals.ReplaceCurrentGameState(blindSelectionState);
+            else
+                Globals.PushGameState(blindSelectionState); //TODO: context??
         }
 
         /// <summary>
@@ -496,10 +505,14 @@ namespace ConsoleBalatro.Engine
             Globals.PushGameState(new GameStateObj() { GameState = GameState.MainMenu });
         }
 
-        public static void InitializeWinRound()
+        public static void InitializeWinRound(bool replaceCurrentState = false)
         {
             EngineEventHandler.TriggerEvent(new EngineEventArgs() { MyContext = new() { Context = EventContextType.RunWon } });
-            Globals.PushGameState(new GameStateObj() { GameState = GameState.WinMenu });
+            var winState = new GameStateObj() { GameState = GameState.WinMenu };
+            if (replaceCurrentState)
+                Globals.ReplaceCurrentGameState(winState);
+            else
+                Globals.PushGameState(winState);
         }
 
         public static void EndWonRun()
@@ -513,11 +526,8 @@ namespace ConsoleBalatro.Engine
 
         public static void ContinueWonRun()
         {
-            if (Globals.CurrentGameState == GameState.WinMenu)
-                Globals.PopCurrGameState();
-
             RunWinDecisionPending = false;
-            InitializeBlindSelectionRound();
+            InitializeBlindSelectionRound(replaceCurrentState: Globals.CurrentGameState == GameState.WinMenu);
         }
 
         public static void OpenCollectionMenu()
@@ -786,8 +796,8 @@ namespace ConsoleBalatro.Engine
         public static void StartSelectedBlind()
         {
             EngineEventHandler.TriggerEvent(new EngineEventArgs() { MyContext = new EventContext() { Context = EventContextType.StartSelectedBlind } });
-            CloseBlindSelectionRound();
-            InitializePlayRound(CurrentSelectedBlind);
+            EngineEventHandler.TriggerEvent(new EngineEventArgs() { MyContext = new() { Context = EventContextType.EndBlindSelection } });
+            InitializePlayRound(CurrentSelectedBlind, replaceCurrentState: true);
         }
 
         /// <summary>
@@ -807,9 +817,9 @@ namespace ConsoleBalatro.Engine
             CurrentDeckDbName = deckDBName;
             DeckDb.BecomeDeck(deckDBName);
             StakeManager.SetStake(stakeChosen);
-            CloseDeckSelectionRound();
+            EngineEventHandler.TriggerEvent(new EngineEventArgs() { MyContext = new() { Context = EventContextType.EndDeckSelection } });
             StartNewAnte();
-            InitializeBlindSelectionRound();
+            InitializeBlindSelectionRound(replaceCurrentState: true);
         }
     }
 }

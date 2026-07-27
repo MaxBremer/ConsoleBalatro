@@ -12,6 +12,7 @@ namespace ConsoleBalatro.Engine.Events.Args
         //Like why are they separated? What was I thinking? idk...
         public bool isPush => NewStateBeingPushed != null;
         public bool isPop => OldStateToBePopped != null;
+        public bool isReplace => isPush && isPop;
         public GameStateObj NewStateBeingPushed = null;
         public GameStateObj OldStatePushedOver = null;
         public GameStateObj OldStateToBePopped = null;
@@ -23,6 +24,6 @@ namespace ConsoleBalatro.Engine.Events.Args
 
         //See? All that work just to undo it all here. Why, Max? Why?
         public GameStateObj OldState => isPop ? OldStateToBePopped : OldStatePushedOver;
-        public GameStateObj NewState => isPop ? NewStateRevealedByPop : NewStateBeingPushed;
+        public GameStateObj NewState => isPush ? NewStateBeingPushed : NewStateRevealedByPop;
     }
 }

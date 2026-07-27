@@ -18,6 +18,7 @@ namespace ConsoleBalatro.UI.EngineUI
             UIGameStateTracker = new Stack<GameStateObj>();
             EngineEventHandler.StartListening(new EngineEventListener() { MyAction = OnGameStatePop, MyContextType = EventContextType.GameStatePop, NonEngineListener = true });
             EngineEventHandler.StartListening(new EngineEventListener() { MyAction = OnGameStatePush, MyContextType = EventContextType.GameStatePush, NonEngineListener = true });
+            EngineEventHandler.StartListening(new EngineEventListener() { MyAction = OnGameStateReplace, MyContextType = EventContextType.GameStateReplace, NonEngineListener = true });
         }
 
         //TODO: These exist so that, if needed, I can animate this.
@@ -34,6 +35,16 @@ namespace ConsoleBalatro.UI.EngineUI
         {
             if(args is EngineGameStateChangeArgs gsArgs && gsArgs.isPush)
             {
+                UIGameStateTracker.Push(gsArgs.NewStateBeingPushed);
+            }
+        }
+
+        public static void OnGameStateReplace(EngineEventArgs args)
+        {
+            if (args is EngineGameStateChangeArgs gsArgs && gsArgs.isReplace)
+            {
+                if (UIGameStateTracker.Count > 0)
+                    UIGameStateTracker.Pop();
                 UIGameStateTracker.Push(gsArgs.NewStateBeingPushed);
             }
         }

@@ -69,9 +69,11 @@ namespace ConsoleBalatro.Engine.Events
 
         GameStatePush,
         GameStatePop,
+        GameStateReplace,
 
         PostGameStatePush,
         PostGameStatePop,
+        PostGameStateReplace,
 
         StartPostRound,
         EndPostRound,

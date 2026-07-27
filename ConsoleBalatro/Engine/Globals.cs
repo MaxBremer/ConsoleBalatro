@@ -802,6 +802,37 @@ namespace ConsoleBalatro.Engine
         }
 
         /// <summary>
+        /// Atomically replace the current game state without exposing the state beneath it to listeners.
+        /// </summary>
+        /// <param name="obj">The state object that will become current.</param>
+        /// <returns>The state object that was replaced, or null when the stack was empty.</returns>
+        public static GameStateObj ReplaceCurrentGameState(GameStateObj obj)
+        {
+            if (GameStateStack == null || GameStateStack.Count == 0)
+            {
+                PushGameState(obj);
+                return null;
+            }
+
+            var oldState = GameStateStack.Peek();
+            var args = new EngineGameStateChangeArgs()
+            {
+                MyContext = new() { Context = EventContextType.GameStateReplace },
+                OldStateToBePopped = oldState,
+                NewStateBeingPushed = obj,
+            };
+            EngineEventHandler.TriggerEvent(args);
+
+            GameStateStack.Pop();
+            GameStateStack.Push(obj);
+
+            args.isAfterStateChange = true;
+            args.MyContext = new() { Context = EventContextType.PostGameStateReplace };
+            EngineEventHandler.TriggerEvent(args);
+            return oldState;
+        }
+
+        /// <summary>
         /// Clear out the entire game state stack.
         /// </summary>
         public static void ClearGameStateStack()

@@ -589,6 +589,7 @@ namespace ConsoleBalatro.UI.EngineUI
         {
             EngineEventHandler.StartListening(new EngineEventListener() { MyAction = listAct, MyContextType = EventContextType.GameStatePop, NonEngineListener = true });
             EngineEventHandler.StartListening(new EngineEventListener() { MyAction = listAct, MyContextType = EventContextType.GameStatePush, NonEngineListener = true });
+            EngineEventHandler.StartListening(new EngineEventListener() { MyAction = listAct, MyContextType = EventContextType.GameStateReplace, NonEngineListener = true });
         }
 
         //TODO: AGAIN, I was just snorting dumb juice when writing this. lookit all the repeated code. Make better.

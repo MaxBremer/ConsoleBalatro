@@ -14,6 +14,67 @@ namespace ConsoleBalatro.Tests;
 
 public class UnlockManagerTests : TestClassBase
 {
+    [Theory]
+    [InlineData("BLUE", AchievementDb.BlueDeckUnlockId, 20)]
+    [InlineData("YELLOW", AchievementDb.YellowDeckUnlockId, 50)]
+    [InlineData("GREEN", AchievementDb.GreenDeckUnlockId, 75)]
+    [InlineData("BLACK", AchievementDb.BlackDeckUnlockId, 100)]
+    public void CollectionMilestones_UnlockDeckAndAchievement(string deckDbName, string achievementId, int requiredItems)
+    {
+        UnlockManager.ResetProgressToDefaults();
+        var collectionItems = JokerDb.JokerDbNames.Take(requiredItems).ToList();
+        Assert.Equal(requiredItems, collectionItems.Count);
+
+        foreach (var jokerDbName in collectionItems.Take(requiredItems - 1))
+        {
+            UnlockManager.AddJokerToCollection(jokerDbName, saveImmediately: false);
+        }
+
+        Assert.False(DeckDb.IsDeckUnlocked(deckDbName));
+        Assert.False(UnlockManager.IsAchievementAchieved(achievementId));
+
+        UnlockManager.AddJokerToCollection(collectionItems[^1], saveImmediately: false);
+
+        Assert.True(DeckDb.IsDeckUnlocked(deckDbName));
+        Assert.True(UnlockManager.IsAchievementAchieved(achievementId));
+    }
+
+    [Theory]
+    [InlineData("RED", StakeType.WHITE, "MAGIC", AchievementDb.MagicDeckUnlockId)]
+    [InlineData("BLUE", StakeType.WHITE, "NEBULA", AchievementDb.NebulaDeckUnlockId)]
+    [InlineData("YELLOW", StakeType.WHITE, "GHOST", AchievementDb.GhostDeckUnlockId)]
+    [InlineData("GREEN", StakeType.WHITE, "ABANDONED", AchievementDb.AbandonedDeckUnlockId)]
+    [InlineData("BLACK", StakeType.WHITE, "CHECKERED", AchievementDb.CheckeredDeckUnlockId)]
+    [InlineData("RED", StakeType.RED, "ZODIAC", AchievementDb.ZodiacDeckUnlockId)]
+    [InlineData("RED", StakeType.GREEN, "PAINTED", AchievementDb.PaintedDeckUnlockId)]
+    [InlineData("RED", StakeType.BLACK, "ANAGLYPH", AchievementDb.AnaglyphDeckUnlockId)]
+    [InlineData("RED", StakeType.BLUE, "PLASMA", AchievementDb.PlasmaDeckUnlockId)]
+    [InlineData("RED", StakeType.ORANGE, "ERRATIC", AchievementDb.ErraticDeckUnlockId)]
+    public void RunWins_UnlockDeckAndAchievement(string playedDeck, StakeType stake, string unlockedDeck, string achievementId)
+    {
+        UnlockManager.ResetProgressToDefaults();
+        FlowHandler.CurrentDeckDbName = playedDeck;
+        StakeManager.CurrentStake = stake;
+
+        EngineEventHandler.TriggerEvent(new EngineEventArgs { MyContext = new EventContext { Context = EventContextType.RunWon } });
+
+        Assert.True(DeckDb.IsDeckUnlocked(unlockedDeck));
+        Assert.True(UnlockManager.IsAchievementAchieved(achievementId));
+    }
+
+    [Fact]
+    public void StakeDeckUnlocks_AcceptHarderStakeButNotEasierStake()
+    {
+        UnlockManager.ResetProgressToDefaults();
+        FlowHandler.CurrentDeckDbName = "RED";
+        StakeManager.CurrentStake = StakeType.PURPLE;
+
+        EngineEventHandler.TriggerEvent(new EngineEventArgs { MyContext = new EventContext { Context = EventContextType.RunWon } });
+
+        Assert.True(DeckDb.IsDeckUnlocked("PLASMA"));
+        Assert.False(DeckDb.IsDeckUnlocked("ERRATIC"));
+    }
+
     [Fact]
     public void DeckUnlocks_SaveAndLoad_WithDefaultDecks()
     {

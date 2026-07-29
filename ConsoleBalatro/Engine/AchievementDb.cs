@@ -3,6 +3,7 @@ using ConsoleBalatro.Engine.Cards.Consumables;
 using ConsoleBalatro.Engine.Cards.Enums;
 using ConsoleBalatro.Engine.Events;
 using ConsoleBalatro.Engine.Events.Args;
+using ConsoleBalatro.Engine.Stakes;
 
 namespace ConsoleBalatro.Engine
 {
@@ -15,6 +16,40 @@ namespace ConsoleBalatro.Engine
 
         public const string TenHandsPlayedAchievementId = "TEN_HANDS_PLAYED";
         public const string ScoreTenThousandAchievementId = "SCORE_10000_HAND";
+
+        public const string BlueDeckUnlockId = "BLUE_DECK_UNLOCK";
+        public const string YellowDeckUnlockId = "YELLOW_DECK_UNLOCK";
+        public const string GreenDeckUnlockId = "GREEN_DECK_UNLOCK";
+        public const string BlackDeckUnlockId = "BLACK_DECK_UNLOCK";
+        public const string MagicDeckUnlockId = "MAGIC_DECK_UNLOCK";
+        public const string NebulaDeckUnlockId = "NEBULA_DECK_UNLOCK";
+        public const string GhostDeckUnlockId = "GHOST_DECK_UNLOCK";
+        public const string AbandonedDeckUnlockId = "ABANDONED_DECK_UNLOCK";
+        public const string CheckeredDeckUnlockId = "CHECKERED_DECK_UNLOCK";
+        public const string ZodiacDeckUnlockId = "ZODIAC_DECK_UNLOCK";
+        public const string PaintedDeckUnlockId = "PAINTED_DECK_UNLOCK";
+        public const string AnaglyphDeckUnlockId = "ANAGLYPH_DECK_UNLOCK";
+        public const string PlasmaDeckUnlockId = "PLASMA_DECK_UNLOCK";
+        public const string ErraticDeckUnlockId = "ERRATIC_DECK_UNLOCK";
+
+        public static IReadOnlyDictionary<string, string> DeckUnlocksByAchievementId { get; } =
+            new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase)
+            {
+                [BlueDeckUnlockId] = "BLUE",
+                [YellowDeckUnlockId] = "YELLOW",
+                [GreenDeckUnlockId] = "GREEN",
+                [BlackDeckUnlockId] = "BLACK",
+                [MagicDeckUnlockId] = "MAGIC",
+                [NebulaDeckUnlockId] = "NEBULA",
+                [GhostDeckUnlockId] = "GHOST",
+                [AbandonedDeckUnlockId] = "ABANDONED",
+                [CheckeredDeckUnlockId] = "CHECKERED",
+                [ZodiacDeckUnlockId] = "ZODIAC",
+                [PaintedDeckUnlockId] = "PAINTED",
+                [AnaglyphDeckUnlockId] = "ANAGLYPH",
+                [PlasmaDeckUnlockId] = "PLASMA",
+                [ErraticDeckUnlockId] = "ERRATIC",
+            };
 
         public const string Brainstorm_UnlockId = "BRAINSTORM_UNLOCK";
 
@@ -88,6 +123,23 @@ namespace ConsoleBalatro.Engine
 
         public static void RegisterDefaultAchievements()
         {
+            RegisterCollectionDeckUnlock(BlueDeckUnlockId, "Blue", 20);
+            RegisterCollectionDeckUnlock(YellowDeckUnlockId, "Yellow", 50);
+            RegisterCollectionDeckUnlock(GreenDeckUnlockId, "Green", 75);
+            RegisterCollectionDeckUnlock(BlackDeckUnlockId, "Black", 100);
+
+            RegisterDeckWinUnlock(MagicDeckUnlockId, "Magic", "RED");
+            RegisterDeckWinUnlock(NebulaDeckUnlockId, "Nebula", "BLUE");
+            RegisterDeckWinUnlock(GhostDeckUnlockId, "Ghost", "YELLOW");
+            RegisterDeckWinUnlock(AbandonedDeckUnlockId, "Abandoned", "GREEN");
+            RegisterDeckWinUnlock(CheckeredDeckUnlockId, "Checkered", "BLACK");
+
+            RegisterStakeWinUnlock(ZodiacDeckUnlockId, "Zodiac", StakeType.RED);
+            RegisterStakeWinUnlock(PaintedDeckUnlockId, "Painted", StakeType.GREEN);
+            RegisterStakeWinUnlock(AnaglyphDeckUnlockId, "Anaglyph", StakeType.BLACK);
+            RegisterStakeWinUnlock(PlasmaDeckUnlockId, "Plasma", StakeType.BLUE);
+            RegisterStakeWinUnlock(ErraticDeckUnlockId, "Erratic", StakeType.ORANGE);
+
             RegisterAllAchievementData(
                 TenHandsPlayedAchievementId, 
                 "Practiced Hand", 
@@ -429,6 +481,38 @@ namespace ConsoleBalatro.Engine
             RegisterAchievementDisplayData(id, name, desc);
             RegisterAchievementListener(id, contextType, condition);
         }
+
+        private static void RegisterCollectionDeckUnlock(string id, string deckName, int requiredItems)
+        {
+            RegisterAllAchievementData(
+                id,
+                $"{deckName} Deck Unlocked",
+                $"Discover at least {requiredItems} items from your collection.",
+                EventContextType.CollectionItemAdded,
+                _ => UnlockManager.CollectionCount >= requiredItems);
+        }
+
+        private static void RegisterDeckWinUnlock(string id, string deckName, string requiredDeckDbName)
+        {
+            RegisterAllAchievementData(
+                id,
+                $"{deckName} Deck Unlocked",
+                $"Win a run with the {FormatDbName(requiredDeckDbName)} Deck on any difficulty.",
+                EventContextType.RunWon,
+                _ => string.Equals(FlowHandler.CurrentDeckDbName, requiredDeckDbName, StringComparison.OrdinalIgnoreCase));
+        }
+
+        private static void RegisterStakeWinUnlock(string id, string deckName, StakeType requiredStake)
+        {
+            RegisterAllAchievementData(
+                id,
+                $"{deckName} Deck Unlocked",
+                $"Win a run on {FormatDbName(requiredStake.ToString())} Stake difficulty or harder.",
+                EventContextType.RunWon,
+                _ => StakeManager.OfficialStakeOrder.IndexOf(StakeManager.CurrentStake) >= StakeManager.OfficialStakeOrder.IndexOf(requiredStake));
+        }
+
+        private static string FormatDbName(string dbName) => dbName[0] + dbName[1..].ToLowerInvariant();
 
         public static void ClearAchievementDefinitions()
         {

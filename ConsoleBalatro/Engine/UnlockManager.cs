@@ -297,6 +297,11 @@ namespace ConsoleBalatro.Engine
                 return false;
             }
 
+            if (AchievementDb.DeckUnlocksByAchievementId.TryGetValue(achievementId, out var deckDbName))
+            {
+                UnlockDeck(deckDbName, saveImmediately: false);
+            }
+
             StopAchievementListener(achievementId);
             var displayData = AchievementDb.GetAchievementDisplayData(achievementId);
             var achArgs = new EngineAchievementUnlockArgs() { AchievementId = achievementId, AchievementName = displayData.Name, AchievementDesc = displayData.Details };
@@ -408,6 +413,10 @@ namespace ConsoleBalatro.Engine
                 foreach (var achievementId in (saveData.Achievements?.Achieved ?? new List<string>()).Where(x => !string.IsNullOrWhiteSpace(x)))
                 {
                     AchievedAchievements.Add(achievementId);
+                    if (AchievementDb.DeckUnlocksByAchievementId.TryGetValue(achievementId, out var deckDbName))
+                    {
+                        UnlockedDecks.Add(deckDbName);
+                    }
                 }
 
                 foreach (var progress in saveData.Achievements?.ProgressCounts ?? new Dictionary<string, int>())

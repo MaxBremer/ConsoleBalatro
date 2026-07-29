@@ -497,7 +497,7 @@ namespace ConsoleBalatro.Engine
             RegisterAllAchievementData(
                 id,
                 $"{deckName} Deck Unlocked",
-                $"Win a run with the {requiredDeckDbName[0] + requiredDeckDbName[1..].ToLowerInvariant()} Deck on any difficulty.",
+                $"Win a run with the {FormatDbName(requiredDeckDbName)} Deck on any difficulty.",
                 EventContextType.RunWon,
                 _ => string.Equals(FlowHandler.CurrentDeckDbName, requiredDeckDbName, StringComparison.OrdinalIgnoreCase));
         }

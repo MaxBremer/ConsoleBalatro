@@ -59,6 +59,16 @@ namespace ConsoleBalatro.Engine
         public const string MerryAndy_UnlockId = "MERRYANDY_UNLOCK";
         public const string Bootstraps_UnlockId = "BOOTSTRAPS_UNLOCK";
 
+        public const string Troubadour_UnlockId = "TROUBADOUR_UNLOCK";
+        public const string HangingChad_UnlockId = "HANGINGCHAD_UNLOCK";
+        public const string Matador_UnlockId = "MATADOR_UNLOCK";
+        public const string InvisibleJoker_UnlockId = "INVISIBLEJOKER_UNLOCK";
+        public const string ShootTheMoon_UnlockId = "SHOOTTHEMOON_UNLOCK";
+
+        private static int ConsecutiveSingleHandRoundWins = 0;
+        private static bool RunExceededInvisibleJokerLimit = false;
+        private static readonly HashSet<int> HeartsPlayedThisRound = new();
+
         static AchievementDb()
         {
             RegisterDefaultAchievements();
@@ -69,6 +79,10 @@ namespace ConsoleBalatro.Engine
 
         public static void RegisterDefaultAchievements()
         {
+            ConsecutiveSingleHandRoundWins = 0;
+            RunExceededInvisibleJokerLimit = false;
+            HeartsPlayedThisRound.Clear();
+
             RegisterAllAchievementData(
                 TenHandsPlayedAchievementId, 
                 "Practiced Hand", 
@@ -276,6 +290,49 @@ namespace ConsoleBalatro.Engine
                 "Have at least 2 Polychrome Jokers at the same time.",
                 EventContextType.CardDrawnToZone,
                 args => ZoneManager.JokerZone != null && ZoneManager.JokerZone.Cards.Count(c => c.IsJoker && c.Edition == Edition.POLYCHROME) >= 2);
+
+            RegisterAllAchievementData(
+                Troubadour_UnlockId,
+                "Troubadour Unlocked",
+                "Win 5 consecutive rounds by playing only 1 hand.",
+                EventContextType.EndPlayRound,
+                args => CheckTroubadourUnlock());
+            RegisterAllAchievementData(
+                HangingChad_UnlockId,
+                "Hanging Chad Unlocked",
+                "Beat a Boss Blind with a High Card.",
+                EventContextType.HandPlayDone,
+                args => args is EngineHandPlayDoneArgs playArgs
+                    && FlowHandler.CurrentSelectedBlind == BlindType.BOSS
+                    && playArgs.HandTypeThatWasPlayed == PlayedHandType.HIGHCARD
+                    && HandWonCurrentBlind(playArgs));
+            RegisterAllAchievementData(
+                Matador_UnlockId,
+                "Matador Unlocked",
+                "Defeat a Boss Blind in 1 hand without using any discards.",
+                EventContextType.HandPlayDone,
+                args => args is EngineHandPlayDoneArgs playArgs
+                    && FlowHandler.CurrentSelectedBlind == BlindType.BOSS
+                    && HandWonCurrentBlind(playArgs)
+                    && HandsPlayedThisRoundIncludingCurrent() == 1
+                    && Globals.CurDiscardsRemaining == Globals.MaxDiscardsPerRound);
+            RegisterAllAchievementData(
+                InvisibleJoker_UnlockId,
+                "Invisible Joker Unlocked",
+                "Win a run without ever having more than 4 Jokers.",
+                EventContextType.RunWon,
+                args => !RunExceededInvisibleJokerLimit && CurrentVisibleJokerCount() <= 4);
+            RegisterAllAchievementData(
+                ShootTheMoon_UnlockId,
+                "Shoot the Moon Unlocked",
+                "Play every Heart card in your deck in one round.",
+                EventContextType.HandPlayDone,
+                args => args is EngineHandPlayDoneArgs playArgs && CheckShootTheMoonUnlock(playArgs));
+
+            EngineEventHandler.StartListening(new EngineEventListener { MyContextType = EventContextType.StartPlayRoundSetupOver, MyAction = _ => ResetRoundHeartTracker() });
+            EngineEventHandler.StartListening(new EngineEventListener { MyContextType = EventContextType.StartPlayRound, MyAction = _ => CheckInvisibleJokerLimit() });
+            EngineEventHandler.StartListening(new EngineEventListener { MyContextType = EventContextType.CardDrawnToZone, MyAction = _ => CheckInvisibleJokerLimit() });
+
         }
 
         private static void RegisterAllAchievementData(string id, string name, string desc, EventContextType contextType, Func<EngineEventArgs, bool> condition)
@@ -351,6 +408,68 @@ namespace ConsoleBalatro.Engine
 
             AchievementDefinitionsById[definition.Id] = definition;
             return true;
+        }
+
+
+        private static bool CheckTroubadourUnlock()
+        {
+            if (HandsPlayedThisRoundIncludingCurrent() == 1)
+            {
+                ConsecutiveSingleHandRoundWins += 1;
+            }
+            else
+            {
+                ConsecutiveSingleHandRoundWins = 0;
+            }
+
+            return ConsecutiveSingleHandRoundWins >= 5;
+        }
+
+        private static bool HandWonCurrentBlind(EngineHandPlayDoneArgs playArgs)
+        {
+            return playArgs.PreventGameOverAndWinBlind || playArgs.CurrentTotalChips >= playArgs.RequiredChipsForBlind;
+        }
+
+        private static int HandsPlayedThisRoundIncludingCurrent()
+        {
+            return ScoreHandler.NumHandTypePlayedThisRound.Values.Sum();
+        }
+
+        private static int CurrentVisibleJokerCount()
+        {
+            return ZoneManager.JokerZone?.Cards.Count(card => card.IsJoker) ?? 0;
+        }
+
+        private static bool CheckInvisibleJokerLimit()
+        {
+            if (CurrentVisibleJokerCount() > 4)
+            {
+                RunExceededInvisibleJokerLimit = true;
+            }
+
+            return false;
+        }
+
+        private static bool ResetRoundHeartTracker()
+        {
+            HeartsPlayedThisRound.Clear();
+            CheckInvisibleJokerLimit();
+            return false;
+        }
+
+        private static bool CheckShootTheMoonUnlock(EngineHandPlayDoneArgs playArgs)
+        {
+            foreach (var heart in playArgs.CardsInPlayedHand.Where(card => card.IsSuit(Suit.HEARTS)))
+            {
+                HeartsPlayedThisRound.Add(heart.ID);
+            }
+
+            var heartIdsInDeck = ZoneManager.GetFullDeckCards()?
+                .Where(card => card.IsSuit(Suit.HEARTS))
+                .Select(card => card.ID)
+                .ToHashSet();
+
+            return heartIdsInDeck != null && heartIdsInDeck.Count > 0 && heartIdsInDeck.IsSubsetOf(HeartsPlayedThisRound);
         }
 
         private static bool AllTarotsCollected()

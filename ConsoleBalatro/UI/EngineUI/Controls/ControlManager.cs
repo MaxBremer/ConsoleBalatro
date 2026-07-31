@@ -393,6 +393,15 @@ namespace ConsoleBalatro.UI.EngineUI.Controls
                 FlowHandler.StartSelectedBlind();
             });
 
+            ret.AvailableActions.Add(ConsoleKey.G, _ =>
+            {
+                EngineDisplayGlobals.ShowInfoDisplay(GetCurrentTagsInfo(), Card.CardInfoLineDivider);
+                EngineDisplayGlobals.Redraw();
+                ReadKey();
+                EngineDisplayGlobals.HideInfoDisplay();
+                EngineDisplayGlobals.Redraw();
+            });
+
             if (Globals.ALLOW_DEBUG_COMMANDS)
             {
                 ret.AvailableActions.Add(ConsoleKey.D, _ =>
@@ -412,6 +421,17 @@ namespace ConsoleBalatro.UI.EngineUI.Controls
             });
 
             return ret;
+        }
+
+        /// <summary>
+        /// Builds the blind-selection summary for this ante's pre-generated tags.
+        /// </summary>
+        public static string GetCurrentTagsInfo()
+        {
+            var small = FlowHandler.CurSmallBlindTagCard?.DetailedInfoDisplay(null) ?? "No tag";
+            var big = FlowHandler.CurBigBlindTagCard?.DetailedInfoDisplay(null) ?? "No tag";
+            return "SMALL BLIND" + Card.CardInfoDoubleDivider + small
+                + Card.CardInfoDoubleDivider + "BIG BLIND" + Card.CardInfoDoubleDivider + big;
         }
 
         private static ControlOptionset BuildWinOptions()

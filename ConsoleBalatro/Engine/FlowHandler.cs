@@ -175,14 +175,28 @@ namespace ConsoleBalatro.Engine
         public static BlindType CurrentSelectedBlind = BlindType.SMALL;
 
         /// <summary>
-        /// The tag received for skipping the current small blind.
+        /// The pre-generated tag card received for skipping the current small blind.
         /// </summary>
-        public static TagType CurSmallBlindTag;
+        public static Card CurSmallBlindTagCard;
 
         /// <summary>
-        /// The tag received for skipping the current big blind.
+        /// The pre-generated tag card received for skipping the current big blind.
         /// </summary>
-        public static TagType CurBigBlindTag;
+        public static Card CurBigBlindTagCard;
+
+        // These type properties are retained for callers which rig tags (notably tests and
+        // debug tools). Assigning a type now creates the card immediately, just like an ante roll.
+        public static TagType CurSmallBlindTag
+        {
+            get => CurSmallBlindTagCard?.TagData?.MyType ?? TagType.NONE;
+            set => CurSmallBlindTagCard = value == TagType.NONE ? null : TagDb.BuildTagOfType(value);
+        }
+
+        public static TagType CurBigBlindTag
+        {
+            get => CurBigBlindTagCard?.TagData?.MyType ?? TagType.NONE;
+            set => CurBigBlindTagCard = value == TagType.NONE ? null : TagDb.BuildTagOfType(value);
+        }
 
         /// <summary>
         /// Get the tag received for skipping the passed blind.
@@ -195,6 +209,13 @@ namespace ConsoleBalatro.Engine
         /// Returns the tag for the currently selected blind.
         /// </summary>
         public static TagType CurrentTag => GetTagTypeOf(CurrentSelectedBlind);
+
+        /// <summary>
+        /// Returns the pre-generated tag card for the currently selected blind.
+        /// </summary>
+        public static Card CurrentTagCard => CurrentSelectedBlind == BlindType.SMALL
+            ? CurSmallBlindTagCard
+            : CurrentSelectedBlind == BlindType.BIG ? CurBigBlindTagCard : null;
 
         /// <summary>
         /// The Boss blind DB name of the boss of the current ante.
@@ -764,13 +785,13 @@ namespace ConsoleBalatro.Engine
             if (makeUnique)
             {
                 var shuffled = values.OrderBy(x => Globals.randomNext(Int32.MaxValue)).ToArray();
-                CurSmallBlindTag = shuffled[0];
-                CurBigBlindTag = shuffled[1];
+                CurSmallBlindTagCard = TagDb.BuildTagOfType(shuffled[0]);
+                CurBigBlindTagCard = TagDb.BuildTagOfType(shuffled[1]);
             }
             else
             {
-                CurSmallBlindTag = values[Globals.randomNext(values.Length)];
-                CurBigBlindTag = values[Globals.randomNext(values.Length)];
+                CurSmallBlindTagCard = TagDb.BuildTagOfType(values[Globals.randomNext(values.Length)]);
+                CurBigBlindTagCard = TagDb.BuildTagOfType(values[Globals.randomNext(values.Length)]);
             }
         }
 
@@ -785,7 +806,7 @@ namespace ConsoleBalatro.Engine
             }
 
             EngineEventHandler.TriggerEvent(new EngineEventArgs() { MyContext = new EventContext() { Context = EventContextType.BlindSkip } });
-            TagDb.AddTagOfType(CurrentTag);
+            TagDb.OnTagAdd(CurrentTagCard);
 
             IncrementBlind();
         }

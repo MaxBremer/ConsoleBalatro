@@ -71,7 +71,7 @@ namespace ConsoleBalatro.Engine.Cards.Tags
                             break;
                         ZoneManager.JokerZone.AddCard(commonJoker, invisibleAdd: false);
                     }
-            }) },
+            }, hardDesc: "Get two random Common Jokers (must have room)") },
             {TagType.UNCOMMON, c => BuildRarityShopTag("Uncommon Tag", JokerRarity.UNCOMMON, c) },
             {TagType.RARE, c => BuildRarityShopTag("Rare Tag", JokerRarity.RARE, c) },
             {TagType.HANDY, c => BuildImmediateTag("Handy Tag", c, _ => Globals.EmitMoneyGain(EngineEventHandler.CountOfSaved(EventContextType.HandPlayDone), c), hardDesc: "Gain $1 for each hand played this run.")},//TODO: Datadict val for amt per hand?

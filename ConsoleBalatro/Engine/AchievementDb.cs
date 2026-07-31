@@ -68,6 +68,7 @@ namespace ConsoleBalatro.Engine
         private static int ConsecutiveSingleHandRoundWins = 0;
         private static bool RunExceededInvisibleJokerLimit = false;
         private static readonly HashSet<int> HeartsPlayedThisRound = new();
+        private static readonly List<EngineEventListener> TrackingListeners = new();
 
         static AchievementDb()
         {
@@ -79,6 +80,11 @@ namespace ConsoleBalatro.Engine
 
         public static void RegisterDefaultAchievements()
         {
+            foreach (var listener in TrackingListeners)
+            {
+                EngineEventHandler.StopListening(listener);
+            }
+            TrackingListeners.Clear();
             ConsecutiveSingleHandRoundWins = 0;
             RunExceededInvisibleJokerLimit = false;
             HeartsPlayedThisRound.Clear();
@@ -329,9 +335,9 @@ namespace ConsoleBalatro.Engine
                 EventContextType.HandPlayDone,
                 args => args is EngineHandPlayDoneArgs playArgs && CheckShootTheMoonUnlock(playArgs));
 
-            EngineEventHandler.StartListening(new EngineEventListener { MyContextType = EventContextType.StartPlayRoundSetupOver, MyAction = _ => ResetRoundHeartTracker() });
-            EngineEventHandler.StartListening(new EngineEventListener { MyContextType = EventContextType.StartPlayRound, MyAction = _ => CheckInvisibleJokerLimit() });
-            EngineEventHandler.StartListening(new EngineEventListener { MyContextType = EventContextType.CardDrawnToZone, MyAction = _ => CheckInvisibleJokerLimit() });
+            RegisterTrackingListener(EventContextType.StartPlayRoundSetupOver, _ => ResetRoundHeartTracker());
+            RegisterTrackingListener(EventContextType.StartPlayRound, _ => CheckInvisibleJokerLimit());
+            RegisterTrackingListener(EventContextType.CardDrawnToZone, _ => CheckInvisibleJokerLimit());
 
         }
 
@@ -343,6 +349,11 @@ namespace ConsoleBalatro.Engine
 
         public static void ClearAchievementDefinitions()
         {
+            foreach (var listener in TrackingListeners)
+            {
+                EngineEventHandler.StopListening(listener);
+            }
+            TrackingListeners.Clear();
             AchievementDefinitionsById.Clear();
             AchievementDisplayDataById.Clear();
         }
@@ -425,6 +436,13 @@ namespace ConsoleBalatro.Engine
             return ConsecutiveSingleHandRoundWins >= 5;
         }
 
+        private static void RegisterTrackingListener(EventContextType contextType, Action<EngineEventArgs> action)
+        {
+            var listener = new EngineEventListener { MyContextType = contextType, MyAction = action };
+            TrackingListeners.Add(listener);
+            EngineEventHandler.StartListening(listener);
+        }
+
         private static bool HandWonCurrentBlind(EngineHandPlayDoneArgs playArgs)
         {
             return playArgs.PreventGameOverAndWinBlind || playArgs.CurrentTotalChips >= playArgs.RequiredChipsForBlind;
@@ -432,7 +450,9 @@ namespace ConsoleBalatro.Engine
 
         private static int HandsPlayedThisRoundIncludingCurrent()
         {
-            return ScoreHandler.NumHandTypePlayedThisRound.Values.Sum();
+            var trackedHands = ScoreHandler.NumHandTypePlayedThisRound.Values.Sum();
+            var spentHands = Math.Max(0, Globals.MaxHandsPerRound - Globals.CurHandsRemaining);
+            return Math.Max(trackedHands, spentHands);
         }
 
         private static int CurrentVisibleJokerCount()

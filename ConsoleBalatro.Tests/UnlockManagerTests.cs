@@ -360,6 +360,147 @@ public class UnlockManagerTests : TestClassBase
         }
     }
 
+    [Fact]
+    public void TroubadourUnlock_RequiresFiveConsecutiveSingleHandRoundWins()
+    {
+        PrepareComplexUnlockTest();
+        try
+        {
+            for (var round = 0; round < 4; round++)
+            {
+                SetHandsPlayedThisRound(1);
+                TriggerSimpleEvent(EventContextType.EndPlayRound);
+            }
+
+            Assert.False(UnlockManager.IsAchievementAchieved(AchievementDb.Troubadour_UnlockId));
+
+            SetHandsPlayedThisRound(2);
+            TriggerSimpleEvent(EventContextType.EndPlayRound);
+            for (var round = 0; round < 4; round++)
+            {
+                SetHandsPlayedThisRound(1);
+                TriggerSimpleEvent(EventContextType.EndPlayRound);
+            }
+
+            Assert.False(UnlockManager.IsAchievementAchieved(AchievementDb.Troubadour_UnlockId));
+
+            SetHandsPlayedThisRound(1);
+            TriggerSimpleEvent(EventContextType.EndPlayRound);
+
+            Assert.True(UnlockManager.IsAchievementAchieved(AchievementDb.Troubadour_UnlockId));
+            Assert.Equal(AchievementDb.Troubadour_UnlockId, JokerDb.JokerMetadata["TROUBADOUR"].AchievementForUnlock);
+        }
+        finally
+        {
+            CleanupComplexUnlockTest();
+        }
+    }
+
+    [Fact]
+    public void HangingChadUnlock_RequiresBossBlindWinWithHighCard()
+    {
+        PrepareComplexUnlockTest();
+        try
+        {
+            FlowHandler.CurrentSelectedBlind = BlindType.BOSS;
+            TriggerWinningHand(PlayedHandType.PAIR);
+            Assert.False(UnlockManager.IsAchievementAchieved(AchievementDb.HangingChad_UnlockId));
+
+            TriggerWinningHand(PlayedHandType.HIGHCARD);
+
+            Assert.True(UnlockManager.IsAchievementAchieved(AchievementDb.HangingChad_UnlockId));
+            Assert.Equal(AchievementDb.HangingChad_UnlockId, JokerDb.JokerMetadata["HANGING CHAD"].AchievementForUnlock);
+        }
+        finally
+        {
+            CleanupComplexUnlockTest();
+        }
+    }
+
+    [Fact]
+    public void MatadorUnlock_RequiresOneHandBossWinWithNoDiscardsUsed()
+    {
+        PrepareComplexUnlockTest();
+        try
+        {
+            FlowHandler.CurrentSelectedBlind = BlindType.BOSS;
+            Globals.CurDiscardsRemaining = Globals.MaxDiscardsPerRound - 1;
+            TriggerWinningHand(PlayedHandType.PAIR);
+            Assert.False(UnlockManager.IsAchievementAchieved(AchievementDb.Matador_UnlockId));
+
+            SetHandsPlayedThisRound(0);
+            Globals.CurDiscardsRemaining = Globals.MaxDiscardsPerRound;
+            TriggerWinningHand(PlayedHandType.PAIR);
+
+            Assert.True(UnlockManager.IsAchievementAchieved(AchievementDb.Matador_UnlockId));
+            Assert.Equal(AchievementDb.Matador_UnlockId, JokerDb.JokerMetadata["MATADOR"].AchievementForUnlock);
+        }
+        finally
+        {
+            CleanupComplexUnlockTest();
+        }
+    }
+
+    [Fact]
+    public void InvisibleJokerUnlock_FailsAfterHoldingFiveJokersAndSucceedsWithFour()
+    {
+        PrepareComplexUnlockTest();
+        try
+        {
+            for (var i = 0; i < 5; i++)
+            {
+                ZoneManager.JokerZone.AddCard(JokerDb.GenerateJokerCard("JIMBO"));
+            }
+
+            ZoneManager.JokerZone.RemoveCard(ZoneManager.JokerZone.Cards.Last());
+            TriggerSimpleEvent(EventContextType.RunWon);
+            Assert.False(UnlockManager.IsAchievementAchieved(AchievementDb.InvisibleJoker_UnlockId));
+
+            EngineEventHandler.ResetFullEventHandler();
+            UnlockManager.ResetProgressToDefaults();
+            ZoneManager.JokerZone.ClearCards();
+            for (var i = 0; i < 4; i++)
+            {
+                ZoneManager.JokerZone.AddCard(JokerDb.GenerateJokerCard("JIMBO"));
+            }
+
+            TriggerSimpleEvent(EventContextType.RunWon);
+
+            Assert.True(UnlockManager.IsAchievementAchieved(AchievementDb.InvisibleJoker_UnlockId));
+            Assert.Equal(AchievementDb.InvisibleJoker_UnlockId, JokerDb.JokerMetadata["INVISIBLE JOKER"].AchievementForUnlock);
+        }
+        finally
+        {
+            CleanupComplexUnlockTest();
+        }
+    }
+
+    [Fact]
+    public void ShootTheMoonUnlock_RequiresEveryHeartInDeckDuringOneRound()
+    {
+        PrepareComplexUnlockTest();
+        try
+        {
+            ZoneManager.DeckZone.ClearCards(true);
+            var hearts = CardFactory.CardListFromDefString("AH,2H,3H", ",");
+            ZoneManager.DeckZone.AddCards(hearts, invisibleAdd: true);
+            ZoneManager.DeckZone.AddCard(CardFactory.CardListFromDefString("AS", ",").Single(), invisibleAdd: true);
+
+            TriggerSimpleEvent(EventContextType.StartPlayRoundSetupOver);
+            TriggerPlayedCards(hearts.Take(2).ToList());
+            Assert.False(UnlockManager.IsAchievementAchieved(AchievementDb.ShootTheMoon_UnlockId));
+
+            TriggerPlayedCards([hearts[2]]);
+
+            Assert.True(UnlockManager.IsAchievementAchieved(AchievementDb.ShootTheMoon_UnlockId));
+            Assert.Equal(AchievementDb.ShootTheMoon_UnlockId, JokerDb.JokerMetadata["SHOOT THE MOON"].AchievementForUnlock);
+        }
+        finally
+        {
+            CleanupComplexUnlockTest();
+        }
+    }
+
 
     [Fact]
     public void PersistentJokerUnlockAchievements_TrackAcrossRunsAndPersist()
@@ -565,6 +706,64 @@ public class UnlockManagerTests : TestClassBase
             UnlockManager.ResetProgressToDefaults(clearAchievementDefinitions: true);
             DeleteTempSave(savePath);
         }
+    }
+
+    private void PrepareComplexUnlockTest()
+    {
+        ResetEngineForTest();
+        UnlockManager.ResetProgressToDefaults();
+        SetHandsPlayedThisRound(0);
+    }
+
+    private static void CleanupComplexUnlockTest()
+    {
+        UnlockManager.ResetProgressToDefaults(clearAchievementDefinitions: true);
+        EngineEventHandler.ResetFullEventHandler();
+    }
+
+    private static void SetHandsPlayedThisRound(int count)
+    {
+        foreach (var handType in ScoreHandler.NumHandTypePlayedThisRound.Keys.ToList())
+        {
+            ScoreHandler.NumHandTypePlayedThisRound[handType] = 0;
+        }
+
+        ScoreHandler.NumHandTypePlayedThisRound[PlayedHandType.HIGHCARD] = count;
+        Globals.CurHandsRemaining = Globals.MaxHandsPerRound - count;
+    }
+
+    private static void TriggerSimpleEvent(EventContextType contextType)
+    {
+        EngineEventHandler.TriggerEvent(new EngineEventArgs
+        {
+            MyContext = new EventContext { Context = contextType },
+        });
+    }
+
+    private static void TriggerWinningHand(PlayedHandType handType)
+    {
+        EngineEventHandler.TriggerEvent(new EngineHandPlayDoneArgs
+        {
+            MyContext = new EventContext { Context = EventContextType.HandPlayDone },
+            HandTypeThatWasPlayed = handType,
+            CardsInPlayedHand = [],
+            CardsHeldInHand = [],
+            CurrentTotalChips = 100,
+            RequiredChipsForBlind = 100,
+        });
+    }
+
+    private static void TriggerPlayedCards(List<Card> cards)
+    {
+        EngineEventHandler.TriggerEvent(new EngineHandPlayDoneArgs
+        {
+            MyContext = new EventContext { Context = EventContextType.HandPlayDone },
+            HandTypeThatWasPlayed = PlayedHandType.HIGHCARD,
+            CardsInPlayedHand = cards,
+            CardsHeldInHand = [],
+            CurrentTotalChips = 0,
+            RequiredChipsForBlind = 100,
+        });
     }
 
     private static string BuildTempSavePath()

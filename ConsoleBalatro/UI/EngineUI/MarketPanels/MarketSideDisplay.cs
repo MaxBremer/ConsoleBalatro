@@ -55,6 +55,10 @@ namespace ConsoleBalatro.UI.EngineUI.MarketPanels
                 ret.Add("HAND STATS");
                 ret.Add("[T]");
 
+                ret.Add("");
+                ret.Add("VIEW TAGS");
+                ret.Add("[G]");
+
                 if(Globals.CurBossBlindRerollsAllowed != 0)
                 {
                     ret.Add("");

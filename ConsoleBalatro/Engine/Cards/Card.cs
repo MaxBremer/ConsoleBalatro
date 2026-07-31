@@ -569,7 +569,7 @@ namespace ConsoleBalatro.Engine.Cards
             {
                 retStr += "FACE DOWN";
             }
-            else if(IsJoker || IsVoucher)
+            else if(IsJoker || IsVoucher || IsTag)
             {
                 retStr += JokerData.JokerName + CardInfoDoubleDivider;
                 retStr += JokerData.DescriptionBuilder(context) + CardInfoDoubleDivider;

@@ -18,6 +18,36 @@ namespace ConsoleBalatro.Tests
 {
     public class TagTests : TestClassBase
     {
+        [Fact]
+        public void StartNewAnte_PreGeneratesTagCards_AndSkipUsesGeneratedCard()
+        {
+            ResetToBlindSelection();
+            var generatedTag = FlowHandler.CurSmallBlindTagCard;
+
+            Assert.NotNull(generatedTag);
+            Assert.True(generatedTag.IsTag);
+
+            var record = CaptureTagEvents();
+            FlowHandler.DoSkip();
+
+            Assert.Same(generatedTag, record.TagsAdded[0]);
+        }
+
+        [Fact]
+        public void BlindSelectionTagInfo_IncludesPreGeneratedTagNamesAndDescriptions()
+        {
+            ResetToBlindSelection();
+            FlowHandler.CurSmallBlindTag = TagType.ORBITAL;
+            FlowHandler.CurBigBlindTag = TagType.INVESTMENT;
+
+            var info = UI.EngineUI.Controls.ControlManager.GetCurrentTagsInfo();
+
+            Assert.Contains("Orbital Tag", info);
+            Assert.Contains("Upgrades", info);
+            Assert.Contains("Investment Tag", info);
+            Assert.Contains("$25", info);
+        }
+
         [Theory]
         [InlineData(4, 8)]
         [InlineData(15, 30)]

@@ -14,27 +14,27 @@ namespace ConsoleBalatro.Engine
     public static class ZoneManager
     {
         //Constantly visible zones
-        public static JokerZone JokerZone;
-        public static CardZone ConsumableZone;
-        public static CardZone TagZone;
+        public static JokerZone? JokerZone;
+        public static CardZone? ConsumableZone;
+        public static CardZone? TagZone;
 
         //Visible zones during play round
-        public static CardZone HandZone;
-        public static CardZone CurrentlyBeingPlayedZone;
+        public static CardZone? HandZone;
+        public static CardZone? CurrentlyBeingPlayedZone;
 
         //Visible zones during shop round
-        public static CardZone MainMarketZone;
-        public static CardZone PackMarketZone;
-        public static CardZone VoucherMarketZone;
+        public static CardZone? MainMarketZone;
+        public static CardZone? PackMarketZone;
+        public static CardZone? VoucherMarketZone;
 
         //Visible zones for pack opening
-        public static CardZone PackOptionZone;
+        public static CardZone? PackOptionZone;
         //Use HandZone for cards to use the options on, thus will be affected by hand size limits and such
         //TODO: Maybe set up separate hand-like zone for pack opening?
 
-        public static List<Card> CardsSelectedInHand => HandZone.Cards.Where(x => x.isSelected).ToList();
-        public static List<Card> JokersSelectedInZone => JokerZone.Cards.Where(x => x.isSelected).ToList();
-        public static List<Card> ConsumablesSelectedInZone => ConsumableZone.Cards.Where(x => x.isSelected).ToList();
+        public static List<Card> CardsSelectedInHand => HandZone?.Cards.Where(x => x.isSelected).ToList() ?? [];
+        public static List<Card> JokersSelectedInZone => JokerZone?.Cards.Where(x => x.isSelected).ToList() ?? [];
+        public static List<Card> ConsumablesSelectedInZone => ConsumableZone?.Cards.Where(x => x.isSelected).ToList() ?? [];
         public static List<Card> AllCardsSelected
         {
             get
@@ -48,10 +48,12 @@ namespace ConsoleBalatro.Engine
         {
             get
             {
-                return HandZone.MaxCapacity;
+                return HandZone?.MaxCapacity ?? 0;
             }
             set
             {
+                if (HandZone == null)
+                    return;
                 var oldHandCap = HandZone.MaxCapacity;
                 var newHandCap = value;
                 HandZone.MaxCapacity = newHandCap;
@@ -64,27 +66,29 @@ namespace ConsoleBalatro.Engine
         {
             get
             {
-                return MainMarketZone.MaxCapacity;
+                return MainMarketZone?.MaxCapacity ?? 0;
             }
             set
             {
+                if (MainMarketZone == null)
+                    return;
                 MainMarketZone.MaxCapacity = value;
             }
         }
 
         //Invisible zones
-        public static CardZone DiscardZone; //Where cards go when discarded during a blind.
-        public static CardZone PreDestructionZone; //Special zone for cards about to be destroyed, but needed for the moment. Currently used for tags only.
-        public static DestroyCardZone DestructionZone; //Where destroyed cards go, deletes them. Don't put anything here u want to see ever again.
-        public static CardZone HiddenPlayZone; //Where cards go when played during a round.
-        public static CardZone DeckZone; //Zone that holds the deck in its current state (not necessarily full list during a play round)
+        public static CardZone? DiscardZone; //Where cards go when discarded during a blind.
+        public static CardZone? PreDestructionZone; //Special zone for cards about to be destroyed, but needed for the moment. Currently used for tags only.
+        public static DestroyCardZone? DestructionZone; //Where destroyed cards go, deletes them. Don't put anything here u want to see ever again.
+        public static CardZone? HiddenPlayZone; //Where cards go when played during a round.
+        public static CardZone? DeckZone; //Zone that holds the deck in its current state (not necessarily full list during a play round)
 
-        public static CardZone ActiveVoucherZone; //Zone that holds currently active vouchers.
-        public static CardZone CurrentlyActivatingConsumable; //Zone holding any consumable currently being activated.
+        public static CardZone? ActiveVoucherZone; //Zone that holds currently active vouchers.
+        public static CardZone? CurrentlyActivatingConsumable; //Zone holding any consumable currently being activated.
 
-        public static CardZone HiddenBlindAttributeZone; //Used for hidden "Jokers" used to implement effects of Boss blinds.
+        public static CardZone? HiddenBlindAttributeZone; //Used for hidden "Jokers" used to implement effects of Boss blinds.
         //NOTE: The following should only be used for PERMANENT effects, staying across the entire run after being added.
-        public static CardZone OtherHiddenJokerZone; //Used for other hidden effects; deck abilities, stake effects, challenge effects, etc.
+        public static CardZone? OtherHiddenJokerZone; //Used for other hidden effects; deck abilities, stake effects, challenge effects, etc.
 
         /// <summary>
         /// Initialize all CardZones needed for a run.

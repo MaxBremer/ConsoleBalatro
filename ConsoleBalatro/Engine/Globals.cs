@@ -41,12 +41,12 @@ namespace ConsoleBalatro.Engine
         public const bool USE_DEFAULT_JOKER_IF_POOL_EMPTY = true;
         //Ok, so: in real Balatro, the Illusion voucher (playing cards in shop can have enhancements/editions/seals) has a GLITCH:
         //though it says cards can generate with seals in market, they can't really.
-        //So this is here to toggle our Illusion voucher behaves like it SHOULD based on description, or how it does in real Balatro.
+        //So this is here to toggle whether our Illusion voucher behaves like it SHOULD based on description, or how it does in real Balatro.
         public const bool MIRROR_ILLUSION_SEAL_GLITCH = false;
         //Enables the key commands for A) debug command line, and B) debug-only rerolls like pack market reroll, voucher market reroll, etc.
         public const bool ALLOW_DEBUG_COMMANDS = true;
 
-        public static readonly BigInteger MaxChipCount = BigInteger.Parse("1000000000000000000000");
+        public static readonly BigInteger MaxChipCount = BigInteger.Parse("1000000000000000000000");//1_000_000_000_000_000_000_000. That's 1 sextillion.
 
         public static BigInteger CapChipCount(double chipCount)
         {
@@ -78,7 +78,7 @@ namespace ConsoleBalatro.Engine
         private static BigInteger _reqChipsBlind = -1;
 
         //The pre-calculation values of current chips and mult.
-        //By pre-calculation like literally before they're multiplied together to get the final chips.
+        //By pre-calculation I mean like literally before they're multiplied together to get the final chips.
         public static BigInteger CurrentChips = 0;
         public static double CurrentMult = 0;
 

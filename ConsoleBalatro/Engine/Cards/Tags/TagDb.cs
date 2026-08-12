@@ -63,6 +63,8 @@ namespace ConsoleBalatro.Engine.Cards.Tags
             {TagType.SPECTRAL, c => BuildMegaPackTag("Ethereal Tag", PackType.BASIC_SPECTRAL, c) },
             {TagType.TOP_UP, c => BuildImmediateTag("Top-Up Tag", c, _ =>
             {
+                if(ZoneManager.JokerZone == null)
+                    return;
                 for (int i = 0; i < 2 && ZoneManager.JokerZone.HasRoom; i++)
                     {
                         //var commonJoker = MarketOptionsManager.PullRandomJokerFromPool(JokerRarity.COMMON, removeFromPool: true);
@@ -96,6 +98,8 @@ namespace ConsoleBalatro.Engine.Cards.Tags
                 jdb.DescriptionBuilder = _ => "Adds a Voucher to the next Shop";
                 jdb.TagData.Activate = _ =>
                 {
+                    if(ZoneManager.VoucherMarketZone == null)
+                        return;
                     MarketPullManager.DrawMarketItem(BuyItemType.VOUCHER, ZoneManager.VoucherMarketZone, overrideSpaceLimits: true, source: GenerationSource.GenericJoker);
                     //MarketOptionsManager.DrawMarketItem(BuyItemType.VOUCHER, ZoneManager.VoucherMarketZone, overrideSpaceLimits: true);
                 };
@@ -110,8 +114,8 @@ namespace ConsoleBalatro.Engine.Cards.Tags
                 jdb.TagData.DoTrigger = (_, _) =>
                 {
                     var allTargets = new List<Card>();
-                    allTargets.AddRange(ZoneManager.MainMarketZone.Cards);
-                    allTargets.AddRange(ZoneManager.PackMarketZone.Cards);
+                    allTargets.AddRange(ZoneManager.MainMarketZone?.Cards ?? []);
+                    allTargets.AddRange(ZoneManager.PackMarketZone?.Cards ?? []);
 
                     return allTargets.Any(x => x.BuyCost != 0);
                 };
@@ -176,7 +180,9 @@ namespace ConsoleBalatro.Engine.Cards.Tags
             tagDataBlock.EventTypesTrigger.Add(EventContextType.TagAdded);
             tagDataBlock.DoTrigger = (args, ct) => args is EngineTagAddedEventArgs tagArgs
                 && tagArgs.isPostAdd
+                && tagArgs.TagCard != null && tagArgs.TagCard.JokerData != null
                 && !tagArgs.TagCard.JokerData.TagData.ImmuneToDouble
+                && ct.JokerData != null
                 && ct.JokerData.DataDict.ContainsKey("ACTIVATED")
                 && !ct.JokerData.DataDict["ACTIVATED"].BoolData;
             
@@ -192,7 +198,7 @@ namespace ConsoleBalatro.Engine.Cards.Tags
             return jokerDataBlock;
         }
 
-        public static JokerCardDataBlock BuildImmediateTag(string name, Card c, Action<EngineEventArgs> OnAddAction, string hardDesc = "")
+        public static JokerCardDataBlock BuildImmediateTag(string name, Card c, Action<EngineEventArgs?> OnAddAction, string hardDesc = "")
         {
             var jokerDataBlock = PrepBlockForTag(name, c);
             jokerDataBlock.TagData.OnAddAction = OnAddAction;
@@ -203,11 +209,131 @@ namespace ConsoleBalatro.Engine.Cards.Tags
             return jokerDataBlock;
         }
 
+        public static void MakeCardTagOfType(Card c, TagType type)
+        {
+            var jokerBlock = TagBuilders[type](c);
+            jokerBlock.TagData.MyType = type;
+            c.JokerData = jokerBlock;
+        }
+
+        public static Card BuildTagOfType(TagType type)
+        {
+            var c = new Card();
+            MakeCardTagOfType(c, type);
+            return c;
+        }
+
+        public static void AddTagOfType(TagType type)
+        {
+            if (type == TagType.NONE)
+                return;
+            var c = BuildTagOfType(type);
+            OnTagAdd(c);
+        }
+
+        public static void OnTagAdd(Card TagCard, CardZone? fromZone = null)
+        {
+            //First just check that the card passed is a tag.
+            if (!TagCard.IsTag || TagCard.JokerData == null || ZoneManager.TagZone == null || ZoneManager.PreDestructionZone == null)
+                return;
+
+            //Build the activation function.
+            //TODO: Make immediate activation a flag?
+            //Then this func is just called on add? No need for a separate "on add func"?
+            Action<EngineEventArgs> ActivateFunc = arg =>
+            {
+                var data = TagCard.JokerData.TagData;
+                //Check the custom activation flag func
+                if (data.DoTrigger(arg, TagCard))
+                {
+                    ZoneManager.PreDestructionZone.DrawTargetFrom(ZoneManager.TagZone, TagCard);
+                    EngineEventHandler.TriggerEvent(new EngineTagTriggeredArgs()
+                    {
+                        TagThatTriggered = TagCard,
+                        MyContext = new() { Context = EventContextType.TagActivatedViaListener },
+                    });
+                    data.Activate(arg);
+                    OnTagRemove(TagCard);
+                    ZoneManager.DestroyCard(TagCard, ZoneManager.PreDestructionZone);
+                }
+            };
+
+            //Trigger the pre-addition tagAdd event.
+            EventContext evContext = new() { Context = EventContextType.TagAdded };
+            EngineEventHandler.TriggerEvent(new EngineTagAddedEventArgs()
+            {
+                isPostAdd = false,
+                TagCard = TagCard,
+                MyContext = evContext,
+            });
+
+            //Now, draw the card to the tag zone, either from another zone or from nothing.
+            if (fromZone == null)
+            {
+                ZoneManager.TagZone.AddCard(TagCard);
+            }
+            else
+            {
+                ZoneManager.TagZone.DrawTargetFrom(fromZone, TagCard);
+            }
+
+            //Add all the tags listeners
+            var listenerList = new List<EngineEventListener>();
+            foreach (var evType in TagCard.JokerData.TagData.EventTypesTrigger)
+            {
+                var listener = new EngineEventListener() { MyAction = ActivateFunc, MyContextType = evType };
+                EngineEventHandler.StartListening(listener);
+                listenerList.Add(listener);
+            }
+            //track the listeners for stopping post-activation.
+            TagListeners.Add(TagCard.JokerData.TagData.MyTagID, listenerList);
+
+            //If there is an on add action, activate it now. We're doing the add.
+            var onAddAct = TagCard.JokerData.TagData.OnAddAction;
+            if (onAddAct != null)
+            {
+                onAddAct(null);//TODO: args needed????
+                //After an on-add activation, destroy this tag.
+                //NOTE: This means tags can only have ONE activation, whether triggered via listeners or on-add.
+                //This makes sense gameplay-wise (tags only trigger once when they "pop"), but is slightly counter-intuitive code-wise.
+                EngineEventHandler.TriggerEvent(new EngineTagTriggeredArgs()
+                {
+                    TagThatTriggered = TagCard,
+                    MyContext = new() { Context = EventContextType.TagActivatedInstantly },
+                });
+                ZoneManager.PreDestructionZone.DrawTargetFrom(ZoneManager.TagZone, TagCard);
+                OnTagRemove(TagCard);
+                ZoneManager.DestroyCard(TagCard, ZoneManager.PreDestructionZone);
+            }
+
+            //Finally, trigger the post-add tagAdd event.
+            EventContext evContextPostAdd = new() { Context = EventContextType.TagAdded };
+            EngineEventHandler.TriggerEvent(new EngineTagAddedEventArgs()
+            {
+                isPostAdd = true,
+                TagCard = TagCard,
+                MyContext = evContextPostAdd,
+            });
+        }
+
+        public static void OnTagRemove(Card TagCard)
+        {
+            if (!TagCard.IsTag || TagCard.JokerData == null)
+                return;
+            var targetId = TagCard.JokerData.TagData.MyTagID;
+            foreach (var list in TagListeners[targetId])
+            {
+                EngineEventHandler.StopListening(list);
+            }
+            TagListeners[targetId].Clear();
+            TagListeners.Remove(targetId);
+        }
+
         private static JokerCardDataBlock BuildEditionShopTag(string name, Edition edition, Card c)
         {
             var jokerDataBlock = PrepBlockForTag(name, c);
             jokerDataBlock.TagData.EventTypesTrigger.Add(EventContextType.StartMarket);
-            jokerDataBlock.TagData.DoTrigger = (_, _) => ZoneManager.MainMarketZone.HasRoom;
+            jokerDataBlock.TagData.DoTrigger = (_, _) => ZoneManager.MainMarketZone?.HasRoom ?? false;
 
             jokerDataBlock.TagData.Activate = _ =>
             {
@@ -219,7 +345,7 @@ namespace ConsoleBalatro.Engine.Cards.Tags
                     return;
                 toAdd.SetEditionOfficial(edition);
                 toAdd.BuyCostOverride = 0;
-                ZoneManager.MainMarketZone.AddCard(toAdd);
+                ZoneManager.MainMarketZone?.AddCard(toAdd);
                 //MarketOptionsManager.DrawTargetMarketItem(BuyItemType.JOKER, ZoneManager.MainMarketZone, toAdd);
             };
             jokerDataBlock.DescriptionBuilder = _ => "The next base edition Joker you find in a Shop becomes " + edition.ToString() + " " + EngineUtils.EditionDescriptors[edition] + " and free.";
@@ -231,7 +357,7 @@ namespace ConsoleBalatro.Engine.Cards.Tags
             var targetSource = rarity == JokerRarity.RARE ? GenerationSource.RareTag : GenerationSource.UncommonTag;
             var jokerDataBlock = PrepBlockForTag(name, c);
             jokerDataBlock.TagData.EventTypesTrigger.Add(EventContextType.StartMarket);
-            jokerDataBlock.TagData.DoTrigger = (_, _) => ZoneManager.MainMarketZone.HasRoom;
+            jokerDataBlock.TagData.DoTrigger = (_, _) => ZoneManager.MainMarketZone?.HasRoom ?? false;
             jokerDataBlock.TagData.Activate = _ =>
             {
                 //var toAdd = MarketOptionsManager.PullRandomJokerFromPool(rarity);
@@ -239,7 +365,7 @@ namespace ConsoleBalatro.Engine.Cards.Tags
                 if (toAdd == null)
                     return;
                 toAdd.BuyCostOverride = 0;
-                ZoneManager.MainMarketZone.AddCard(toAdd);
+                ZoneManager.MainMarketZone?.AddCard(toAdd);
                 //MarketOptionsManager.DrawTargetMarketItem(BuyItemType.JOKER, ZoneManager.MainMarketZone, toAdd);
             };
             jokerDataBlock.DescriptionBuilder = _ => "The next shop will have a free " + rarity.ToString() + " Joker.";
@@ -284,125 +410,6 @@ namespace ConsoleBalatro.Engine.Cards.Tags
 
             var nextPack = QueuedPackType.Dequeue();
             PackActions.OpenPack(ConsumableManager.MakePack(nextPack));
-        }
-
-        public static void MakeCardTagOfType(Card c, TagType type)
-        {
-            var jokerBlock = TagBuilders[type](c);
-            jokerBlock.TagData.MyType = type;
-            c.JokerData = jokerBlock;
-        }
-
-        public static Card BuildTagOfType(TagType type)
-        {
-            var c = new Card();
-            MakeCardTagOfType(c, type);
-            return c;
-        }
-
-        public static void AddTagOfType(TagType type)
-        {
-            if (type == TagType.NONE)
-                return;
-            var c = BuildTagOfType(type);
-            OnTagAdd(c);
-        }
-
-        public static void OnTagAdd(Card TagCard, CardZone fromZone = null)
-        {
-            //First just check that the card passed is a tag.
-            if (!TagCard.IsTag)
-                return;
-
-            //Build the activation function.
-            //TODO: Make immediate activation a flag?
-            //Then this func is just called on add? No need for a separate "on add func"?
-            Action<EngineEventArgs> ActivateFunc = arg =>
-            {
-                var data = TagCard.JokerData.TagData;
-                if(data.DoTrigger(arg, TagCard))
-                {
-                    ZoneManager.PreDestructionZone.DrawTargetFrom(ZoneManager.TagZone, TagCard);
-                    EngineEventHandler.TriggerEvent(new EngineTagTriggeredArgs()
-                    {
-                        TagThatTriggered = TagCard,
-                        MyContext = new() { Context = EventContextType.TagActivatedViaListener},
-                    });
-                    data.Activate(arg);
-                    OnTagRemove(TagCard);
-                    ZoneManager.DestroyCard(TagCard, ZoneManager.PreDestructionZone);
-                }
-            };
-
-            //Trigger the pre-addition tagAdd event.
-            EventContext evContext = new() { Context = EventContextType.TagAdded };
-            EngineEventHandler.TriggerEvent(new EngineTagAddedEventArgs()
-            {
-                isPostAdd = false,
-                TagCard = TagCard,
-                MyContext = evContext,
-            });
-
-            //Now, draw the card to the tag zone, either from another zone or from nothing.
-            if (fromZone == null)
-            {
-                ZoneManager.TagZone.AddCard(TagCard);
-            }
-            else
-            {
-                ZoneManager.TagZone.DrawTargetFrom(fromZone, TagCard);
-            }
-
-            //Add all the tags listeners
-            var listenerList = new List<EngineEventListener>();
-            foreach (var evType in TagCard.JokerData.TagData.EventTypesTrigger)
-            {
-                var listener = new EngineEventListener() { MyAction = ActivateFunc, MyContextType = evType };
-                EngineEventHandler.StartListening(listener);
-                listenerList.Add(listener);
-            }
-            //track the listeners for stopping post-activation.
-            TagListeners.Add(TagCard.JokerData.TagData.MyTagID, listenerList);
-
-            //If there is an on add action, activate it now. We're doing the add.
-            var onAddAct = TagCard.JokerData.TagData.OnAddAction;
-            if(onAddAct != null)
-            {
-                onAddAct(null);//TODO: args needed????
-                //After an on-add activation, destroy this tag.
-                //NOTE: This means tags can only have ONE activation, whether triggered via listeners or on-add.
-                //This makes sense gameplay-wise (tags only trigger once when they "pop"), but is slightly counter-intuitive code-wise.
-                EngineEventHandler.TriggerEvent(new EngineTagTriggeredArgs()
-                {
-                    TagThatTriggered = TagCard,
-                    MyContext = new() { Context = EventContextType.TagActivatedInstantly },
-                });
-                ZoneManager.PreDestructionZone.DrawTargetFrom(ZoneManager.TagZone, TagCard);
-                OnTagRemove(TagCard);
-                ZoneManager.DestroyCard(TagCard, ZoneManager.PreDestructionZone);
-            }
-
-            //Finally, trigger the post-add tagAdd event.
-            EventContext evContextPostAdd = new() { Context = EventContextType.TagAdded };
-            EngineEventHandler.TriggerEvent(new EngineTagAddedEventArgs()
-            {
-                isPostAdd = true,
-                TagCard = TagCard,
-                MyContext = evContextPostAdd,
-            });
-        }
-
-        public static void OnTagRemove(Card TagCard)
-        {
-            if (!TagCard.IsTag)
-                return;
-            var targetId = TagCard.JokerData.TagData.MyTagID;
-            foreach (var list in TagListeners[targetId])
-            {
-                EngineEventHandler.StopListening(list);
-            }
-            TagListeners[targetId].Clear();
-            TagListeners.Remove(targetId);
         }
     }
 }

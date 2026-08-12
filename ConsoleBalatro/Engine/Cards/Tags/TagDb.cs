@@ -18,7 +18,7 @@ namespace ConsoleBalatro.Engine.Cards.Tags
         private static Queue<PackType> QueuedPackType = new();
         private static bool PackQueueListenerInitialized = false;
 
-        private static Dictionary<int, List<EngineEventListener>> TagListeners = new();
+        private static Dictionary<int, List<EngineEventListener>> TagListeners = [];
 
         //PUT DATA DICTIONARY HERE
         public static Dictionary<TagType, Func<Card, JokerCardDataBlock>> TagBuilders = new()

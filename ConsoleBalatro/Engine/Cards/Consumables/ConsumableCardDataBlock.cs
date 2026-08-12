@@ -23,7 +23,7 @@ namespace ConsoleBalatro.Engine.Cards.Consumables
         public Dictionary<string, JokerData> DataDict = new();
 
         public Action<EngineEventArgs> Use = _ => { };
-        public Func<EngineEventArgs, bool> IsActivatable = _ => true;
+        public Func<EngineEventArgs?, bool> IsActivatable = _ => true;
 
         public void ActivateConsumable(EngineEventArgs evArgs)
         {

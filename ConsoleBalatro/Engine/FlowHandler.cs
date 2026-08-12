@@ -232,7 +232,7 @@ namespace ConsoleBalatro.Engine
         /// Did it this way so in theory other similar things could do this. But they don't. Just juggle tag.
         /// TODO: fix this. do it better. dummy.
         /// </summary>
-        public static EnginePlayRoundSetupArgs CurrentTempChanges = null;
+        public static EnginePlayRoundSetupArgs? CurrentTempChanges = null;
 
         /// <summary>
         /// Initialize any global event listeners for gameplay flow.

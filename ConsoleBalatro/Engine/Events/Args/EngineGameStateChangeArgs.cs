@@ -13,17 +13,17 @@ namespace ConsoleBalatro.Engine.Events.Args
         public bool isPush => NewStateBeingPushed != null;
         public bool isPop => OldStateToBePopped != null;
         public bool isReplace => isPush && isPop;
-        public GameStateObj NewStateBeingPushed = null;
-        public GameStateObj OldStatePushedOver = null;
-        public GameStateObj OldStateToBePopped = null;
-        public GameStateObj NewStateRevealedByPop = null;
+        public GameStateObj? NewStateBeingPushed = null;
+        public GameStateObj? OldStatePushedOver = null;
+        public GameStateObj? OldStateToBePopped = null;
+        public GameStateObj? NewStateRevealedByPop = null;
 
         public bool StateChangeIsInterrupted = false; //More stupid. Don't do this. Jackass
 
         public bool isAfterStateChange = false; //See this here is how to do it dumbass.
 
         //See? All that work just to undo it all here. Why, Max? Why?
-        public GameStateObj OldState => isPop ? OldStateToBePopped : OldStatePushedOver;
-        public GameStateObj NewState => isPush ? NewStateBeingPushed : NewStateRevealedByPop;
+        public GameStateObj? OldState => isPop ? OldStateToBePopped : OldStatePushedOver;
+        public GameStateObj? NewState => isPush ? NewStateBeingPushed : NewStateRevealedByPop;
     }
 }

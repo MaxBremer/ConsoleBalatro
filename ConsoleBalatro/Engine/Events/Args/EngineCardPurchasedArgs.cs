@@ -15,7 +15,7 @@ namespace ConsoleBalatro.Engine.Events.Args
                 MyContext = new() { Context = EventContextType.CardPurchased };
         }
         public Card BeingPurchased { get; set; }
-        public CardZone ZoneGoingTo { get; set; }
+        public CardZone? ZoneGoingTo { get; set; }
         public int AmountPaid { get; set; }
     }
 }

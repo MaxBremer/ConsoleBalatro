@@ -122,7 +122,7 @@ namespace ConsoleBalatro.Engine
         public static bool ChaosClownFreeRerollAvailable = false;
 
         //Used to track the "card source" of reroll costs. Actually useful, not just a hack.
-        public static Card RerollButtonCard;
+        public static Card? RerollButtonCard;
 
         //Max capacity of hand zone.
         public static int HandSize { get => ZoneManager.HandSize; set => ZoneManager.HandSize = value; }
@@ -334,8 +334,8 @@ namespace ConsoleBalatro.Engine
             SetStartOfRoundStats();
             RequiredChipsForCurrentBlind = -1;
 
-            ZoneManager.HiddenBlindAttributeZone.ClearCards(false);
-            ZoneManager.OtherHiddenJokerZone.ClearCards(false);
+            ZoneManager.HiddenBlindAttributeZone?.ClearCards(false);
+            ZoneManager.OtherHiddenJokerZone?.ClearCards(false);
         }
 
         /// <summary>
@@ -344,7 +344,7 @@ namespace ConsoleBalatro.Engine
         /// </summary>
         public static void PlayCurrentlySelectedHand()
         {
-            if (CurrentGameState != GameState.PlayRound || CurNumCardsSelected == 0)
+            if (CurrentGameState != GameState.PlayRound || ZoneManager.HandZone == null || CurNumCardsSelected == 0)
             {
                 return;
             }
@@ -359,7 +359,7 @@ namespace ConsoleBalatro.Engine
             };
             EngineEventHandler.TriggerEvent(evArgs);
 
-            ZoneManager.CurrentlyBeingPlayedZone.DrawTargetsFrom(ZoneManager.HandZone, selCards);
+            ZoneManager.CurrentlyBeingPlayedZone?.DrawTargetsFrom(ZoneManager.HandZone, selCards);
             var handSelInfo = EngineUtils.BestHandFromCards(selCards);
 
             var bestHandArgs = new EngineHandPlayArgs()
@@ -423,18 +423,22 @@ namespace ConsoleBalatro.Engine
                     cardInHand.TriggerInHandDuringScoring(sContext);
                 }
 
-                foreach (var jokerCard in ZoneManager.JokerZone.Cards)
+                if(ZoneManager.JokerZone != null)
                 {
-                    jokerCard.TriggerScoring(sContext);
+                    foreach (var jokerCard in ZoneManager.JokerZone.Cards)
+                        jokerCard.TriggerScoring(sContext);
                 }
 
-                foreach (var voucherCard in ZoneManager.ActiveVoucherZone.Cards)
+                if(ZoneManager.ActiveVoucherZone != null)
                 {
-                    voucherCard.TriggerScoring(sContext);//TODO: Put all always-score cards (like jokers, vouchers, boss blind jokers) in one always-score list, then score that.
-                    //So: right now technically there are things that should score but aren't; take other hidden "jokers" like boss blinds, challenges, decks etc. 
-                    //This works right now cause none of them have effects that require them to trigger; that's for things like jokers that give +mult, +chips, etc.
-                    //HOWEVER: I find the idea of getting like a HOLO deck somehow kinda funny. So I think these should trigger eventually.
-                    //LMAO I WROTE THIS LIKE EXACT COMMENT BELOW THE CURLY BRACKET AND DIDNT NOTICE. WTF.
+                    foreach (var voucherCard in ZoneManager.ActiveVoucherZone.Cards)
+                    {
+                        voucherCard.TriggerScoring(sContext);//TODO: Put all always-score cards (like jokers, vouchers, boss blind jokers) in one always-score list, then score that.
+                                                             //So: right now technically there are things that should score but aren't; take other hidden "jokers" like boss blinds, challenges, decks etc. 
+                                                             //This works right now cause none of them have effects that require them to trigger; that's for things like jokers that give +mult, +chips, etc.
+                                                             //HOWEVER: I find the idea of getting like a HOLO deck somehow kinda funny. So I think these should trigger eventually.
+                                                             //LMAO I WROTE THIS LIKE EXACT COMMENT BELOW THE CURLY BRACKET AND DIDNT NOTICE. WTF.
+                    }
                 }
 
                 //TODO: Other hidden effects should score correct? Otherwise only listeners from challenges/decks/boss blinds/other hiddens will trigger, not scoring effects.
@@ -614,11 +618,11 @@ namespace ConsoleBalatro.Engine
         {
             if (c.IsJoker)
             {
-                return CanAfford(c) && ZoneManager.JokerZone.HasRoomFor(c);
+                return CanAfford(c) && ZoneManager.JokerZone != null && ZoneManager.JokerZone.HasRoomFor(c);
             }
             if (c.isConsumable)
             {
-                return CanAfford(c) && ZoneManager.ConsumableZone.HasRoomFor(c);
+                return CanAfford(c) && ZoneManager.ConsumableZone != null && ZoneManager.ConsumableZone.HasRoomFor(c);
             }
             return CanAfford(c);
         }
@@ -672,7 +676,7 @@ namespace ConsoleBalatro.Engine
         public static void PerformPurchaseByType(Card beingPurchased)
         {
             var zoneFrom = beingPurchased.MyZone;
-            CardZone zoneTo = null;
+            CardZone? zoneTo = null;
             //Order matters here; a card can in theory be multiple of these things.
             if (beingPurchased.IsVoucher)
             {
@@ -694,7 +698,7 @@ namespace ConsoleBalatro.Engine
         /// <param name="beingPurchased">Card to be purchased.</param>
         /// <param name="zoneGoingTo">The zone the card will go to after the purchase.</param>
         /// <param name="zoneFrom">The zone the card is coming from before the purchase.</param>
-        public static void PerformPurchase(Card beingPurchased, CardZone zoneGoingTo = null, CardZone zoneFrom = null)
+        public static void PerformPurchase(Card beingPurchased, CardZone? zoneGoingTo = null, CardZone? zoneFrom = null)
         {
             if (zoneFrom == null)
                 zoneFrom = beingPurchased.MyZone;
@@ -757,7 +761,7 @@ namespace ConsoleBalatro.Engine
         /// Pop the current game state object off the state stack.
         /// </summary>
         /// <returns>The now-removed current game state object.</returns>
-        public static GameStateObj PopCurrGameState()
+        public static GameStateObj? PopCurrGameState()
         {
             if (GameStateStack == null || GameStateStack.Count == 0)
                 return null;
@@ -794,7 +798,7 @@ namespace ConsoleBalatro.Engine
             };
             EngineEventHandler.TriggerEvent(args);
 
-            GameStateStack.Push(obj);
+            GameStateStack?.Push(obj);
 
             args.isAfterStateChange = true;
             args.MyContext = new() { Context = EventContextType.PostGameStatePush };
@@ -806,7 +810,7 @@ namespace ConsoleBalatro.Engine
         /// </summary>
         /// <param name="obj">The state object that will become current.</param>
         /// <returns>The state object that was replaced, or null when the stack was empty.</returns>
-        public static GameStateObj ReplaceCurrentGameState(GameStateObj obj)
+        public static GameStateObj? ReplaceCurrentGameState(GameStateObj obj)
         {
             if (GameStateStack == null || GameStateStack.Count == 0)
             {

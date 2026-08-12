@@ -21,9 +21,9 @@ namespace ConsoleBalatro.Engine.Cards.Consumables
             public int NumCanBeTaken;
             public int ChanceToAppear; //This is out of 10,000 (for percentages).
             public BuyItemType RelevantBuyItemType = BuyItemType.NONE;
-            public string PackName;//TODO: THESE FIELDS ARE DISPLAY FIELDS. MOVE TO DISPLAY CLASSES.
-            public string TopLine;
-            public string BottomLine;
+            public string PackName = "";//TODO: THESE FIELDS ARE DISPLAY FIELDS. MOVE TO DISPLAY CLASSES.
+            public string TopLine = "";
+            public string BottomLine = "";
             public string ID => PackName.ToUpper();
 
 
@@ -240,11 +240,11 @@ namespace ConsoleBalatro.Engine.Cards.Consumables
 
                 ret.DescriptionBuilder = _ => "Convert all cards in hand to a single random suit.";
 
-                ret.IsActivatable = _ => ZoneManager.HandZone.Cards.Count > 0;
+                ret.IsActivatable = _ => ZoneManager.HandZone?.Cards.Count > 0;
                 ret.Use = _ =>
                 {
                     var selSuit =  (Suit)Globals.ChooseRandomInclusive(1, 4);
-                    foreach (var card in ZoneManager.HandZone.Cards)
+                    foreach (var card in ZoneManager.HandZone?.Cards ?? [])
                     {
                         card.SetSuitOfficial(selSuit);
                     }

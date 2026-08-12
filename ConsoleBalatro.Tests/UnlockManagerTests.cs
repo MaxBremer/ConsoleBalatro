@@ -211,7 +211,9 @@ public class UnlockManagerTests : TestClassBase
             Assert.NotNull(ZoneManager.ConsumableZone);
             ZoneManager.JokerZone.AddCard(JokerDb.GenerateJokerCard("JIMBO"));
             ZoneManager.JokerZone.AddCard(JokerDb.GenerateJokerCard("JOLLY JOKER"));
-            ZoneManager.ConsumableZone.AddCard(ConsumableManager.MakeTarotCard("FOOL"));
+            var fool = ConsumableManager.MakeTarotCard("FOOL");
+            if(fool != null)
+                ZoneManager.ConsumableZone.AddCard(fool);
 
             FlowHandler.IncrementBlind();
 
@@ -575,7 +577,7 @@ public class UnlockManagerTests : TestClassBase
             EngineEventHandler.TriggerEvent(new EngineConsumableUseArgs
             {
                 MyContext = new EventContext { Context = EventContextType.ConsumableUsed },
-                ConsumableDBName = pluto.ConsumableData.DBName,
+                ConsumableDBName = pluto.ConsumableData?.DBName ?? "",
             });
 
             Assert.True(UnlockManager.IsJokerCollected("JIMBO"));

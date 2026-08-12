@@ -39,7 +39,7 @@ namespace ConsoleBalatro.Engine.Cards
         //Maybe base jimbo joker? Things like that? ...are there any other things like that? Cavendish/banana?
         public double MultBase = 0;
         public double MultMultBase = 0;
-        public CardZone MyZone = null;
+        public CardZone? MyZone = null;
 
         public bool ForcedSelect = false;
 

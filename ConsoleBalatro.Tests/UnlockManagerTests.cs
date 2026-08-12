@@ -207,6 +207,8 @@ public class UnlockManagerTests : TestClassBase
             FlowHandler.CurrentAnte = 8;
             FlowHandler.CurrentSelectedBlind = BlindType.BOSS;
             StakeManager.CurrentStake = StakeType.GREEN;
+            Assert.NotNull(ZoneManager.JokerZone);
+            Assert.NotNull(ZoneManager.ConsumableZone);
             ZoneManager.JokerZone.AddCard(JokerDb.GenerateJokerCard("JIMBO"));
             ZoneManager.JokerZone.AddCard(JokerDb.GenerateJokerCard("JOLLY JOKER"));
             ZoneManager.ConsumableZone.AddCard(ConsumableManager.MakeTarotCard("FOOL"));
@@ -607,23 +609,22 @@ public class UnlockManagerTests : TestClassBase
         UnlockManager.ResetProgressToDefaults();
         Globals.CurMaxInterest = 5;
         Globals.Money = 25;
-        List<(string, int)> list = null;
         for (var i = 0; i < 9; i++)
         {
-            list = FlowHandler.CalcPostRoundMoneyWithSources();
+            _ = FlowHandler.CalcPostRoundMoneyWithSources();
         }
         Assert.False(UnlockManager.IsAchievementAchieved(AchievementDb.MoneyTree_UnlockId));
 
         Globals.Money = 24;
-        list = FlowHandler.CalcPostRoundMoneyWithSources();
+        _ = FlowHandler.CalcPostRoundMoneyWithSources();
         Globals.Money = 25;
         for (var i = 0; i < 9; i++)
         {
-            list = FlowHandler.CalcPostRoundMoneyWithSources();
+            _ = FlowHandler.CalcPostRoundMoneyWithSources();
         }
         Assert.False(UnlockManager.IsAchievementAchieved(AchievementDb.MoneyTree_UnlockId));
 
-        list = FlowHandler.CalcPostRoundMoneyWithSources();
+        _ = FlowHandler.CalcPostRoundMoneyWithSources();
         Assert.True(UnlockManager.IsAchievementAchieved(AchievementDb.MoneyTree_UnlockId));
     }
 

@@ -41,7 +41,7 @@ namespace ConsoleBalatro.Engine.Market
         public static void FillMainMarket()
         {
             var batch = new ContentRollBatchContext();
-            while (ZoneManager.MainMarketZone.HasRoomIgnoreNegative)
+            while (ZoneManager.MainMarketZone?.HasRoomIgnoreNegative ?? false)
             {
                 var type = ChooseMarketRollType();
                 DrawMarketItem(type, ZoneManager.MainMarketZone, batchContext: batch);
@@ -96,7 +96,7 @@ namespace ConsoleBalatro.Engine.Market
         /// <param name="overrideSpaceLimits">Whether to ignore space limits on the zone to draw to.</param>
         /// <param name="source">The source of the generation request (market roll, pack opening etc)</param>
         /// <param name="batchContext">The context for this batch of rolls.</param>
-        public static void DrawNumMarketItems(BuyItemType itemType, int num, CardZone drawTo, bool applyMarketModifiers = false, bool overrideSpaceLimits = false, GenerationSource source = GenerationSource.Shop, ContentRollBatchContext batchContext = null)
+        public static void DrawNumMarketItems(BuyItemType itemType, int num, CardZone drawTo, bool applyMarketModifiers = false, bool overrideSpaceLimits = false, GenerationSource source = GenerationSource.Shop, ContentRollBatchContext? batchContext = null)
         {
             for (int i = 0; i < num; i++)
             {
@@ -113,7 +113,7 @@ namespace ConsoleBalatro.Engine.Market
         /// <param name="overrideSpaceLimits">Whether to ignore space limits on the zone to draw to.</param>
         /// <param name="source">The source of the generation request (market roll, pack opening etc)</param>
         /// <param name="batchContext">The context for this batch of rolls.</param>
-        public static void DrawMarketItem(BuyItemType itemType, CardZone zoneToDrawTo, bool applyMarketModifiers = false, bool overrideSpaceLimits = false, GenerationSource source = GenerationSource.Shop, ContentRollBatchContext batchContext = null)
+        public static void DrawMarketItem(BuyItemType itemType, CardZone zoneToDrawTo, bool applyMarketModifiers = false, bool overrideSpaceLimits = false, GenerationSource source = GenerationSource.Shop, ContentRollBatchContext? batchContext = null)
         {
             //structure:
             //roll for option
@@ -135,7 +135,7 @@ namespace ConsoleBalatro.Engine.Market
         /// <param name="batchContext">The batch context for this particular roll.</param>
         /// <param name="forcedRarity">The optional forced rarity override, forces a certain rarity of item to be returned.</param>
         /// <returns>A card rolled based on passed specifications.</returns>
-        public static Card PickMarketCard(BuyItemType itemType, GenerationSource source = GenerationSource.Shop, ContentRollBatchContext batchContext = null, JokerRarity? forcedRarity = null)
+        public static Card PickMarketCard(BuyItemType itemType, GenerationSource source = GenerationSource.Shop, ContentRollBatchContext? batchContext = null, JokerRarity? forcedRarity = null)
         {
             var poolType = TypeToPoolMappings[itemType];
             var req = new ContentRollRequest()
@@ -146,7 +146,7 @@ namespace ConsoleBalatro.Engine.Market
                 ForcedRarity = forcedRarity,
             };
             var resp = PoolManager.RollSingle(req);
-            Card ret = null;
+            Card ret = new Card();
             switch (resp.Pool)
             {
                 case ItemPool.Planet:
@@ -173,7 +173,6 @@ namespace ConsoleBalatro.Engine.Market
                     ret = CardFactory.PlayingCardFromDefString(resp.Id);
                     break;
                 default:
-                    ret = new Card();
                     break;
             }
 

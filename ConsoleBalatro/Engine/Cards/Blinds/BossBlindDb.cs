@@ -157,14 +157,14 @@ namespace ConsoleBalatro.Engine.Cards.Blinds
                         MyContextType = EventContextType.HandPlayDone,
                         MyAction = args =>
                         {
-                            if (args is EngineHandPlayDoneArgs h && h.CardsHeldInHand.Count > 0)
+                            if (args is EngineHandPlayDoneArgs h && h.CardsHeldInHand.Count > 0 && ZoneManager.HandZone != null)
                             {
                                 if(h.CardsHeldInHand.Count <= 2)
-                                    ZoneManager.DiscardZone.DrawTargetsFrom(ZoneManager.HandZone, h.CardsHeldInHand);
+                                    ZoneManager.DiscardZone?.DrawTargetsFrom(ZoneManager.HandZone, h.CardsHeldInHand);
                                 else
                                 {
                                     List<Card> toDisc = h.CardsHeldInHand.OrderBy(x => Globals.randomNext(int.MaxValue)).Take(2).ToList();
-                                    ZoneManager.DiscardZone.DrawTargetsFrom(ZoneManager.HandZone, toDisc);
+                                    ZoneManager.DiscardZone?.DrawTargetsFrom(ZoneManager.HandZone, toDisc);
                                 }
                             }
                         }
@@ -542,7 +542,7 @@ namespace ConsoleBalatro.Engine.Cards.Blinds
                             if(args is EngineCardSoldArgs sellArgs && sellArgs.CardBeingSold.IsJoker)
                             {
                                 ret.DataDict["DEBUFFFLAG"].IntData = 0;
-                                foreach (var c in ZoneManager.HandZone.Cards)
+                                foreach (var c in ZoneManager.HandZone?.Cards ?? [])
                                 {
                                     c.Debuffed = false;
                                 }
@@ -561,15 +561,15 @@ namespace ConsoleBalatro.Engine.Cards.Blinds
                     
                     ret.OnJokerGainEffs.Add(() =>
                     {
-                        foreach (var j in ZoneManager.JokerZone.Cards)
+                        foreach (var j in ZoneManager.JokerZone?.Cards ?? [])
                         {
                             j.FaceDown = true;
 	                    }
-                        ZoneManager.JokerZone.Shuffle();
+                        ZoneManager.JokerZone?.Shuffle();
                     });
                     ret.OnJokerRemovalEffs.Add(() =>
                     {
-                        foreach (var j in ZoneManager.JokerZone.Cards)
+                        foreach (var j in ZoneManager.JokerZone?.Cards ?? [])
                         {
                             j.FaceDown = false;
                         }
@@ -588,7 +588,7 @@ namespace ConsoleBalatro.Engine.Cards.Blinds
 
                     Func<Card?, Card?> GetJoker = curTarget =>
                     {
-                        var cardList = ZoneManager.JokerZone.Cards.ToList();
+                        var cardList = ZoneManager.JokerZone?.Cards.ToList() ?? [];
                         if (!cardList.Any())
                             return null;
 
@@ -622,23 +622,25 @@ namespace ConsoleBalatro.Engine.Cards.Blinds
                         MyContextType = EventContextType.HandPlayDone,
                         MyAction = _ =>
                         {
-                            if(ret.DataDict["CARDTARGET"].CardData != null)
+                            var cardData = ret.DataDict["CARDTARGET"].CardData;
+                            if(cardData != null)
                             {
-                                ret.DataDict["CARDTARGET"].CardData.Debuffed = false;
+                                cardData.Debuffed = false;
                             }
-                            var target = GetJoker(ret.DataDict["CARDTARGET"].CardData);
+                            var target = GetJoker(cardData);
                             if(target != null)
                             {
                                 target.BossDebuff();
-                                ret.DataDict["CARDTARGET"].CardData = target;
+                                cardData = target;
                             }
                         },
                     });
 
                     ret.OnJokerRemovalEffs.Add(() =>
                     {
-                        if(ret.DataDict["CARDTARGET"].CardData != null)
-                            ret.DataDict["CARDTARGET"].CardData.Debuffed = false;
+                        var cardData = ret.DataDict["CARDTARGET"].CardData;
+                        if(cardData != null)
+                            cardData.Debuffed = false;
                     });
 
                     return ret;
@@ -654,8 +656,8 @@ namespace ConsoleBalatro.Engine.Cards.Blinds
 
                     Func<Card?> GetSelected = () =>
                     {
-                        var cardList = ZoneManager.HandZone.Cards.Where(x => !x.isSelected).ToList();
-                        if (!cardList.Any())
+                        var cardList = ZoneManager.HandZone?.Cards.Where(x => !x.isSelected).ToList();
+                        if (cardList == null || !cardList.Any())
                             return null;
 
                         if(cardList.Count == 1)

@@ -50,7 +50,7 @@ namespace ConsoleBalatro.Tests
             ResetEngineForTest();
             FlowHandler.StartNewAnte();
             FlowHandler.InitializeBlindSelectionRound();
-            if(returnVoucher)
+            if (returnVoucher && ZoneManager.VoucherMarketZone != null)
                 MarketOptionsManager.ReturnMarketItemFromZone(ZoneManager.VoucherMarketZone.Cards[0], ZoneManager.VoucherMarketZone);
         }
 
@@ -70,10 +70,10 @@ namespace ConsoleBalatro.Tests
 
         public List<Card> BuildKnownHand(string handDef, bool selectAll = true, bool clearHand = true)
         {
-            if(clearHand)
-                ZoneManager.HandZone.Cards.Clear();
+            if (clearHand)
+                ZoneManager.HandZone?.Cards.Clear();
             var cards = CardFactory.CardListFromDefString(handDef, ",");
-            ZoneManager.HandZone.AddCards(cards, overrideSpace: !clearHand);//If we're not clearing the hand, we want to allow going over the normal hand limit, since we're likely just adding cards to an already existing hand.
+            ZoneManager.HandZone?.AddCards(cards, overrideSpace: !clearHand);//If we're not clearing the hand, we want to allow going over the normal hand limit, since we're likely just adding cards to an already existing hand.
             if (selectAll)
             {
                 foreach (var c in cards)
@@ -90,7 +90,7 @@ namespace ConsoleBalatro.Tests
             BuildKnownHand(handDef);
             if (upgrade)
             {
-                foreach (var c in ZoneManager.HandZone.Cards)
+                foreach (var c in ZoneManager.HandZone?.Cards ?? [])
                 {
                     c.Seal = Seal.RED;
                     c.Edition = Edition.HOLOGRAPHIC;
@@ -107,7 +107,7 @@ namespace ConsoleBalatro.Tests
 
         public void AddJoker(string jokerName)
         {
-            ZoneManager.JokerZone.AddCard(JokerDb.GenerateJokerCard(jokerName));
+            ZoneManager.JokerZone?.AddCard(JokerDb.GenerateJokerCard(jokerName));
         }
 
         public void RigNextRoll(bool desiredResult)
@@ -137,7 +137,7 @@ namespace ConsoleBalatro.Tests
                 MyAction = args =>
                 {
                     var drawArgs = Assert.IsType<EngineCardDrawnToZoneArgs>(args);
-                    if(drawArgs.ZoneDrawnTo == ZoneManager.DiscardZone)
+                    if (drawArgs.ZoneDrawnTo == ZoneManager.DiscardZone)
                         capture.CardsDiscarded.Add(drawArgs.CardBeingDrawn);
                 }
             });
@@ -235,25 +235,31 @@ namespace ConsoleBalatro.Tests
 
         public void AddTarot(string tarotName)
         {
-            ZoneManager.ConsumableZone.AddCard(ConsumableManager.MakeTarotCard(tarotName.ToUpper()));
+            ZoneManager.ConsumableZone?.AddCard(ConsumableManager.MakeTarotCard(tarotName.ToUpper()));
         }
 
         public void AddSpectral(string spectralName)
         {
-            ZoneManager.ConsumableZone.AddCard(ConsumableManager.MakeSpectralCard(spectralName.ToUpper()));
+            ZoneManager.ConsumableZone?.AddCard(ConsumableManager.MakeSpectralCard(spectralName.ToUpper()));
         }
 
         public void AddVoucher(string voucherName)
         {
-            ZoneManager.ActiveVoucherZone.AddCard(VoucherDb.MakeVoucherCard(voucherName.ToUpper()));
+            ZoneManager.ActiveVoucherZone?.AddCard(VoucherDb.MakeVoucherCard(voucherName.ToUpper()));
         }
 
         public bool VoucherIsInMarket(string voucherName)
         {
-            return VoucherPoolRules.CurrentValidVouchers.Contains(voucherName.ToUpper()) && !ZoneManager.ActiveVoucherZone.Cards.Any(c => c.IsVoucher && c.JokerData.DBName == voucherName.ToUpper());
+            return VoucherPoolRules.CurrentValidVouchers.Contains(voucherName.ToUpper()) && (ZoneManager.ActiveVoucherZone == null || !ZoneManager.ActiveVoucherZone.Cards.Any(c => c.IsVoucher && c.JokerData != null && c.JokerData.DBName == voucherName.ToUpper()));
         }
 
-        public void UseCon() => ConsumableManager.UseConsumable(ZoneManager.ConsumableZone.Cards[0]);
+        public void UseCon()
+        {
+            if (ZoneManager.ConsumableZone != null)
+            {
+                ConsumableManager.UseConsumable(ZoneManager.ConsumableZone.Cards[0]);
+            }
+        }
 
         public bool AllHandsLevel(int lvl) => !ScoreHandler.HandLevels.Any(x => x.Value != lvl);
     }

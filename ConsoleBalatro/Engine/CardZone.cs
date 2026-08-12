@@ -11,7 +11,7 @@ namespace ConsoleBalatro.Engine
 {
     public class CardZone
     {
-        public string Name;
+        public string Name = "";
         public List<Card> Cards = new List<Card>();
         public int MaxCapacity = -1;//-1 for infinite
         public bool HasRoom => MaxCapacity == -1 || Cards.Count < MaxCapacity;
@@ -27,7 +27,7 @@ namespace ConsoleBalatro.Engine
             EngineEventHandler.TriggerEvent(shuffleArgs);
         }
         //TODO: invisible add/remove causes so many fucking problems better to just remove... not even that useful.
-        public virtual bool AddCard(Card card, bool invisibleAdd = false, bool overrideSpace = false, CardZone zoneDrawnFrom = null)
+        public virtual bool AddCard(Card card, bool invisibleAdd = false, bool overrideSpace = false, CardZone? zoneDrawnFrom = null)
         {
             if (!HasRoomFor(card) && !overrideSpace)
                 return false;
@@ -109,7 +109,7 @@ namespace ConsoleBalatro.Engine
         }
 
         //Add optional params for override space and invisible add/remove if needed in the future
-        public Card DrawFromAndReturn(CardZone zone, bool ignoreSpaceLimits = false)
+        public Card? DrawFromAndReturn(CardZone zone, bool ignoreSpaceLimits = false)
         {
             if ((!ignoreSpaceLimits && !HasRoom) || zone.Cards.Count == 0)
                 return null;
@@ -118,7 +118,7 @@ namespace ConsoleBalatro.Engine
             return target;
         }
 
-        public Card DrawTargetFromAndReturn(CardZone zone, Card target)
+        public Card? DrawTargetFromAndReturn(CardZone zone, Card target)
         {
             if (!HasRoom || !zone.Cards.Contains(target))
                 return null;

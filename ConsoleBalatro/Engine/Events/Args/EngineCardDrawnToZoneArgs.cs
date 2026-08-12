@@ -9,8 +9,8 @@ namespace ConsoleBalatro.Engine.Events.Args
 {
     public class EngineCardDrawnToZoneArgs : EngineEventArgs
     {
-        public CardZone ZoneDrawnTo;
-        public CardZone ZoneDrawnFrom;
+        public CardZone? ZoneDrawnTo;
+        public CardZone? ZoneDrawnFrom;
         public Card CardBeingDrawn;
     }
 }

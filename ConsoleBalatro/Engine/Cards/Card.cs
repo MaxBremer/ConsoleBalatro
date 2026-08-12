@@ -87,14 +87,14 @@ namespace ConsoleBalatro.Engine.Cards
         public bool IsVoucher => JokerData != null && JokerData.isVoucher;
         public bool IsTag => JokerData != null && JokerData.isTag;
         public JokerCardDataBlock? JokerData = null;
-        public TagDataBlock? TagData => IsTag ? JokerData.TagData : null;
+        public TagDataBlock? TagData => IsTag ? JokerData?.TagData : null;
 
         public PackType MyPackType = PackType.NONE;
         public bool isPack => MyPackType != PackType.NONE;
 
 
         public bool isConsumable => ConsumableData != null;
-        public ConsumableCardDataBlock ConsumableData = null;
+        public ConsumableCardDataBlock? ConsumableData = null;
 
         public bool isPlayingCard => !IsJoker && !IsVoucher && !IsTag && !isConsumable && !isPack;
 
@@ -267,7 +267,7 @@ namespace ConsoleBalatro.Engine.Cards
 
         public void ToggleSelect()
         {
-            if (!isSelected && ZoneManager.HandZone.Cards.Contains(this) && Globals.CurNumCardsSelected >= Globals.SelectionMax)
+            if (!isSelected && ZoneManager.HandZone != null && ZoneManager.HandZone.Cards.Contains(this) && Globals.CurNumCardsSelected >= Globals.SelectionMax)
                 return;//SHOULD THIS ALSO BE HANDLED BY A LISTENER? EV THAT CHECKS FOR OBJECTIONS?
 
             var args = new EngineSelectionTogglingArgs() { CardThatIsToggling = this, OldSelectionState = isSelected, MyContext = new() { Context = EventContextType.CardTogglingSelection} };
@@ -430,23 +430,23 @@ namespace ConsoleBalatro.Engine.Cards
             target.SetEnhancementOfficial(Enhancement);
 
             //NOTE: Deciding here and now that joker, voucher, and tag are exclusive. A card can only be 0 to 1 of these things, not multiple.
-            if (IsJoker)
+            if (IsJoker && JokerData != null)
             {
                 var jName = JokerData.DBName;
                 JokerDb.MakeCardJoker(target, jName);
                 JokerData.CopyDataDictTo(target.JokerData);
-            }else if (IsVoucher)
+            }else if (IsVoucher && JokerData != null)
             {
                 var vName = JokerData.DBName;
                 VoucherDb.MakeCardVoucher(target, vName);
                 JokerData.CopyDataDictTo(target.JokerData);
-            }else if (IsTag)
+            }else if (IsTag && JokerData != null)
             {
                 var tType = JokerData.TagData.MyType;
                 TagDb.MakeCardTagOfType(target, tType);
                 JokerData.CopyDataDictTo(target.JokerData);
             }
-            if (isConsumable)
+            if (isConsumable && ConsumableData != null)
             {
                 var cName = ConsumableData.DBName;
                 switch (ConsumableData.Type)
@@ -498,7 +498,7 @@ namespace ConsoleBalatro.Engine.Cards
             return;//FOR NOW, DONT ACTUALLY DO ANYTHING TO DESTROY A CARD. MAYBE LATER IDK.
             //TODO: CLEAN UP.
             //tbh idk if this actually does anything, but it makes me feel better.
-            if(IsJoker || IsVoucher)
+            /*if(IsJoker || IsVoucher)
             {
                 JokerData.DataDict.Clear();
                 JokerData.OnJokerGainEffs.Clear();
@@ -509,7 +509,7 @@ namespace ConsoleBalatro.Engine.Cards
             {
                 ConsumableData.DataDict.Clear();
                 ConsumableData = null;
-            }
+            }*/
         }
 
         private int CalcBuyCost()
@@ -569,7 +569,7 @@ namespace ConsoleBalatro.Engine.Cards
             {
                 retStr += "FACE DOWN";
             }
-            else if(IsJoker || IsVoucher || IsTag)
+            else if((IsJoker || IsVoucher || IsTag) && JokerData != null)
             {
                 retStr += JokerData.JokerName + CardInfoDoubleDivider;
                 retStr += JokerData.DescriptionBuilder(context) + CardInfoDoubleDivider;
@@ -578,7 +578,7 @@ namespace ConsoleBalatro.Engine.Cards
                     retStr += JokerData.Rarity.ToString();
                 }
             }
-            else if (isConsumable)
+            else if (isConsumable && ConsumableData != null)
             {
                 retStr += ConsumableData.ConsumableName + CardInfoDoubleDivider;
                 retStr += ConsumableData.DescriptionBuilder(context);

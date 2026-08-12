@@ -556,7 +556,7 @@ namespace ConsoleBalatro.Engine
         /// </summary>
         /// <param name="moneyAmt">Amount of money to gain.</param>
         /// <param name="src">The card that caused this money gain.</param>
-        public static void EmitMoneyGain(int moneyAmt, Card src)
+        public static void EmitMoneyGain(int moneyAmt, Card? src)
         {
             var emitArgs = new EngineGoldGainEmitArgs() { AmountGained = moneyAmt, MyContext = new EventContext() { Context = EventContextType.MoneyGainEmit }, SourceOfEmit = src };
             EngineEventHandler.TriggerEvent(emitArgs);
@@ -730,7 +730,7 @@ namespace ConsoleBalatro.Engine
             var zoneFrom = beingPurchased.MyZone;
 
             //TODO: Once again, consumable usage params.
-            if(beingPurchased.isConsumable && beingPurchased.ConsumableData.IsActivatable(null))
+            if(beingPurchased.ConsumableData != null && beingPurchased.ConsumableData.IsActivatable(null))
             {
                 PerformPurchase(beingPurchased);
                 ConsumableManager.UseConsumable(beingPurchased, zoneFrom);

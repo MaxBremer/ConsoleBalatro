@@ -15,7 +15,7 @@ namespace ConsoleBalatro.Engine.Cards.Jokers
         public Card MyCard;
         public bool isJoker = true;
         public JokerRarity Rarity = JokerRarity.COMMON;
-        public Func<EventContext, string> DescriptionBuilder;
+        public Func<EventContext?, string> DescriptionBuilder;
         public List<EngineEventListener> Listeners = new();
         public Dictionary<string, JokerData> DataDict = new();
 
@@ -38,8 +38,10 @@ namespace ConsoleBalatro.Engine.Cards.Jokers
         public bool isTag = false;
         public TagDataBlock TagData;
 
-        public void CopyDataDictTo(JokerCardDataBlock target, bool clearFirst = true)
+        public void CopyDataDictTo(JokerCardDataBlock? target, bool clearFirst = true)
         {
+            if (target == null)
+                return;
             if (clearFirst)
                 target.DataDict.Clear();
             foreach (var k in DataDict.Keys)

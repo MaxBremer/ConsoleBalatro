@@ -11,6 +11,6 @@ namespace ConsoleBalatro.Engine.Events.Args
     {
         public CardZone? ZoneDrawnTo;
         public CardZone? ZoneDrawnFrom;
-        public Card CardBeingDrawn;
+        public Card? CardBeingDrawn;
     }
 }

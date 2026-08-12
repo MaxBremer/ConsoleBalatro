@@ -11,14 +11,14 @@ namespace ConsoleBalatro.Engine.Cards.Consumables
 {
     public class ConsumableCardDataBlock
     {
-        public string ConsumableName;
-        public string DBName;
+        public string ConsumableName = "";
+        public string DBName = "";
         public ConsumableType Type;
         public BuyItemType BuyType;
         public PlayedHandType PlanetHandType;
-        public Func<EventContext, string> DescriptionBuilder;
+        public Func<EventContext, string> DescriptionBuilder = _ => "";
 
-        public Card MyCard;
+        public Card? MyCard;
 
         public Dictionary<string, JokerData> DataDict = new();
 
@@ -34,8 +34,10 @@ namespace ConsoleBalatro.Engine.Cards.Consumables
             }
         }
 
-        public void CopyDataDictTo(ConsumableCardDataBlock target)
+        public void CopyDataDictTo(ConsumableCardDataBlock? target)
         {
+            if (target == null)
+                return;
             target.DataDict.Clear();
             foreach (var kvp in DataDict)
             {

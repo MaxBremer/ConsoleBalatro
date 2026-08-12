@@ -257,11 +257,11 @@ namespace ConsoleBalatro.Engine
         /// <param name="c">Card to be destroyed</param>
         /// <param name="fromZone">The zone the card is being drawn from.</param>
         /// <returns>A boolean indicating whether the destruction was successful.</returns>
-        public static bool DestroyCard(Card c, CardZone fromZone)
+        public static bool DestroyCard(Card c, CardZone? fromZone)
         {
             if (c.IsDestructible)
             {
-                DestructionZone.DrawTargetFrom(fromZone, c);
+                DestructionZone?.DrawTargetFrom(fromZone, c);
                 return true;
             }
             return false;

@@ -34,7 +34,7 @@ namespace ConsoleBalatro.Engine.Cards.Decks
         /// <summary>
         /// Full DB of decks, alongside their builder function.
         /// </summary>
-        public static Dictionary<string, Func<Card, JokerCardDataBlock>> DeckData = new()
+        public static Dictionary<string, Func<Card?, JokerCardDataBlock>> DeckData = new()
         {
             {
                 "RED",
@@ -107,7 +107,8 @@ namespace ConsoleBalatro.Engine.Cards.Decks
                     ret.OnJokerGainEffs.Add(() =>
                     {
                         Globals.MaxHandsPerRound -= 1;
-                        ZoneManager.JokerZone.MaxCapacity += 1;
+                        if(ZoneManager.JokerZone != null)
+                            ZoneManager.JokerZone.MaxCapacity += 1;
                     });
 
                     return ret;
@@ -120,9 +121,9 @@ namespace ConsoleBalatro.Engine.Cards.Decks
                     var ret = JokerDb.BasicDataBlock("Magic", "Start run with the Crystal Ball voucher and 2 copies of The Fool");
                     ret.OnJokerGainEffs.Add(() =>
                     {
-                        ZoneManager.ActiveVoucherZone.AddCard(VoucherDb.MakeVoucherCard("CRYSTAL BALL"));
+                        ZoneManager.ActiveVoucherZone?.AddCard(VoucherDb.MakeVoucherCard("CRYSTAL BALL"));
                         for (int i = 0; i < 2; i++)
-                            ZoneManager.ConsumableZone.AddCard(ConsumableManager.MakeTarotCard("FOOL"));
+                            ZoneManager.ConsumableZone?.AddCard(ConsumableManager.MakeTarotCard("FOOL"));
                     });
 
                     return ret;
@@ -135,8 +136,9 @@ namespace ConsoleBalatro.Engine.Cards.Decks
                     var ret = JokerDb.BasicDataBlock("Nebula", "Start run with the Telescope voucher, -1 consumable slot");
                     ret.OnJokerGainEffs.Add(() =>
                     {
-                        ZoneManager.ConsumableZone.MaxCapacity -= 1;
-                        ZoneManager.ActiveVoucherZone.AddCard(VoucherDb.MakeVoucherCard("TELESCOPE"));
+                        if(ZoneManager.ConsumableZone != null)
+                            ZoneManager.ConsumableZone.MaxCapacity -= 1;
+                        ZoneManager.ActiveVoucherZone?.AddCard(VoucherDb.MakeVoucherCard("TELESCOPE"));
                     });
 
                     return ret;
@@ -149,7 +151,7 @@ namespace ConsoleBalatro.Engine.Cards.Decks
                     var ret = JokerDb.BasicDataBlock("Ghost", "Spectral cards may appear in the shop, start with a Hex card.");
                     ret.OnJokerGainEffs.Add(() =>
                     {
-                        ZoneManager.ConsumableZone.AddCard(ConsumableManager.MakeSpectralCard("HEX"));
+                        ZoneManager.ConsumableZone?.AddCard(ConsumableManager.MakeSpectralCard("HEX"));
                     });
                     ret.Listeners.Add(new EngineEventListener()
                     {
@@ -173,7 +175,7 @@ namespace ConsoleBalatro.Engine.Cards.Decks
                     var ret = JokerDb.BasicDataBlock("Abandoned", "Start run with no Face Cards in your deck.");
                     ret.OnJokerGainEffs.Add(() =>
                     {
-                        ZoneManager.DeckZone.Cards.RemoveAll(c => EngineUtils.isFace(c));
+                        ZoneManager.DeckZone?.Cards.RemoveAll(c => EngineUtils.isFace(c));
                     });
 
                     return ret;
@@ -186,7 +188,7 @@ namespace ConsoleBalatro.Engine.Cards.Decks
                     var ret = JokerDb.BasicDataBlock("Checkered", "Start run with 26 Spades and 26 Hearts in your deck");
                     ret.OnJokerGainEffs.Add(() =>
                     {
-                        foreach (var c in ZoneManager.DeckZone.Cards)
+                        foreach (var c in ZoneManager.DeckZone?.Cards ?? [])
                         {
                             if(c.Suit == Enums.Suit.DIAMONDS)
                             {
@@ -208,9 +210,9 @@ namespace ConsoleBalatro.Engine.Cards.Decks
                     var ret = JokerDb.BasicDataBlock("Zodiac", "Start run with Tarot Merchant, Planet Merchant, and Overstock.");
                     ret.OnJokerGainEffs.Add(() =>
                     {
-                        ZoneManager.ActiveVoucherZone.AddCard(VoucherDb.MakeVoucherCard("TAROT MERCHANT"));
-                        ZoneManager.ActiveVoucherZone.AddCard(VoucherDb.MakeVoucherCard("PLANET MERCHANT"));
-                        ZoneManager.ActiveVoucherZone.AddCard(VoucherDb.MakeVoucherCard("OVERSTOCK"));
+                        ZoneManager.ActiveVoucherZone?.AddCard(VoucherDb.MakeVoucherCard("TAROT MERCHANT"));
+                        ZoneManager.ActiveVoucherZone?.AddCard(VoucherDb.MakeVoucherCard("PLANET MERCHANT"));
+                        ZoneManager.ActiveVoucherZone?.AddCard(VoucherDb.MakeVoucherCard("OVERSTOCK"));
                     });
 
                     return ret;
@@ -224,7 +226,8 @@ namespace ConsoleBalatro.Engine.Cards.Decks
                     ret.OnJokerGainEffs.Add(() =>
                     {
                         Globals.HandSize += 2;
-                        ZoneManager.JokerZone.MaxCapacity -= 1;
+                        if(ZoneManager.JokerZone != null)
+                            ZoneManager.JokerZone.MaxCapacity -= 1;
                     });
 
                     return ret;
@@ -290,7 +293,7 @@ namespace ConsoleBalatro.Engine.Cards.Decks
                     var ret = JokerDb.BasicDataBlock("Erratic", "All Ranks and Suits in deck are randomized");
                     ret.OnJokerGainEffs.Add(() =>
                     {
-                        foreach (var c in ZoneManager.DeckZone.Cards)
+                        foreach (var c in ZoneManager.DeckZone?.Cards ?? [])
                         {
                             EngineUtils.RandomizePlayingCard(c);
 	                    }

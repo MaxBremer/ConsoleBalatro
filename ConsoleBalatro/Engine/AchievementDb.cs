@@ -420,7 +420,7 @@ namespace ConsoleBalatro.Engine
                 "Glow Up Unlocked",
                 "Have at least 5 Joker cards with Foil, Holographic, Polychrome, or Negative effect.",
                 EventContextType.CardDetailsChange,
-                args => args is EngineCardDetailsChangeArgs detArgs && detArgs.CardBeingChanged.IsJoker && ZoneManager.JokerZone.Cards.Contains(detArgs.CardBeingChanged) && detArgs.isEditionChange && detArgs.isAfter && ZoneManager.JokerZone.Cards.Count(x => x.Edition != Edition.BASE) >= 5);
+                args => args is EngineCardDetailsChangeArgs detArgs && detArgs.CardBeingChanged.IsJoker && ZoneManager.JokerZone != null && ZoneManager.JokerZone.Cards.Contains(detArgs.CardBeingChanged) && detArgs.isEditionChange && detArgs.isAfter && ZoneManager.JokerZone.Cards.Count(x => x.Edition != Edition.BASE) >= 5);
             RegisterAllAchievementData(
                 Petroglyph_UnlockId,
                 "Petroglyph Unlocked",

@@ -24,9 +24,9 @@ namespace ConsoleBalatro.UI.EngineUI
         public const int PLAYING_CARD_SUIT_IND = 14;
         public const int PLAYING_CARD_RANK_IND = 7;
 
-        private EngineEventListener MyListener;
-        private EngineEventListener MyFlipListener;
-        private EngineEventListener MyDebuffListener;
+        private EngineEventListener? MyListener;
+        private EngineEventListener? MyFlipListener;
+        private EngineEventListener? MyDebuffListener;
         public CardDisplay(Card c) : base(CARD_HEIGHT, CARD_WIDTH)
         {
             MyCard = c;
@@ -111,7 +111,7 @@ namespace ConsoleBalatro.UI.EngineUI
                 return;
             }
 
-            if (MyCard.IsJoker || MyCard.IsVoucher)
+            if ((MyCard.IsJoker || MyCard.IsVoucher) && MyCard.JokerData != null)
             {
                 var dispName = MyCard.JokerData.JokerName;
                 if(dispName.Length > 3)
@@ -193,10 +193,6 @@ namespace ConsoleBalatro.UI.EngineUI
 
         private string insertInto(string original, string newS, int ind)
         {
-            if (newS.EndsWith("n"))
-            {
-                var x = 0;//I legitimately have no idea why this is here. Some debug from some era?
-            }
             return original.Substring(0, ind) + newS + original.Substring(ind + newS.Length);
         }
 

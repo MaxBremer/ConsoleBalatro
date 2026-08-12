@@ -9,7 +9,7 @@ namespace ConsoleBalatro.Engine.Events.Args
 {
     public class EngineGoldGainEmitArgs : EngineEventArgs
     {
-        public Card SourceOfEmit;
+        public Card? SourceOfEmit;
         public int AmountGained;
         public bool IsLoss => AmountGained < 0;
     }

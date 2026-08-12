@@ -90,11 +90,12 @@ namespace ConsoleBalatro.Engine
             }
         }
 
-        public void DrawTargetFrom(CardZone zone, Card target, bool invisibleAdd = false, bool ignoreSpaceLimits = false)
+        public void DrawTargetFrom(CardZone? zone, Card target, bool invisibleAdd = false, bool ignoreSpaceLimits = false)
         {
             if ((!ignoreSpaceLimits && !HasRoomFor(target)) || !zone.Cards.Contains(target))
                 return;
-            zone.RemoveCard(target);
+            if(zone != null)
+                zone.RemoveCard(target);
             AddCard(target, invisibleAdd: invisibleAdd, overrideSpace: ignoreSpaceLimits, zoneDrawnFrom: zone);
         }
 

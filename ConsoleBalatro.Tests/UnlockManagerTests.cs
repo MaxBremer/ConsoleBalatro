@@ -272,21 +272,6 @@ public class UnlockManagerTests : TestClassBase
         Assert.Equal(BlindType.SMALL, FlowHandler.CurrentSelectedBlind);
     }
 
-    //This test is out of date, a) base antes go beyond 12 b) they continue scaling by 2x after the list empties.
-    /*[Fact]
-    public void AnteScaling_ReusesHighestConfiguredAmountAfterAnteTwelve()
-    {
-        ResetEngineForTest();
-        StakeManager.CurrentStake = StakeType.WHITE;
-
-        FlowHandler.CurrentAnte = 12;
-        var anteTwelveAmount = FlowHandler.CurrentBaseChipAmount;
-
-        FlowHandler.CurrentAnte = 13;
-
-        Assert.Equal(anteTwelveAmount, FlowHandler.CurrentBaseChipAmount);
-    }*/
-
     [Fact]
     public void DebugUnlockDeck_UnlocksDeckAndStakeProgress()
     {

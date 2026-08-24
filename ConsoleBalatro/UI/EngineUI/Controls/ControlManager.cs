@@ -50,6 +50,7 @@ namespace ConsoleBalatro.UI.EngineUI.Controls
             AvailableControlSets.Add("DECKCHOICE", BuildDeckSelectOptions());
             AvailableControlSets.Add("MAINMENU", BuildMainMenuOptions());
             AvailableControlSets.Add("PLACEHOLDERMENU", BuildPlaceholderMenuOptions());
+            AvailableControlSets.Add("COLLECTION", BuildCollectionOptions());
         }
 
         /// <summary>
@@ -516,6 +517,51 @@ namespace ConsoleBalatro.UI.EngineUI.Controls
             });
 
             return ret;
+        }
+
+        private static ControlOptionset BuildCollectionOptions()
+        {
+            var ret = new ControlOptionset { SchemaName = "Collection" };
+            AddStandardControls(ret, new());
+
+            ret.AvailableActions.Add(ConsoleKey.UpArrow, _ => NavigateCollection(-1, true));
+            ret.AvailableActions.Add(ConsoleKey.DownArrow, _ => NavigateCollection(1, true));
+            ret.AvailableActions.Add(ConsoleKey.LeftArrow, _ => NavigateCollection(-1, false));
+            ret.AvailableActions.Add(ConsoleKey.RightArrow, _ => NavigateCollection(1, false));
+            ret.AvailableActions.Add(ConsoleKey.Enter, _ =>
+            {
+                if (!EngineDisplayGlobals.CollectionMenu.IsViewingCategory)
+                    EngineDisplayGlobals.CollectionMenu.EnterCategory();
+                EngineDisplayGlobals.Redraw();
+            });
+            Action<ControlContext> back = _ =>
+            {
+                if (EngineDisplayGlobals.CollectionMenu.Back())
+                    FlowHandler.ClosePlaceholderMenu();
+                else
+                    EngineDisplayGlobals.Redraw();
+            };
+            ret.AvailableActions.Add(ConsoleKey.B, back);
+            ret.AvailableActions.Add(ConsoleKey.Escape, back);
+            return ret;
+        }
+
+        private static void NavigateCollection(int direction, bool vertical)
+        {
+            var menu = EngineDisplayGlobals.CollectionMenu;
+            if (!menu.IsViewingCategory)
+            {
+                if (direction < 0) menu.SelectPreviousCategory(); else menu.SelectNextCategory();
+            }
+            else if (vertical)
+            {
+                if (direction < 0) menu.SelectCardAbove(); else menu.SelectCardBelow();
+            }
+            else
+            {
+                if (direction < 0) menu.SelectPreviousCard(); else menu.SelectNextCard();
+            }
+            EngineDisplayGlobals.Redraw();
         }
 
         private static ControlOptionset BuildDeckSelectOptions()

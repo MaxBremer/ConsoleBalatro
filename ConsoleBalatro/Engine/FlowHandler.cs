@@ -19,6 +19,7 @@ namespace ConsoleBalatro.Engine
     public static class FlowHandler
     {
         private static int _curAnte = 0;
+        private static RunRandomState? CollectionMenuRunRandomState;
 
         /// <summary>
         /// In the basic White stake, this is the base ante chip amount.
@@ -553,6 +554,7 @@ namespace ConsoleBalatro.Engine
 
         public static void OpenCollectionMenu()
         {
+            CollectionMenuRunRandomState = Globals.RunRandom.State;
             Globals.PushGameState(new GameStateObj() { GameState = GameState.CollectionMenu });
         }
 
@@ -563,7 +565,16 @@ namespace ConsoleBalatro.Engine
 
         public static void ClosePlaceholderMenu()
         {
-            if (Globals.CurrentGameState == GameState.CollectionMenu || Globals.CurrentGameState == GameState.OptionsMenu)
+            if (Globals.CurrentGameState == GameState.CollectionMenu)
+            {
+                if (CollectionMenuRunRandomState != null)
+                {
+                    Globals.RestoreRunRandomState(CollectionMenuRunRandomState);
+                    CollectionMenuRunRandomState = null;
+                }
+                Globals.PopCurrGameState();
+            }
+            else if (Globals.CurrentGameState == GameState.OptionsMenu)
                 Globals.PopCurrGameState();
         }
 

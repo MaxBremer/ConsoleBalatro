@@ -33,6 +33,15 @@ namespace ConsoleBalatro.Engine
         /// </summary>
         public static IRunRandom RunRandom { get; private set; } = ConsoleBalatro.Engine.RunRandom.CreateNewRunRandom();
 
+        /// <summary>
+        /// Restores the run-owned random source to an earlier snapshot.
+        /// </summary>
+        public static void RestoreRunRandomState(RunRandomState state)
+        {
+            ArgumentNullException.ThrowIfNull(state);
+            RunRandom = new RunRandom(state);
+        }
+
         //CONSTANT SETTINGS
         //Should the two tags for a given ante be guaranteed to be unique or not?
         public const bool GUARANTEE_UNIQUE_TAGS = false;

@@ -57,6 +57,8 @@ namespace ConsoleBalatro.UI.EngineUI
             return false;
         }
 
+        public int IndOfJoker(string dbName) => CurrentCards.IndexOf(CurrentCards.FirstOrDefault(c => c.IsJoker && c.JokerData != null && c.JokerData.DBName == dbName) ?? new Card());
+
         public void SelectPreviousCard() => MoveCard(-1);
         public void SelectNextCard() => MoveCard(1);
         public void SelectCardAbove() => MoveCard(-CardsPerRow);

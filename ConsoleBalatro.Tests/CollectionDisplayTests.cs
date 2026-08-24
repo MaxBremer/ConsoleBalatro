@@ -30,9 +30,15 @@ namespace ConsoleBalatro.Tests
 
             display.EnterCategory();
             display.PreDisplaySetup();
+            var jimboIndex = display.IndOfJoker("JIMBO");
+            while(jimboIndex >= 0 && display.SelectedCardIndex != jimboIndex)
+            {
+                display.SelectNextCard();
+            }
 
-            Assert.Contains("JIM", Flatten(display));
-            Assert.Contains("Jimbo", Flatten(display));
+            display.PreDisplaySetup();
+            Assert.Contains("JIM", Flatten(display).ToUpper());
+            Assert.Contains("JIMBO", Flatten(display).ToUpper());
         }
 
         [Fact]

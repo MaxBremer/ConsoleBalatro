@@ -140,6 +140,8 @@ namespace ConsoleBalatro.UI.EngineUI
 
         public static MainMenuDisplay MainMenu;
 
+        public static CollectionDisplay CollectionMenu;
+
         public static PlaceholderMenuDisplay PlaceholderMenu;
 
         public static DeckViewDisplay DeckViewMenu;
@@ -381,6 +383,13 @@ namespace ConsoleBalatro.UI.EngineUI
             PlaceholderMenu.Visible = true;
         }
 
+        private static void SetupCollectionMenuState()
+        {
+            HideAllEngineEntities();
+            CollectionMenu.Reset();
+            CollectionMenu.Visible = true;
+        }
+
         private static void SetupDeckChoiceState()
         {
             HideAllEngineEntities();
@@ -538,6 +547,9 @@ namespace ConsoleBalatro.UI.EngineUI
             PlaceholderMenu = new PlaceholderMenuDisplay(EngineDisplayConstants.MAIN_MENU_DISPLAY_XLOC, EngineDisplayConstants.MAIN_MENU_DISPLAY_YLOC);
             EngineDisplays.Add(PlaceholderMenu);
 
+            CollectionMenu = new CollectionDisplay(EngineDisplayConstants.MAIN_MENU_DISPLAY_XLOC, EngineDisplayConstants.MAIN_MENU_DISPLAY_YLOC);
+            EngineDisplays.Add(CollectionMenu);
+
             DeckViewMenu = new DeckViewDisplay();
             EngineDisplays.Add(DeckViewMenu);
 
@@ -625,8 +637,8 @@ namespace ConsoleBalatro.UI.EngineUI
             {
                 CacheAnimationAction(_ =>
                 {
-                    SetupPlaceholderMenuState("COLLECTION", "Collection viewer will be implemented later.");
-                    ControlManager.CurrentControlset = "PLACEHOLDERMENU";
+                    SetupCollectionMenuState();
+                    ControlManager.CurrentControlset = "COLLECTION";
                     Redraw();
                 });
             }

@@ -1,5 +1,7 @@
 using ConsoleBalatro.Engine;
 using ConsoleBalatro.Engine.Options;
+using ConsoleBalatro.UI.EngineUI;
+using System.Collections.Generic;
 using System.Linq;
 using System.Numerics;
 using Xunit;
@@ -48,6 +50,37 @@ namespace ConsoleBalatro.Tests
             {
                 Globals.MaxChipCount = original;
             }
+        }
+
+        [Fact]
+        public void OptionsMenuPaginatesCatalogsLargerThanItsVisibleRows()
+        {
+            var options = new List<GameOption>();
+            for (var i = 0; i < 10; i++)
+            {
+                var optionNumber = i;
+                options.Add(new ToggleGameOption($"Option {optionNumber}", $"Description {optionNumber}", () => false, _ => { }));
+            }
+            var menu = new OptionsMenuDisplay(0, 0, options);
+
+            for (var i = 0; i < 9; i++)
+                menu.SelectNext();
+
+            var exception = Record.Exception(menu.PreDisplaySetup);
+
+            Assert.Null(exception);
+            Assert.Equal(9, menu.SelectedIndex);
+            Assert.Equal("Page 3/3", ReadSprite(menu, 98, 14, 8));
+            Assert.Equal("> Option 9", ReadSprite(menu, 4, 8, 10));
+            Assert.Equal("DESCRIPTION", ReadSprite(menu, 4, 14, 11));
+        }
+
+        private static string ReadSprite(OptionsMenuDisplay menu, int x, int y, int length)
+        {
+            var result = string.Empty;
+            for (var i = 0; i < length; i++)
+                result += menu.Sprite[y, x + i];
+            return result;
         }
     }
 }

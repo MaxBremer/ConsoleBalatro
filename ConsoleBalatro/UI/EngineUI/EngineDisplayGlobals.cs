@@ -144,6 +144,8 @@ namespace ConsoleBalatro.UI.EngineUI
 
         public static PlaceholderMenuDisplay PlaceholderMenu;
 
+        public static OptionsMenuDisplay OptionsMenu;
+
         public static DeckViewDisplay DeckViewMenu;
 
         //DISPLAY fields are soft mirrors of their engine counterpart;
@@ -390,6 +392,12 @@ namespace ConsoleBalatro.UI.EngineUI
             CollectionMenu.Visible = true;
         }
 
+        private static void SetupOptionsMenuState()
+        {
+            HideAllEngineEntities();
+            OptionsMenu.Visible = true;
+        }
+
         private static void SetupDeckChoiceState()
         {
             HideAllEngineEntities();
@@ -550,6 +558,9 @@ namespace ConsoleBalatro.UI.EngineUI
             CollectionMenu = new CollectionDisplay(EngineDisplayConstants.MAIN_MENU_DISPLAY_XLOC, EngineDisplayConstants.MAIN_MENU_DISPLAY_YLOC);
             EngineDisplays.Add(CollectionMenu);
 
+            OptionsMenu = new OptionsMenuDisplay(EngineDisplayConstants.MAIN_MENU_DISPLAY_XLOC, EngineDisplayConstants.MAIN_MENU_DISPLAY_YLOC);
+            EngineDisplays.Add(OptionsMenu);
+
             DeckViewMenu = new DeckViewDisplay();
             EngineDisplays.Add(DeckViewMenu);
 
@@ -650,8 +661,8 @@ namespace ConsoleBalatro.UI.EngineUI
             {
                 CacheAnimationAction(_ =>
                 {
-                    SetupPlaceholderMenuState("OPTIONS", "Options menu will be implemented later.");
-                    ControlManager.CurrentControlset = "PLACEHOLDERMENU";
+                    SetupOptionsMenuState();
+                    ControlManager.CurrentControlset = "OPTIONS";
                     Redraw();
                 });
             }

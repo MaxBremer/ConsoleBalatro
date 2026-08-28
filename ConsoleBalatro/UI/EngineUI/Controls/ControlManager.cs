@@ -50,6 +50,7 @@ namespace ConsoleBalatro.UI.EngineUI.Controls
             AvailableControlSets.Add("DECKCHOICE", BuildDeckSelectOptions());
             AvailableControlSets.Add("MAINMENU", BuildMainMenuOptions());
             AvailableControlSets.Add("PLACEHOLDERMENU", BuildPlaceholderMenuOptions());
+            AvailableControlSets.Add("OPTIONS", BuildOptionsMenuOptions());
             AvailableControlSets.Add("COLLECTION", BuildCollectionOptions());
         }
 
@@ -172,15 +173,14 @@ namespace ConsoleBalatro.UI.EngineUI.Controls
                 });
             }
 
-            if (Globals.ALLOW_DEBUG_COMMANDS)
+            ret.AvailableActions.Add(ConsoleKey.Oem3, _ =>
             {
-                ret.AvailableActions.Add(ConsoleKey.Oem3, _ =>
-                {
-                    ClearConsole();
-                    DebugManager.RunDebugCmdLine();
-                    EngineDisplayGlobals.Redraw();
-                });
-            }
+                if (!Globals.ALLOW_DEBUG_COMMANDS)
+                    return;
+                ClearConsole();
+                DebugManager.RunDebugCmdLine();
+                EngineDisplayGlobals.Redraw();
+            });
         }
 
         private static void ShowDeckViewMenu(bool allowCurrentStakeView)
@@ -310,13 +310,11 @@ namespace ConsoleBalatro.UI.EngineUI.Controls
             {
                 MarketGeneralManager.RerollMainMarket();
             });
-            if (Globals.ALLOW_DEBUG_COMMANDS)
+            ret.AvailableActions.Add(ConsoleKey.D, _ =>
             {
-                ret.AvailableActions.Add(ConsoleKey.D, _ =>
-                {
+                if (Globals.ALLOW_DEBUG_COMMANDS)
                     MarketGeneralManager.DebugRefreshPackMarket();
-                });
-            }
+            });
             ret.AvailableActions.Add(ConsoleKey.E, _ =>
             {
                 FlowHandler.CloseMarketRound();
@@ -403,14 +401,13 @@ namespace ConsoleBalatro.UI.EngineUI.Controls
                 EngineDisplayGlobals.Redraw();
             });
 
-            if (Globals.ALLOW_DEBUG_COMMANDS)
+            ret.AvailableActions.Add(ConsoleKey.D, _ =>
             {
-                ret.AvailableActions.Add(ConsoleKey.D, _ =>
-                {
-                    FlowHandler.RerollBossBlind(isPlayerReroll: false);
-                    EngineDisplayGlobals.Redraw();
-                });
-            }
+                if (!Globals.ALLOW_DEBUG_COMMANDS)
+                    return;
+                FlowHandler.RerollBossBlind(isPlayerReroll: false);
+                EngineDisplayGlobals.Redraw();
+            });
 
             ret.AvailableActions.Add(ConsoleKey.R, _ =>
             {
@@ -516,6 +513,27 @@ namespace ConsoleBalatro.UI.EngineUI.Controls
                 FlowHandler.ClosePlaceholderMenu();
             });
 
+            return ret;
+        }
+
+        private static ControlOptionset BuildOptionsMenuOptions()
+        {
+            var ret = new ControlOptionset { SchemaName = "OptionsMenu" };
+            AddStandardControls(ret, new());
+
+            void RedrawAfter(Action action)
+            {
+                action();
+                EngineDisplayGlobals.Redraw();
+            }
+
+            ret.AvailableActions.Add(ConsoleKey.UpArrow, _ => RedrawAfter(EngineDisplayGlobals.OptionsMenu.SelectPrevious));
+            ret.AvailableActions.Add(ConsoleKey.DownArrow, _ => RedrawAfter(EngineDisplayGlobals.OptionsMenu.SelectNext));
+            ret.AvailableActions.Add(ConsoleKey.LeftArrow, _ => RedrawAfter(() => EngineDisplayGlobals.OptionsMenu.ChangeSelected(-1)));
+            ret.AvailableActions.Add(ConsoleKey.RightArrow, _ => RedrawAfter(() => EngineDisplayGlobals.OptionsMenu.ChangeSelected(1)));
+            ret.AvailableActions.Add(ConsoleKey.Enter, _ => RedrawAfter(() => EngineDisplayGlobals.OptionsMenu.ChangeSelected(1)));
+            ret.AvailableActions.Add(ConsoleKey.B, _ => FlowHandler.ClosePlaceholderMenu());
+            ret.AvailableActions.Add(ConsoleKey.Escape, _ => FlowHandler.ClosePlaceholderMenu());
             return ret;
         }
 

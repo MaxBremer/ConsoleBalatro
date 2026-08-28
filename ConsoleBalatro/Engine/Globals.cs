@@ -44,18 +44,28 @@ namespace ConsoleBalatro.Engine
 
         //CONSTANT SETTINGS
         //Should the two tags for a given ante be guaranteed to be unique or not?
-        public const bool GUARANTEE_UNIQUE_TAGS = false;
+        public static bool GUARANTEE_UNIQUE_TAGS { get; set; } = false;
         //Should the "default joker" be used if we try to generate a joker and the pool's empty?
         //If not, no joker will be generated, literally a null.
         public const bool USE_DEFAULT_JOKER_IF_POOL_EMPTY = true;
         //Ok, so: in real Balatro, the Illusion voucher (playing cards in shop can have enhancements/editions/seals) has a GLITCH:
         //though it says cards can generate with seals in market, they can't really.
         //So this is here to toggle whether our Illusion voucher behaves like it SHOULD based on description, or how it does in real Balatro.
-        public const bool MIRROR_ILLUSION_SEAL_GLITCH = false;
+        public static bool MIRROR_ILLUSION_SEAL_GLITCH { get; set; } = false;
         //Enables the key commands for A) debug command line, and B) debug-only rerolls like pack market reroll, voucher market reroll, etc.
-        public const bool ALLOW_DEBUG_COMMANDS = true;
+        public static bool ALLOW_DEBUG_COMMANDS { get; set; } = true;
 
-        public static readonly BigInteger MaxChipCount = BigInteger.Parse("1000000000000000000000");//1_000_000_000_000_000_000_000. That's 1 sextillion.
+        public static readonly BigInteger MinimumMaxChipCount = new(2_000_000_000);
+        private static BigInteger _maxChipCount = BigInteger.Parse("1000000000000000000000");
+
+        /// <summary>
+        /// The score ceiling. The minimum keeps ordinary 32-bit-sized scores uncapped.
+        /// </summary>
+        public static BigInteger MaxChipCount
+        {
+            get => _maxChipCount;
+            set => _maxChipCount = BigInteger.Max(value, MinimumMaxChipCount);
+        }
 
         public static BigInteger CapChipCount(double chipCount)
         {

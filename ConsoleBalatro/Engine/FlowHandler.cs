@@ -768,7 +768,8 @@ namespace ConsoleBalatro.Engine
             string targetBossBlindName;
             //Right now, BossBlindDb accounts for final/"finisher" boss blinds and only gives us those if ante is divisible by 8
             //possibly should be moved to here.
-            if (BossBlindDb.AvailableBossBlinds.Count == 0)
+            //TODO: Remove all this, make boss blinds a pool like everything else that gets rolled, apply rules, fixes messy horrible logic below.
+            if (ChallengeManager.CurrentChallenge != null ? BossBlindDb.AvailableBossBlinds.Count(ChallengeManager.CurrentChallenge.AllowedBossBlinds.Contains) == 0 : BossBlindDb.AvailableBossBlinds.Count == 0)
             {
                 //If no boss options available, reset the pool.
                 BossBlindDb.BossBlindsAlreadyUsed.Clear();

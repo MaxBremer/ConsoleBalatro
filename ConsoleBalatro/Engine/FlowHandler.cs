@@ -7,6 +7,7 @@ using ConsoleBalatro.Engine.Events;
 using ConsoleBalatro.Engine.Events.Args;
 using ConsoleBalatro.Engine.Market;
 using ConsoleBalatro.Engine.Stakes;
+using ConsoleBalatro.Engine.Challenges;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -774,6 +775,11 @@ namespace ConsoleBalatro.Engine
             }
             var oldBossBlind = CurrentBossBlind;
             var availableBosses = BossBlindDb.AvailableBossBlinds.ToList();
+            var allowedBosses = ChallengeManager.CurrentChallenge?.AllowedBossBlinds;
+            if (allowedBosses?.Count > 0)
+                availableBosses = availableBosses.Where(allowedBosses.Contains).ToList();
+            if (availableBosses.Count == 0)
+                throw new InvalidOperationException("The active challenge has no eligible boss blinds for this ante.");
             targetBossBlindName = availableBosses[Globals.randomNext(availableBosses.Count)];
             BossBlindDb.BossBlindsAlreadyUsed.Add(targetBossBlindName);
             if (isPlayerReroll)
@@ -846,9 +852,26 @@ namespace ConsoleBalatro.Engine
 
             HasWonCurrentRun = false;
             RunWinDecisionPending = false;
+            ChallengeManager.Clear();
             CurrentDeckDbName = deckDBName;
             DeckDb.BecomeDeck(deckDBName);
             StakeManager.SetStake(stakeChosen);
+            EngineEventHandler.TriggerEvent(new EngineEventArgs() { MyContext = new() { Context = EventContextType.EndDeckSelection } });
+            StartNewAnte();
+            InitializeBlindSelectionRound(replaceCurrentState: true);
+        }
+
+        public static void ChallengeChosen(string challengeId)
+        {
+            if (!ChallengeManager.TryGet(challengeId, out var challenge))
+                return;
+
+            HasWonCurrentRun = false;
+            RunWinDecisionPending = false;
+            CurrentDeckDbName = challenge.BaseDeck;
+            DeckDb.BecomeDeck(challenge.BaseDeck);
+            StakeManager.SetStake(StakeType.WHITE);
+            ChallengeManager.Begin(challenge);
             EngineEventHandler.TriggerEvent(new EngineEventArgs() { MyContext = new() { Context = EventContextType.EndDeckSelection } });
             StartNewAnte();
             InitializeBlindSelectionRound(replaceCurrentState: true);

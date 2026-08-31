@@ -666,18 +666,28 @@ namespace ConsoleBalatro.Engine
         /// </summary>
         private static void MarkCurrentStakeBeatenIfRunWon()
         {
-            if (CurrentAnte == 8 && !string.IsNullOrWhiteSpace(CurrentDeckDbName))
+            if (CurrentAnte == 8)
             {
-                var progressChanged = UnlockManager.MarkDeckStakeBeaten(CurrentDeckDbName, StakeManager.CurrentStake, saveImmediately: false);
-
-                foreach (var jokerName in ZoneManager.JokerZone.Cards
-                    .Where(card => card.IsJoker && !string.IsNullOrWhiteSpace(card.JokerData?.DBName))
-                    .Select(card => card.JokerData!.DBName)
-                    .Distinct(StringComparer.OrdinalIgnoreCase))
+                bool progressChanged = false;
+                //If there's no challenge active and we're playing a real deck, mark deck/jokers as beaten current stake.
+                if(ChallengeManager.CurrentChallenge == null && !string.IsNullOrWhiteSpace(CurrentDeckDbName))
                 {
-                    progressChanged |= UnlockManager.MarkJokerStakeBeaten(jokerName, StakeManager.CurrentStake, saveImmediately: false);
+                    progressChanged = UnlockManager.MarkDeckStakeBeaten(CurrentDeckDbName, StakeManager.CurrentStake, saveImmediately: false);
+
+                    foreach (var jokerName in ZoneManager.JokerZone.Cards
+                        .Where(card => card.IsJoker && !string.IsNullOrWhiteSpace(card.JokerData?.DBName))
+                        .Select(card => card.JokerData!.DBName)
+                        .Distinct(StringComparer.OrdinalIgnoreCase))
+                    {
+                        progressChanged |= UnlockManager.MarkJokerStakeBeaten(jokerName, StakeManager.CurrentStake, saveImmediately: false);
+                    }
+                }
+                else
+                {
+                    //TODO: MARK CURRENT CHALLENGE AS WON.
                 }
 
+                //No matter what, do the following.
                 HasWonCurrentRun = true;
                 RunWinDecisionPending = true;
 

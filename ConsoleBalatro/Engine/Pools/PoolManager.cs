@@ -100,6 +100,7 @@ namespace ConsoleBalatro.Engine.Pools
         public static void InitializeGlobalPoolRules()
         {
             Rules.Clear();
+            Rules.Add(new ChallengePoolRule());
             Rules.Add(new NoOwnedDuplicatesRule());
             Rules.Add(new ShowmanMarketRule());
             Rules.Add(new JokerForcedRarityRule());

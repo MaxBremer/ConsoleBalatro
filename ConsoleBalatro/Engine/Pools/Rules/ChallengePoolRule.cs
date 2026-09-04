@@ -1,0 +1,19 @@
+using ConsoleBalatro.Engine.Challenges;
+
+namespace ConsoleBalatro.Engine.Pools.Rules;
+
+/// <summary>Applies the active challenge's restrictions to every content roll.</summary>
+public sealed class ChallengePoolRule : IMarketPoolRule
+{
+    public int Priority => 10_000;//Challenge restrictions should take priority over every other pool change.
+
+    public void ModifyCandidates(MarketPoolContext context)
+    {
+        var challenge = ChallengeManager.CurrentChallenge;
+        if (challenge == null)
+            return;
+
+        if (challenge.BannedPoolItems.TryGetValue(context.Pool, out var banned))
+            context.Candidates.RemoveAll(candidate => banned.Contains(candidate.Definition.Id));
+    }
+}

@@ -1,5 +1,6 @@
 ﻿using ConsoleBalatro.Engine.Cards.Enums;
 using ConsoleBalatro.Engine.Cards.Jokers;
+using ConsoleBalatro.Engine.Challenges;
 using ConsoleBalatro.Engine.Events;
 using ConsoleBalatro.Engine.Events.Args;
 using System;
@@ -49,6 +50,8 @@ namespace ConsoleBalatro.Engine.Cards.Blinds
             get 
             {
                 List<string> validOpts = new List<string>();
+                //If our ante is a multiple of 8, pull from BigBossBlinds.
+                //Otherwise, pull from everything else.
                 if(FlowHandler.CurrentAnte % 8 == 0)//should this be moved to FlowHandler? Feels like the kind of thing that maybe should be FlowHandler...
                 {
                     validOpts.AddRange(BigBossBlinds);
@@ -56,8 +59,15 @@ namespace ConsoleBalatro.Engine.Cards.Blinds
                 else
                 {
                     validOpts.AddRange(BossBlindNames.Where(x => !BigBossBlinds.Contains(x)));
-                    validOpts.RemoveAll(x => BossBlindMinimumAntes.ContainsKey(x) && BossBlindMinimumAntes[x] > FlowHandler.CurrentAnte);
                 }
+
+                //Remove any that have a minimum Ante that isn't being met.
+                validOpts.RemoveAll(x => BossBlindMinimumAntes.ContainsKey(x) && BossBlindMinimumAntes[x] > FlowHandler.CurrentAnte);
+
+                //Remove any banned by the current challenge
+                var bannedBosses = ChallengeManager.CurrentChallenge?.BannedBossBlinds;
+                if (bannedBosses?.Count > 0)
+                    validOpts.RemoveAll(x => bannedBosses.Contains(x));
 
                 return validOpts.Where(x => !BossBlindsAlreadyUsed.Contains(x)).ToList(); 
             } 

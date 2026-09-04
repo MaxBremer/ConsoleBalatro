@@ -776,29 +776,28 @@ namespace ConsoleBalatro.Engine
 
             //Select new Boss Blind
             string targetBossBlindName;
-            //Right now, BossBlindDb accounts for final/"finisher" boss blinds and only gives us those if ante is divisible by 8
-            //possibly should be moved to here.
-            //TODO: Remove all this, make boss blinds a pool like everything else that gets rolled, apply rules, fixes messy horrible logic below.
-            if (ChallengeManager.CurrentChallenge != null ? BossBlindDb.AvailableBossBlinds.Count(ChallengeManager.CurrentChallenge.AllowedBossBlinds.Contains) == 0 : BossBlindDb.AvailableBossBlinds.Count == 0)
+            
+            //TODO: Remove all the logic in getter for AvailableBossBlinds, make boss blinds a pool like everything else that gets rolled, apply rules, fixes messy horrible logic below.
+            if (BossBlindDb.AvailableBossBlinds.Count == 0)
             {
                 //If no boss options available, reset the pool.
                 BossBlindDb.BossBlindsAlreadyUsed.Clear();
             }
             var oldBossBlind = CurrentBossBlind;
             var availableBosses = BossBlindDb.AvailableBossBlinds.ToList();
-            var allowedBosses = ChallengeManager.CurrentChallenge?.AllowedBossBlinds;
-            if (allowedBosses?.Count > 0)
-                availableBosses = availableBosses.Where(allowedBosses.Contains).ToList();
-            if (availableBosses.Count == 0)
-                throw new InvalidOperationException("The active challenge has no eligible boss blinds for this ante.");
+
             targetBossBlindName = availableBosses[Globals.randomNext(availableBosses.Count)];
-            BossBlindDb.BossBlindsAlreadyUsed.Add(targetBossBlindName);
             if (isPlayerReroll)
             {
-                BossBlindDb.BossBlindsAlreadyUsed.Remove(oldBossBlind);//if player reroll, that boss can be reused.
+                //If player reroll, decrement money and rerolls appropriately.
                 Globals.EmitMoneyLoss(Globals.CurrentBossBlindRerollCost, null, false);
                 if (Globals.CurBossBlindRerollsAllowed > 0)
                     Globals.CurBossBlindRerollsAllowed--;
+            }
+            else
+            {
+                //if not a player reroll, the boss is banned from being used again.
+                BossBlindDb.BossBlindsAlreadyUsed.Add(targetBossBlindName);
             }
             CurrentBossBlind = targetBossBlindName;
         }

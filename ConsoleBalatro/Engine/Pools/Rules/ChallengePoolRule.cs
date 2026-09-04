@@ -13,15 +13,6 @@ public sealed class ChallengePoolRule : IMarketPoolRule
         if (challenge == null)
             return;
 
-        //NOOOOOO NUH UH NOPE THIS ISNT HOW YOU DO IT
-        //NO NO NO NO IF A SOURCE IS BANNED WE SHOULDNT BE ROLLING IT IN THE FIRST PLACE
-        //THEN ITLL JUST BE EEEEMPTYYYYYYYYYYYYYYYYYYYY
-        if (challenge.BannedGenerationSources.Contains(context.Source))
-        {
-            context.Candidates.Clear();
-            return;
-        }
-
         if (challenge.BannedPoolItems.TryGetValue(context.Pool, out var banned))
             context.Candidates.RemoveAll(candidate => banned.Contains(candidate.Definition.Id));
     }

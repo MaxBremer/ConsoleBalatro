@@ -495,6 +495,7 @@ namespace ConsoleBalatro.Engine.Cards
                 MyContext = new EventContext() { Context = EventContextType.CardDestroyed },
             };
             EngineEventHandler.TriggerEvent(args);
+            DataManager.UnTrackCard(this);
             return;//FOR NOW, DONT ACTUALLY DO ANYTHING TO DESTROY A CARD. MAYBE LATER IDK.
             //TODO: CLEAN UP.
             //tbh idk if this actually does anything, but it makes me feel better.

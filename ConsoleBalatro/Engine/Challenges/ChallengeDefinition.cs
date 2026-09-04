@@ -18,8 +18,7 @@ public sealed class ChallengeDefinition
     public Action<CardZone>? ModifyStartingDeck { get; init; }
     public Action? ApplyRules { get; init; }
     public Dictionary<ItemPool, HashSet<string>> BannedPoolItems { get; } = [];
-    public HashSet<GenerationSource> BannedGenerationSources { get; } = [];
-    public HashSet<string> AllowedBossBlinds { get; } = new(StringComparer.OrdinalIgnoreCase);
+    public HashSet<string> BannedBossBlinds { get; } = new(StringComparer.OrdinalIgnoreCase);
 
     internal void Apply()
     {

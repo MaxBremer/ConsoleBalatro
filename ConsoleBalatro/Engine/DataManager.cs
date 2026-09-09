@@ -21,6 +21,11 @@ namespace ConsoleBalatro.Engine
             CardsByID.Add(c.ID, c);
         }
 
+        public static void UnTrackCard(Card c)
+        {
+            CardsByID.Remove(c.ID);
+        }
+
         public static Card GetCardFromList(List<Card> cards, int idToGet) => cards.Where(car => car.ID == idToGet).Count() == 1 ? cards.Where(x => x.ID == idToGet).First() : null;
 
         public static string OrderStringFromCards(List<Card> cards) => string.Join(CARD_ORDER_DIVIDER, cards.Select(c => c.ID));

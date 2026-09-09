@@ -7,6 +7,7 @@ using ConsoleBalatro.Engine.Events;
 using ConsoleBalatro.Engine.Events.Args;
 using ConsoleBalatro.Engine.Market;
 using ConsoleBalatro.Engine.Stakes;
+using ConsoleBalatro.Engine.Challenges;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -665,18 +666,28 @@ namespace ConsoleBalatro.Engine
         /// </summary>
         private static void MarkCurrentStakeBeatenIfRunWon()
         {
-            if (CurrentAnte == 8 && !string.IsNullOrWhiteSpace(CurrentDeckDbName))
+            if (CurrentAnte == 8)
             {
-                var progressChanged = UnlockManager.MarkDeckStakeBeaten(CurrentDeckDbName, StakeManager.CurrentStake, saveImmediately: false);
-
-                foreach (var jokerName in ZoneManager.JokerZone.Cards
-                    .Where(card => card.IsJoker && !string.IsNullOrWhiteSpace(card.JokerData?.DBName))
-                    .Select(card => card.JokerData!.DBName)
-                    .Distinct(StringComparer.OrdinalIgnoreCase))
+                bool progressChanged = false;
+                //If there's no challenge active and we're playing a real deck, mark deck/jokers as beaten current stake.
+                if(ChallengeManager.CurrentChallenge == null && !string.IsNullOrWhiteSpace(CurrentDeckDbName))
                 {
-                    progressChanged |= UnlockManager.MarkJokerStakeBeaten(jokerName, StakeManager.CurrentStake, saveImmediately: false);
+                    progressChanged = UnlockManager.MarkDeckStakeBeaten(CurrentDeckDbName, StakeManager.CurrentStake, saveImmediately: false);
+
+                    foreach (var jokerName in ZoneManager.JokerZone.Cards
+                        .Where(card => card.IsJoker && !string.IsNullOrWhiteSpace(card.JokerData?.DBName))
+                        .Select(card => card.JokerData!.DBName)
+                        .Distinct(StringComparer.OrdinalIgnoreCase))
+                    {
+                        progressChanged |= UnlockManager.MarkJokerStakeBeaten(jokerName, StakeManager.CurrentStake, saveImmediately: false);
+                    }
+                }
+                else
+                {
+                    //TODO: MARK CURRENT CHALLENGE AS WON.
                 }
 
+                //No matter what, do the following.
                 HasWonCurrentRun = true;
                 RunWinDecisionPending = true;
 
@@ -765,8 +776,8 @@ namespace ConsoleBalatro.Engine
 
             //Select new Boss Blind
             string targetBossBlindName;
-            //Right now, BossBlindDb accounts for final/"finisher" boss blinds and only gives us those if ante is divisible by 8
-            //possibly should be moved to here.
+            
+            //TODO: Remove all the logic in getter for AvailableBossBlinds, make boss blinds a pool like everything else that gets rolled, apply rules, fixes messy horrible logic below.
             if (BossBlindDb.AvailableBossBlinds.Count == 0)
             {
                 //If no boss options available, reset the pool.
@@ -774,14 +785,19 @@ namespace ConsoleBalatro.Engine
             }
             var oldBossBlind = CurrentBossBlind;
             var availableBosses = BossBlindDb.AvailableBossBlinds.ToList();
+
             targetBossBlindName = availableBosses[Globals.randomNext(availableBosses.Count)];
-            BossBlindDb.BossBlindsAlreadyUsed.Add(targetBossBlindName);
             if (isPlayerReroll)
             {
-                BossBlindDb.BossBlindsAlreadyUsed.Remove(oldBossBlind);//if player reroll, that boss can be reused.
+                //If player reroll, decrement money and rerolls appropriately.
                 Globals.EmitMoneyLoss(Globals.CurrentBossBlindRerollCost, null, false);
                 if (Globals.CurBossBlindRerollsAllowed > 0)
                     Globals.CurBossBlindRerollsAllowed--;
+            }
+            else
+            {
+                //if not a player reroll, the boss is banned from being used again.
+                BossBlindDb.BossBlindsAlreadyUsed.Add(targetBossBlindName);
             }
             CurrentBossBlind = targetBossBlindName;
         }
@@ -846,9 +862,26 @@ namespace ConsoleBalatro.Engine
 
             HasWonCurrentRun = false;
             RunWinDecisionPending = false;
+            ChallengeManager.Clear();
             CurrentDeckDbName = deckDBName;
             DeckDb.BecomeDeck(deckDBName);
             StakeManager.SetStake(stakeChosen);
+            EngineEventHandler.TriggerEvent(new EngineEventArgs() { MyContext = new() { Context = EventContextType.EndDeckSelection } });
+            StartNewAnte();
+            InitializeBlindSelectionRound(replaceCurrentState: true);
+        }
+
+        public static void ChallengeChosen(string challengeId)
+        {
+            if (!ChallengeManager.TryGet(challengeId, out var challenge))
+                return;
+
+            HasWonCurrentRun = false;
+            RunWinDecisionPending = false;
+            CurrentDeckDbName = challenge.BaseDeck;
+            DeckDb.BecomeDeck(challenge.BaseDeck);
+            StakeManager.SetStake(StakeType.WHITE);
+            ChallengeManager.Begin(challenge);
             EngineEventHandler.TriggerEvent(new EngineEventArgs() { MyContext = new() { Context = EventContextType.EndDeckSelection } });
             StartNewAnte();
             InitializeBlindSelectionRound(replaceCurrentState: true);

@@ -590,6 +590,12 @@ namespace ConsoleBalatro.UI.EngineUI.Controls
             };
             AddStandardControls(ret, new());
 
+            ret.AvailableActions.Add(ConsoleKey.Tab, _ =>
+            {
+                EngineDisplayGlobals.DeckChoiceMenu.ToggleRunType();
+                EngineDisplayGlobals.Redraw();
+            });
+
             ret.AvailableActions.Add(ConsoleKey.LeftArrow, _ =>
             {
                 EngineDisplayGlobals.DeckChoiceMenu.SelectPreviousDeck();
@@ -604,19 +610,23 @@ namespace ConsoleBalatro.UI.EngineUI.Controls
 
             ret.AvailableActions.Add(ConsoleKey.UpArrow, _ =>
             {
-                EngineDisplayGlobals.DeckChoiceMenu.SelectNextStake();
+                if (!EngineDisplayGlobals.DeckChoiceMenu.IsChallengeMode)
+                    EngineDisplayGlobals.DeckChoiceMenu.SelectNextStake();
                 EngineDisplayGlobals.Redraw();
             });
 
             ret.AvailableActions.Add(ConsoleKey.DownArrow, _ =>
             {
-                EngineDisplayGlobals.DeckChoiceMenu.SelectPreviousStake();
+                if (!EngineDisplayGlobals.DeckChoiceMenu.IsChallengeMode)
+                    EngineDisplayGlobals.DeckChoiceMenu.SelectPreviousStake();
                 EngineDisplayGlobals.Redraw();
             });
 
             ret.AvailableActions.Add(ConsoleKey.Enter, _ =>
             {
-                if (EngineDisplayGlobals.DeckChoiceMenu.CanSelectCurrentDeck && EngineDisplayGlobals.DeckChoiceMenu.CanSelectCurrentStake)
+                if (EngineDisplayGlobals.DeckChoiceMenu.IsChallengeMode && EngineDisplayGlobals.DeckChoiceMenu.SelectedChallenge != null)
+                    FlowHandler.ChallengeChosen(EngineDisplayGlobals.DeckChoiceMenu.SelectedChallenge.Id);
+                else if (EngineDisplayGlobals.DeckChoiceMenu.CanSelectCurrentDeck && EngineDisplayGlobals.DeckChoiceMenu.CanSelectCurrentStake)
                     FlowHandler.DeckChosen(EngineDisplayGlobals.DeckChoiceMenu.SelectedDeckName, (StakeType)EngineDisplayGlobals.DeckChoiceMenu.SelectedStakeIndex);
             });
 

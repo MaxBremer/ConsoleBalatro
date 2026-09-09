@@ -3,6 +3,7 @@ using ConsoleBalatro.Engine.Cards.Blinds;
 using ConsoleBalatro.Engine.Cards.Consumables;
 using ConsoleBalatro.Engine.Cards.Enums;
 using ConsoleBalatro.Engine.Cards.Vouchers;
+using ConsoleBalatro.Engine.Challenges;
 using ConsoleBalatro.Engine.Events;
 using ConsoleBalatro.Engine.Events.Args;
 using ConsoleBalatro.Engine.Market;
@@ -338,6 +339,7 @@ namespace ConsoleBalatro.Engine
 
             FlowHandler.CurrentAnte = 0;
             FlowHandler.CurrentDeckDbName = string.Empty;
+            ChallengeManager.Clear();
             StakeManager.CurrentStake = StakeType.WHITE;
             FlowHandler.CurrentSelectedBlind = BlindType.SMALL;
             FlowHandler.CurrentTempChanges = null;

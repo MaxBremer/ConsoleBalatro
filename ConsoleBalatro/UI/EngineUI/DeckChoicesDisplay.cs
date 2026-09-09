@@ -1,6 +1,7 @@
 ﻿using ConsoleBalatro.Engine;
 using ConsoleBalatro.Engine.Cards.Decks;
 using ConsoleBalatro.Engine.Stakes;
+using ConsoleBalatro.Engine.Challenges;
 using ConsoleBalatro.UI;
 using System;
 using System.Collections.Generic;
@@ -17,11 +18,15 @@ namespace ConsoleBalatro.UI.EngineUI
 
         public int SelectedDeckIndex { get; private set; } = 0;
         public int SelectedStakeIndex { get; private set; } = 0;
+        public int SelectedChallengeIndex { get; private set; } = 0;
+        public bool IsChallengeMode { get; private set; }
 
         private List<string> DeckNames => DeckDb.DeckDBNames;
         public string SelectedDeckName => DeckNames.Count == 0 ? string.Empty : DeckNames[SelectedDeckIndex];
         public StakeType SelectedStake => StakeChoices[SelectedStakeIndex];
         public string SelectedStakeName => SelectedStake.ToString();
+        private IReadOnlyList<ChallengeDefinition> Challenges => ChallengeManager.All;
+        public ChallengeDefinition? SelectedChallenge => Challenges.Count == 0 ? null : Challenges[SelectedChallengeIndex];
 
         public Dictionary<StakeType, string> StakeShortDescription = new()
         {
@@ -47,12 +52,22 @@ namespace ConsoleBalatro.UI.EngineUI
 
         public void SelectNextDeck()
         {
+            if (IsChallengeMode) { MoveChallengeSelection(1); return; }
             MoveDeckSelection(1);
         }
 
         public void SelectPreviousDeck()
         {
+            if (IsChallengeMode) { MoveChallengeSelection(-1); return; }
             MoveDeckSelection(-1);
+        }
+
+        public void ToggleRunType() => IsChallengeMode = !IsChallengeMode;
+
+        private void MoveChallengeSelection(int direction)
+        {
+            if (Challenges.Count > 0)
+                SelectedChallengeIndex = (SelectedChallengeIndex + direction + Challenges.Count) % Challenges.Count;
         }
 
         public void SelectNextStake()
@@ -97,12 +112,16 @@ namespace ConsoleBalatro.UI.EngineUI
                 SelectedDeckIndex = 0;
             if (SelectedStakeIndex < 0 || SelectedStakeIndex >= StakeChoices.Count)
                 SelectedStakeIndex = 0;
+            if (SelectedChallengeIndex < 0 || SelectedChallengeIndex >= Challenges.Count)
+                SelectedChallengeIndex = 0;
         }
 
         private void DrawHeader()
         {
-            WriteCentered(1, "CHOOSE YOUR DECK");
-            WriteLine(ContentMargin, 3, "Use Left/Right to browse decks. Up/Down are reserved for stake selection.");
+            WriteCentered(1, IsChallengeMode ? "CHOOSE A CHALLENGE" : "CHOOSE YOUR DECK");
+            WriteLine(ContentMargin, 3, IsChallengeMode
+                ? "Tab: regular decks    Left/Right: browse challenges"
+                : "Tab: challenges    Left/Right: decks    Up/Down: stakes");
         }
 
         private void DrawDeckArt()
@@ -111,7 +130,8 @@ namespace ConsoleBalatro.UI.EngineUI
             var artY = 5;
             DrawBox(artX, artY, ArtPanelWidth, 12, "DECK");
 
-            var artLines = BuildDeckArtLines(SelectedDeckName, CanSelectCurrentDeck);
+            var artLines = BuildDeckArtLines(IsChallengeMode ? SelectedChallenge?.Name ?? "?" : SelectedDeckName,
+                IsChallengeMode || CanSelectCurrentDeck);
             for (int i = 0; i < artLines.Count && i < 8; i++)
             {
                 WriteLine(artX + 2, artY + 2 + i, artLines[i], ArtPanelWidth - 4);
@@ -124,6 +144,22 @@ namespace ConsoleBalatro.UI.EngineUI
             var detailY = 5;
             var detailWidth = Width - ArtPanelWidth - StakePanelWidth - (ContentMargin * 2) - 4;
             DrawBox(detailX, detailY, detailWidth, 12, "EFFECT");
+
+            if (IsChallengeMode)
+            {
+                var challenge = SelectedChallenge;
+                if (challenge == null)
+                {
+                    WriteLine(detailX + 2, detailY + 2, "No challenges are available.", detailWidth - 4);
+                    return;
+                }
+                WriteLine(detailX + 2, detailY + 2, challenge.Name, detailWidth - 4);
+                WriteLine(detailX + 2, detailY + 3, $"Base deck: {challenge.BaseDeck}", detailWidth - 4);
+                var lines = WrapText(challenge.Description, detailWidth - 4);
+                for (int i = 0; i < lines.Count && i < 6; i++)
+                    WriteLine(detailX + 2, detailY + 5 + i, lines[i], detailWidth - 4);
+                return;
+            }
 
             if (string.IsNullOrEmpty(SelectedDeckName))
             {
@@ -148,6 +184,13 @@ namespace ConsoleBalatro.UI.EngineUI
             var stakeX = Width - StakePanelWidth - ContentMargin;
             var stakeY = 5;
             DrawBox(stakeX, stakeY, StakePanelWidth, 12, "STAKES");
+            if (IsChallengeMode)
+            {
+                WriteLine(stakeX + 2, stakeY + 2, "Challenge rules", StakePanelWidth - 4);
+                WriteLine(stakeX + 2, stakeY + 4, "Fixed difficulty", StakePanelWidth - 4);
+                WriteLine(stakeX + 2, stakeY + 6, "White Stake", StakePanelWidth - 4);
+                return;
+            }
             WriteLine(stakeX + 2, stakeY + 2, "Current:", StakePanelWidth - 4);
             WriteLine(stakeX + 2, stakeY + 3, $"> {SelectedStakeName}", StakePanelWidth - 4);
             WriteLine(stakeX + 2, stakeY + 4, StakeShortDescription.ContainsKey(SelectedStake) ? StakeShortDescription[SelectedStake] : "Stake description");
@@ -159,10 +202,13 @@ namespace ConsoleBalatro.UI.EngineUI
 
         private void DrawFooter()
         {
-            var deckCount = DeckNames.Count;
-            var positionText = deckCount == 0 ? "0 / 0" : $"{SelectedDeckIndex + 1} / {deckCount}";
+            var deckCount = IsChallengeMode ? Challenges.Count : DeckNames.Count;
+            var selectedIndex = IsChallengeMode ? SelectedChallengeIndex : SelectedDeckIndex;
+            var positionText = deckCount == 0 ? "0 / 0" : $"{selectedIndex + 1} / {deckCount}";
             WriteLine(ContentMargin, Height - 3, $"<-- Previous    {positionText}    Next -->", Width - (ContentMargin * 2));
-            var enterText = CanSelectCurrentDeck && CanSelectCurrentStake ? "Enter: start run with this deck/stake" : "Enter: locked deck/stake cannot be selected";
+            var enterText = IsChallengeMode
+                ? (SelectedChallenge == null ? "Enter: no challenge available" : "Enter: start challenge")
+                : (CanSelectCurrentDeck && CanSelectCurrentStake ? "Enter: start run with this deck/stake" : "Enter: locked deck/stake cannot be selected");
             WriteLine(ContentMargin, Height - 2, $"{enterText}    B/Escape: back", Width - (ContentMargin * 2));
         }
 

@@ -37,6 +37,7 @@ public sealed class ChallengeDefinition
             var jData = CustomRulesJokerBuilder(c);
             c.JokerData = jData;
             jData.MyCard = c;
+            ZoneManager.AddHiddenEffect(c);
         }
         
     }

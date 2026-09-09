@@ -19,6 +19,7 @@ public static class ChallengeManager
             {
                 Id = "THE OMELETTE",
                 Name = "The Omelette",
+                ChallengeIndex = 1,
                 Description = "All Blinds give no reward money. Extra hands no longer earn money. Earn no Interest at end of round."
             };
             for (var i = 0; i < 5; i++)
@@ -52,6 +53,7 @@ public static class ChallengeManager
             {
                 Id = "15 MINUTE CITY",
                 Name = "15 Minute City",
+                ChallengeIndex = 2,
                 Description = "does this even display?"
             };
 

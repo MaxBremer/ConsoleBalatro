@@ -14,7 +14,7 @@ public class ChallengeTests : TestClassBase
     {
         ResetEngineForTest();
 
-        FlowHandler.ChallengeChosen("THE_OMELETTE");
+        FlowHandler.ChallengeChosen("THE OMELETTE");
 
         Assert.Equal("The Omelette", ChallengeManager.CurrentChallenge?.Name);
         Assert.Equal(5, ZoneManager.JokerZone?.Cards.Count);
@@ -30,6 +30,7 @@ public class ChallengeTests : TestClassBase
         {
             Id = "TEST_RESTRICTION",
             Name = "Test restriction",
+            ChallengeIndex = 0,
             Description = "Test only"
         };
         definition.BannedPoolItems[ItemPool.Joker] = new(StringComparer.OrdinalIgnoreCase) { "EGG" };

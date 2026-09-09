@@ -1,4 +1,5 @@
 using ConsoleBalatro.Engine.Cards;
+using ConsoleBalatro.Engine.Cards.Jokers;
 using ConsoleBalatro.Engine.Pools;
 
 namespace ConsoleBalatro.Engine.Challenges;
@@ -15,8 +16,8 @@ public sealed class ChallengeDefinition
     public string BaseDeck { get; init; } = "RED";
     public List<Func<Card>> StartingJokers { get; } = [];
     public List<Func<Card>> StartingConsumables { get; } = [];
-    public Action<CardZone>? ModifyStartingDeck { get; init; }
-    public Action? ApplyRules { get; init; }
+    public Action<CardZone>? ModifyStartingDeck { get; set; }
+    public Func<Card, JokerCardDataBlock>? CustomRulesJokerBuilder { get; set; }
     public Dictionary<ItemPool, HashSet<string>> BannedPoolItems { get; } = [];
     public HashSet<string> BannedBossBlinds { get; } = new(StringComparer.OrdinalIgnoreCase);
 
@@ -30,6 +31,13 @@ public sealed class ChallengeDefinition
         foreach (var create in StartingConsumables)
             ZoneManager.ConsumableZone?.AddCard(create());
 
-        ApplyRules?.Invoke();
+        if(CustomRulesJokerBuilder != null)
+        {
+            var c = new Card();
+            var jData = CustomRulesJokerBuilder(c);
+            c.JokerData = jData;
+            jData.MyCard = c;
+        }
+        
     }
 }

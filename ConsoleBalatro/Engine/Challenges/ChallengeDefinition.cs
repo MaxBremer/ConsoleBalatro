@@ -17,6 +17,7 @@ public sealed class ChallengeDefinition
     public string BaseDeck { get; init; } = "RED";
     public List<Func<Card>> StartingJokers { get; } = [];
     public List<Func<Card>> StartingConsumables { get; } = [];
+    public List<Func<Card>> StartingVouchers { get; } = [];
     public Action<CardZone>? ModifyStartingDeck { get; set; }
     public Func<Card, JokerCardDataBlock>? CustomRulesJokerBuilder { get; set; }
     public Dictionary<ItemPool, HashSet<string>> BannedPoolItems { get; } = [];
@@ -31,6 +32,8 @@ public sealed class ChallengeDefinition
             ZoneManager.JokerZone?.AddCard(create());
         foreach (var create in StartingConsumables)
             ZoneManager.ConsumableZone?.AddCard(create());
+        foreach (var create in StartingVouchers)
+            ZoneManager.ActiveVoucherZone?.AddCard(create());
 
         if(CustomRulesJokerBuilder != null)
         {

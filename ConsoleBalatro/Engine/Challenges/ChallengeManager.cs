@@ -1,6 +1,7 @@
 using ConsoleBalatro.Engine.Cards;
 using ConsoleBalatro.Engine.Cards.Enums;
 using ConsoleBalatro.Engine.Cards.Jokers;
+using ConsoleBalatro.Engine.Cards.Vouchers;
 using ConsoleBalatro.Engine.Events;
 using ConsoleBalatro.Engine.Events.Args;
 
@@ -54,7 +55,7 @@ public static class ChallengeManager
                 Id = "15 MINUTE CITY",
                 Name = "15 Minute City",
                 ChallengeIndex = 2,
-                Description = "does this even display?"
+                Description = ""
             };
 
             string[] jokes = ["RIDE THE BUS", "SHORTCUT"];
@@ -89,6 +90,57 @@ public static class ChallengeManager
                         cz.AddCard(CardFactory.PlayingCardFromRankSuit(rank, suit));
 	                }
 	            }
+            };
+
+            return challengeDef;
+        } },
+
+        {"RICH GET RICHER", () =>
+        {
+            var challengeDef = new ChallengeDefinition
+            {
+                Id = "RICH GET RICHER",
+                Name = "Rich get Richer",
+                ChallengeIndex = 3,
+                Description = "Chips cannot exceed the current $. Start with $100."
+            };
+
+            string[] vouches = ["SEED MONEY", "MONEY TREE"];
+            foreach (var j in vouches)
+            {
+                challengeDef.StartingVouchers.Add(() => VoucherDb.MakeVoucherCard(j));
+            }
+
+            challengeDef.CustomRulesJokerBuilder = c =>
+            {
+                var ret = JokerDb.BasicDataBlock("Rich get richer challenge", "Gain $100 starting money. Chips cannot exceed current $");
+
+                ret.OnJokerGainEffs.Add(() => Globals.EmitMoneyGain(100 - Globals.Money, c));
+
+                ret.Listeners.Add(new EngineEventListener()
+                {
+                    MyContextType = EventContextType.GainEmit,
+                    MyAction = args =>
+                    {
+                        if (args is EngineChipsMultGainEmitArgs gArgs && gArgs.ChipsGainEmitted > 0)
+                        {
+                            //Cases:
+                            //Already greater than or eq to Chips, cancel gain.
+                            if(Globals.CurrentChips >= Globals.Money)
+                            {
+                                gArgs.ChipsGainEmitted = 0;
+                            }
+                            //The gain amount added to Current chips is greq Money, make the gain amount the difference, so we go to but don't exceed money amount.
+                            else if(Globals.CurrentChips + gArgs.ChipsGainEmitted >= Globals.Money)
+                            {
+                                var diff = Globals.Money - Globals.CurrentChips;
+                                gArgs.ChipsGainEmitted = diff;
+                            }
+                        }
+                    }
+                });
+
+                return ret;
             };
 
             return challengeDef;

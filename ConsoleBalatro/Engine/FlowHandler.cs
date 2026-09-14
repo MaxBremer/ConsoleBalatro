@@ -684,7 +684,7 @@ namespace ConsoleBalatro.Engine
                 }
                 else
                 {
-                    //TODO: MARK CURRENT CHALLENGE AS WON.
+                    progressChanged = UnlockManager.MarkChallengeBeaten(ChallengeManager.CurrentChallenge.Id, saveImmediately: false);
                 }
 
                 //No matter what, do the following.
@@ -873,7 +873,7 @@ namespace ConsoleBalatro.Engine
 
         public static void ChallengeChosen(string challengeId)
         {
-            if (!ChallengeManager.TryGet(challengeId, out var challenge))
+            if (!ChallengeManager.TryGet(challengeId, out var challenge) || !ChallengeManager.IsUnlocked(challengeId))
                 return;
 
             HasWonCurrentRun = false;

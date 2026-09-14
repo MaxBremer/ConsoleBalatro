@@ -5,6 +5,7 @@ using ConsoleBalatro.Engine.Cards.Jokers;
 using ConsoleBalatro.Engine.Stakes;
 using ConsoleBalatro.Engine.Events;
 using ConsoleBalatro.Engine.Events.Args;
+using ConsoleBalatro.Engine.Challenges;
 using System.Text.Json;
 using System.Text.Json.Serialization;
 
@@ -17,6 +18,8 @@ namespace ConsoleBalatro.Engine
         private static readonly List<EngineEventListener> CollectionListeners = new();
         private static readonly List<EngineEventListener> PersistentProgressListeners = new();
         private static HashSet<string> UnlockedDecks = new(StringComparer.OrdinalIgnoreCase);
+        private static HashSet<string> UnlockedChallenges = new(StringComparer.OrdinalIgnoreCase);
+        private static HashSet<string> BeatenChallenges = new(StringComparer.OrdinalIgnoreCase);
         private static HashSet<string> AchievedAchievements = new(StringComparer.OrdinalIgnoreCase);
         private static HashSet<string> CollectedJokers = new(StringComparer.OrdinalIgnoreCase);
         private static HashSet<string> CollectedConsumables = new(StringComparer.OrdinalIgnoreCase);
@@ -54,6 +57,8 @@ namespace ConsoleBalatro.Engine
 
 
         public static IReadOnlyCollection<string> UnlockedDeckNames => UnlockedDecks.OrderBy(x => x).ToList();
+        public static IReadOnlyCollection<string> UnlockedChallengeIds => UnlockedChallenges.OrderBy(x => x).ToList();
+        public static IReadOnlyCollection<string> BeatenChallengeIds => BeatenChallenges.OrderBy(x => x).ToList();
         public static IReadOnlyCollection<string> AchievedAchievementIds => AchievedAchievements.OrderBy(x => x).ToList();
         public static IReadOnlyCollection<string> RegisteredAchievementIds => AchievementDb.RegisteredAchievementIds;
         public static IReadOnlyCollection<string> CollectedJokerDbNames => CollectedJokers.OrderBy(x => x).ToList();
@@ -83,6 +88,8 @@ namespace ConsoleBalatro.Engine
             StopPersistentProgressListeners();
 
             UnlockedDecks = new HashSet<string>(DeckDb.DefaultUnlockedDeckNames, StringComparer.OrdinalIgnoreCase);
+            UnlockedChallenges = new HashSet<string>(ChallengeManager.DefaultUnlockedChallengeIds, StringComparer.OrdinalIgnoreCase);
+            BeatenChallenges = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
             AchievedAchievements = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
             CollectedJokers = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
             CollectedConsumables = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
@@ -106,6 +113,33 @@ namespace ConsoleBalatro.Engine
 
 
         public static bool IsDeckUnlocked(string deckDbName) => UnlockedDecks.Contains(deckDbName);
+
+        public static bool IsChallengeUnlocked(string challengeId) => UnlockedChallenges.Contains(challengeId);
+
+        public static bool UnlockChallenge(string challengeId, bool saveImmediately = true)
+        {
+            if (!ChallengeManager.TryGet(challengeId, out _) || !UnlockedChallenges.Add(challengeId))
+                return false;
+
+            if (saveImmediately)
+                SaveProgress();
+            return true;
+        }
+
+        public static bool IsChallengeBeaten(string challengeId) => BeatenChallenges.Contains(challengeId);
+
+        public static bool MarkChallengeBeaten(string challengeId, bool saveImmediately = true)
+        {
+            if (!ChallengeManager.TryGet(challengeId, out _) || !BeatenChallenges.Add(challengeId))
+                return false;
+
+            if (AchievementDb.ChallengeCompletionAchievementIds.TryGetValue(challengeId, out var achievementId))
+                MarkAchievementAchieved(achievementId, saveImmediately: false);
+
+            if (saveImmediately)
+                SaveProgress();
+            return true;
+        }
 
         public static bool UnlockDeck(string deckDbName, bool saveImmediately = true)
         {
@@ -301,6 +335,10 @@ namespace ConsoleBalatro.Engine
             {
                 UnlockDeck(deckDbName, saveImmediately: false);
             }
+            if (AchievementDb.ChallengeUnlocksByAchievementId.TryGetValue(achievementId, out var challengeId))
+            {
+                UnlockChallenge(challengeId, saveImmediately: false);
+            }
 
             StopAchievementListener(achievementId);
             var displayData = AchievementDb.GetAchievementDisplayData(achievementId);
@@ -323,7 +361,7 @@ namespace ConsoleBalatro.Engine
 
             lock (SaveLock)
             {
-                var saveData = UnlockSaveData.FromCurrentState(UnlockedDecks, DeckHighestBeatenStakeIndexes, JokerHighestBeatenStakeIndexes, AchievedAchievements, PersistentProgressCounts, CollectedJokers, CollectedConsumables, CollectedBossBlinds);
+                var saveData = UnlockSaveData.FromCurrentState(UnlockedDecks, DeckHighestBeatenStakeIndexes, UnlockedChallenges, BeatenChallenges, JokerHighestBeatenStakeIndexes, AchievedAchievements, PersistentProgressCounts, CollectedJokers, CollectedConsumables, CollectedBossBlinds);
                 var saveDirectory = Path.GetDirectoryName(SaveFilePath);
                 if (!string.IsNullOrWhiteSpace(saveDirectory))
                 {
@@ -387,6 +425,8 @@ namespace ConsoleBalatro.Engine
         private static void ApplySaveData(UnlockSaveData? saveData)
         {
             UnlockedDecks = new HashSet<string>(DeckDb.DefaultUnlockedDeckNames, StringComparer.OrdinalIgnoreCase);
+            UnlockedChallenges = new HashSet<string>(ChallengeManager.DefaultUnlockedChallengeIds, StringComparer.OrdinalIgnoreCase);
+            BeatenChallenges = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
             AchievedAchievements = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
             CollectedJokers = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
             CollectedConsumables = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
@@ -417,7 +457,14 @@ namespace ConsoleBalatro.Engine
                     {
                         UnlockedDecks.Add(deckDbName);
                     }
+                    if (AchievementDb.ChallengeUnlocksByAchievementId.TryGetValue(achievementId, out var challengeId))
+                        UnlockedChallenges.Add(challengeId);
                 }
+
+                foreach (var challengeId in (saveData.Challenges?.Unlocked ?? []).Where(x => ChallengeManager.TryGet(x, out _)))
+                    UnlockedChallenges.Add(challengeId);
+                foreach (var challengeId in (saveData.Challenges?.Beaten ?? []).Where(x => ChallengeManager.TryGet(x, out _)))
+                    BeatenChallenges.Add(challengeId);
 
                 foreach (var progress in saveData.Achievements?.ProgressCounts ?? new Dictionary<string, int>())
                 {
@@ -711,12 +758,13 @@ namespace ConsoleBalatro.Engine
 
         private sealed class UnlockSaveData
         {
-            public int Version { get; set; } = 1;
+            public int Version { get; set; } = 2;
             public DeckUnlockSaveData? Decks { get; set; } = new();
+            public ChallengeUnlockSaveData? Challenges { get; set; } = new();
             public AchievementUnlockSaveData? Achievements { get; set; } = new();
             public CollectionSaveData? Collection { get; set; } = new();
 
-            public static UnlockSaveData FromCurrentState(IEnumerable<string> unlockedDecks, IReadOnlyDictionary<string, int> highestBeatenStakeIndexes, IReadOnlyDictionary<string, int> jokerHighestBeatenStakeIndexes, IEnumerable<string> achievedAchievements, IReadOnlyDictionary<string, int> progressCounts, IEnumerable<string> collectedJokers, IEnumerable<string> collectedConsumables, IEnumerable<string> collectedBossBlinds)
+            public static UnlockSaveData FromCurrentState(IEnumerable<string> unlockedDecks, IReadOnlyDictionary<string, int> highestBeatenStakeIndexes, IEnumerable<string> unlockedChallenges, IEnumerable<string> beatenChallenges, IReadOnlyDictionary<string, int> jokerHighestBeatenStakeIndexes, IEnumerable<string> achievedAchievements, IReadOnlyDictionary<string, int> progressCounts, IEnumerable<string> collectedJokers, IEnumerable<string> collectedConsumables, IEnumerable<string> collectedBossBlinds)
             {
                 return new UnlockSaveData
                 {
@@ -724,6 +772,11 @@ namespace ConsoleBalatro.Engine
                     {
                         Unlocked = unlockedDecks.OrderBy(x => x).ToList(),
                         HighestBeatenStakeIndexes = highestBeatenStakeIndexes.OrderBy(x => x.Key).ToDictionary(x => x.Key, x => x.Value),
+                    },
+                    Challenges = new ChallengeUnlockSaveData
+                    {
+                        Unlocked = unlockedChallenges.OrderBy(x => x).ToList(),
+                        Beaten = beatenChallenges.OrderBy(x => x).ToList(),
                     },
                     Achievements = new AchievementUnlockSaveData
                     {
@@ -751,6 +804,12 @@ namespace ConsoleBalatro.Engine
         {
             public List<string> Achieved { get; set; } = new();
             public Dictionary<string, int> ProgressCounts { get; set; } = new(StringComparer.OrdinalIgnoreCase);
+        }
+
+        private sealed class ChallengeUnlockSaveData
+        {
+            public List<string> Unlocked { get; set; } = new();
+            public List<string> Beaten { get; set; } = new();
         }
 
         private sealed class CollectionSaveData

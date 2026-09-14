@@ -624,8 +624,11 @@ namespace ConsoleBalatro.UI.EngineUI.Controls
 
             ret.AvailableActions.Add(ConsoleKey.Enter, _ =>
             {
-                if (EngineDisplayGlobals.DeckChoiceMenu.IsChallengeMode && EngineDisplayGlobals.DeckChoiceMenu.SelectedChallenge != null)
-                    FlowHandler.ChallengeChosen(EngineDisplayGlobals.DeckChoiceMenu.SelectedChallenge.Id);
+                if (EngineDisplayGlobals.DeckChoiceMenu.IsChallengeMode)
+                {
+                    if (EngineDisplayGlobals.DeckChoiceMenu.CanSelectCurrentChallenge)
+                        FlowHandler.ChallengeChosen(EngineDisplayGlobals.DeckChoiceMenu.SelectedChallenge!.Id);
+                }
                 else if (EngineDisplayGlobals.DeckChoiceMenu.CanSelectCurrentDeck && EngineDisplayGlobals.DeckChoiceMenu.CanSelectCurrentStake)
                     FlowHandler.DeckChosen(EngineDisplayGlobals.DeckChoiceMenu.SelectedDeckName, (StakeType)EngineDisplayGlobals.DeckChoiceMenu.SelectedStakeIndex);
             });

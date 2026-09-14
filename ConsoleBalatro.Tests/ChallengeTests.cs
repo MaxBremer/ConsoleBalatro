@@ -1,4 +1,5 @@
 using ConsoleBalatro.Engine;
+using ConsoleBalatro.Engine.Cards.Blinds;
 using ConsoleBalatro.Engine.Challenges;
 using ConsoleBalatro.Engine.Pools;
 using ConsoleBalatro.Engine.Pools.Rollables;
@@ -9,6 +10,94 @@ namespace ConsoleBalatro.Tests;
 
 public class ChallengeTests : TestClassBase
 {
+    [Fact]
+    public void Challenges_DefaultToFirstTwoUnlocked()
+    {
+        UnlockManager.ResetProgressToDefaults();
+
+        Assert.True(ChallengeManager.IsUnlocked("THE OMELETTE"));
+        Assert.True(ChallengeManager.IsUnlocked("15 MINUTE CITY"));
+        Assert.False(ChallengeManager.IsUnlocked("RICH GET RICHER"));
+    }
+
+    [Fact]
+    public void BeatingFirstTwoChallenges_UnlocksThirdChallengeThroughAchievement()
+    {
+        UnlockManager.ResetProgressToDefaults();
+
+        Assert.True(UnlockManager.MarkChallengeBeaten("THE OMELETTE", saveImmediately: false));
+        Assert.True(UnlockManager.IsAchievementAchieved(AchievementDb.OmeletteChallengeWinId));
+        Assert.False(ChallengeManager.IsUnlocked("RICH GET RICHER"));
+
+        Assert.True(UnlockManager.MarkChallengeBeaten("15 MINUTE CITY", saveImmediately: false));
+
+        Assert.True(UnlockManager.IsAchievementAchieved(AchievementDb.FifteenMinuteCityChallengeWinId));
+        Assert.True(UnlockManager.IsAchievementAchieved(AchievementDb.RichGetRicherChallengeUnlockId));
+        Assert.True(ChallengeManager.IsUnlocked("RICH GET RICHER"));
+    }
+
+    [Fact]
+    public void ChallengeProgress_PersistsWithUnlocksAndCompletionAchievement()
+    {
+        var savePath = Path.Combine(Path.GetTempPath(), $"console-balatro-challenges-{Guid.NewGuid():N}.json");
+        var originalPath = UnlockManager.SaveFilePath;
+        try
+        {
+            UnlockManager.SaveFilePath = savePath;
+            UnlockManager.PermanentProgressSavingDisabled = false;
+            UnlockManager.ResetProgressToDefaults();
+
+            UnlockManager.MarkChallengeBeaten("THE OMELETTE", saveImmediately: false);
+            UnlockManager.MarkChallengeBeaten("15 MINUTE CITY");
+            Assert.True(File.Exists(savePath));
+
+            UnlockManager.ResetProgressToDefaults();
+            Assert.False(ChallengeManager.IsBeaten("THE OMELETTE"));
+            Assert.False(ChallengeManager.IsUnlocked("RICH GET RICHER"));
+
+            Assert.True(UnlockManager.LoadProgress());
+            Assert.True(ChallengeManager.IsBeaten("THE OMELETTE"));
+            Assert.True(ChallengeManager.IsBeaten("15 MINUTE CITY"));
+            Assert.True(ChallengeManager.IsUnlocked("RICH GET RICHER"));
+            Assert.True(UnlockManager.IsAchievementAchieved(AchievementDb.OmeletteChallengeWinId));
+            Assert.True(UnlockManager.IsAchievementAchieved(AchievementDb.FifteenMinuteCityChallengeWinId));
+        }
+        finally
+        {
+            UnlockManager.PermanentProgressSavingDisabled = true;
+            UnlockManager.SaveFilePath = originalPath;
+            UnlockManager.ResetProgressToDefaults();
+            if (File.Exists(savePath))
+                File.Delete(savePath);
+        }
+    }
+
+    [Fact]
+    public void LockedChallenge_CannotBeStarted()
+    {
+        ResetEngineForTest();
+        UnlockManager.ResetProgressToDefaults();
+
+        FlowHandler.ChallengeChosen("RICH GET RICHER");
+
+        Assert.Null(ChallengeManager.CurrentChallenge);
+    }
+
+    [Fact]
+    public void WinningAnteEightBoss_MarksCurrentChallengeBeaten()
+    {
+        ResetEngineForTest();
+        UnlockManager.ResetProgressToDefaults();
+        FlowHandler.ChallengeChosen("THE OMELETTE");
+        FlowHandler.CurrentAnte = 8;
+        FlowHandler.CurrentSelectedBlind = BlindType.BOSS;
+
+        FlowHandler.IncrementBlind();
+
+        Assert.True(ChallengeManager.IsBeaten("THE OMELETTE"));
+        Assert.True(UnlockManager.IsAchievementAchieved(AchievementDb.OmeletteChallengeWinId));
+    }
+
     [Fact]
     public void Omelette_StartsWithFiveEggs()
     {

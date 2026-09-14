@@ -31,6 +31,24 @@ namespace ConsoleBalatro.Engine
         public const string AnaglyphDeckUnlockId = "ANAGLYPH_DECK_UNLOCK";
         public const string PlasmaDeckUnlockId = "PLASMA_DECK_UNLOCK";
         public const string ErraticDeckUnlockId = "ERRATIC_DECK_UNLOCK";
+        public const string OmeletteChallengeWinId = "THE_OMELETTE_CHALLENGE_WIN";
+        public const string FifteenMinuteCityChallengeWinId = "15_MINUTE_CITY_CHALLENGE_WIN";
+        public const string RichGetRicherChallengeWinId = "RICH_GET_RICHER_CHALLENGE_WIN";
+        public const string RichGetRicherChallengeUnlockId = "RICH_GET_RICHER_CHALLENGE_UNLOCK";
+
+        public static IReadOnlyDictionary<string, string> ChallengeCompletionAchievementIds { get; } =
+            new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase)
+            {
+                ["THE OMELETTE"] = OmeletteChallengeWinId,
+                ["15 MINUTE CITY"] = FifteenMinuteCityChallengeWinId,
+                ["RICH GET RICHER"] = RichGetRicherChallengeWinId,
+            };
+
+        public static IReadOnlyDictionary<string, string> ChallengeUnlocksByAchievementId { get; } =
+            new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase)
+            {
+                [RichGetRicherChallengeUnlockId] = "RICH GET RICHER",
+            };
 
         public static IReadOnlyDictionary<string, string> DeckUnlocksByAchievementId { get; } =
             new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase)
@@ -139,6 +157,16 @@ namespace ConsoleBalatro.Engine
             RegisterStakeWinUnlock(AnaglyphDeckUnlockId, "Anaglyph", StakeType.BLACK);
             RegisterStakeWinUnlock(PlasmaDeckUnlockId, "Plasma", StakeType.BLUE);
             RegisterStakeWinUnlock(ErraticDeckUnlockId, "Erratic", StakeType.ORANGE);
+
+            RegisterChallengeCompletion(OmeletteChallengeWinId, "The Omelette");
+            RegisterChallengeCompletion(FifteenMinuteCityChallengeWinId, "15 Minute City");
+            RegisterChallengeCompletion(RichGetRicherChallengeWinId, "Rich get Richer");
+            RegisterAllAchievementData(
+                RichGetRicherChallengeUnlockId,
+                "Rich get Richer Challenge Unlocked",
+                "Beat The Omelette and 15 Minute City challenges.",
+                EventContextType.AchievementUnlocked,
+                _ => UnlockManager.IsChallengeBeaten("THE OMELETTE") && UnlockManager.IsChallengeBeaten("15 MINUTE CITY"));
 
             RegisterAllAchievementData(
                 TenHandsPlayedAchievementId, 
@@ -490,6 +518,12 @@ namespace ConsoleBalatro.Engine
                 $"Discover at least {requiredItems} items from your collection.",
                 EventContextType.CollectionItemAdded,
                 _ => UnlockManager.CollectionCount >= requiredItems);
+        }
+
+        private static void RegisterChallengeCompletion(string id, string challengeName)
+        {
+            RegisterAchievementDisplayData(id, $"{challengeName} Complete", $"Beat the {challengeName} challenge.");
+            RegisterAchievement(id);
         }
 
         private static void RegisterDeckWinUnlock(string id, string deckName, string requiredDeckDbName)

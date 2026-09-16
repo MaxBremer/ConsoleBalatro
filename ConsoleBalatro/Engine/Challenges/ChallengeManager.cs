@@ -148,6 +148,10 @@ public static class ChallengeManager
     };
 
     public static IReadOnlyList<ChallengeDefinition> All => Definitions.Values.ToList();
+    public static IReadOnlyCollection<string> DefaultUnlockedChallengeIds { get; } =
+        new HashSet<string>(StringComparer.OrdinalIgnoreCase) { "THE OMELETTE", "15 MINUTE CITY" };
+    public static IReadOnlyCollection<string> UnlockedChallengeIds =>
+        Definitions.Keys.Where(UnlockManager.IsChallengeUnlocked).OrderBy(x => x).ToList();
     public static ChallengeDefinition? CurrentChallenge { get; private set; }
 
     static ChallengeManager()
@@ -171,6 +175,13 @@ public static class ChallengeManager
 
     public static bool TryGet(string id, out ChallengeDefinition definition) =>
         Definitions.TryGetValue(id, out definition!);
+
+    public static bool IsUnlocked(string id) => UnlockManager.IsChallengeUnlocked(id);
+
+    public static bool Unlock(string id, bool saveImmediately = true) =>
+        UnlockManager.UnlockChallenge(id, saveImmediately);
+
+    public static bool IsBeaten(string id) => UnlockManager.IsChallengeBeaten(id);
 
     public static void Begin(ChallengeDefinition definition)
     {

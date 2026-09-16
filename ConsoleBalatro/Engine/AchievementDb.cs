@@ -31,6 +31,7 @@ namespace ConsoleBalatro.Engine
         public const string AnaglyphDeckUnlockId = "ANAGLYPH_DECK_UNLOCK";
         public const string PlasmaDeckUnlockId = "PLASMA_DECK_UNLOCK";
         public const string ErraticDeckUnlockId = "ERRATIC_DECK_UNLOCK";
+
         public const string OmeletteChallengeWinId = "THE_OMELETTE_CHALLENGE_WIN";
         public const string FifteenMinuteCityChallengeWinId = "15_MINUTE_CITY_CHALLENGE_WIN";
         public const string RichGetRicherChallengeWinId = "RICH_GET_RICHER_CHALLENGE_WIN";
@@ -49,6 +50,8 @@ namespace ConsoleBalatro.Engine
             {
                 [RichGetRicherChallengeUnlockId] = "RICH GET RICHER",
             };
+
+
 
         public static IReadOnlyDictionary<string, string> DeckUnlocksByAchievementId { get; } =
             new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase)

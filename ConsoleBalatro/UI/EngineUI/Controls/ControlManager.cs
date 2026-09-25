@@ -668,13 +668,14 @@ namespace ConsoleBalatro.UI.EngineUI.Controls
             });
 
             //Everyone besides market zones gets move.
-            if(!(ZoneManager.MainMarketZone.Cards.Contains(c) || ZoneManager.PackMarketZone.Cards.Contains(c) || ZoneManager.VoucherMarketZone.Cards.Contains(c)))
+            //Also, pinned cards can't move.
+            if(!(ZoneManager.MainMarketZone.Cards.Contains(c) || ZoneManager.PackMarketZone.Cards.Contains(c) || ZoneManager.VoucherMarketZone.Cards.Contains(c)) && !c.Pinned)
             {
                 ret.AvailableActions.Add(ConsoleKey.M, context =>
                 {
                     var targetZone = c.MyZone;
                     var secondCardForSwap = KeySelectCardFromZone(targetZone);
-                    if (c == secondCardForSwap)
+                    if (c == secondCardForSwap || secondCardForSwap.Pinned)
                         return;
 
                     targetZone.SwapCardPositions(c, secondCardForSwap);

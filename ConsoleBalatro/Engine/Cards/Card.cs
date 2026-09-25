@@ -43,6 +43,8 @@ namespace ConsoleBalatro.Engine.Cards
 
         public bool ForcedSelect = false;
 
+        public bool Pinned = false;
+
         public bool DebuffedByBoss = false;
 
         public bool Debuffed {  
@@ -605,7 +607,12 @@ namespace ConsoleBalatro.Engine.Cards
 
             if (Debuffed)
             {
-                retStr += "DEBUFFED";
+                retStr += CardInfoLineDivider + "DEBUFFED";
+            }
+
+            if (Pinned)
+            {
+                retStr += CardInfoLineDivider + "PINNED";
             }
 
             return retStr;

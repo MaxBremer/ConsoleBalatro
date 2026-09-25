@@ -291,6 +291,8 @@ namespace ConsoleBalatro.Engine
 
             PoolManager.InitializePoolManager();
 
+            AchievementDb.AchievementDbInitialize();
+
             RerollButtonCard = new();
         }
 
@@ -299,7 +301,6 @@ namespace ConsoleBalatro.Engine
         /// </summary>
         public static void ResetGlobalValues()
         {
-            AchievementDb.ResetMoneyTreeInterestStreak();
             TotalCurrentChips = 0;
             Money = 4;//starting money is base 4
             MinimumMoneyAllowed = 0;

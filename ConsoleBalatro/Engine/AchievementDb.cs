@@ -139,9 +139,19 @@ namespace ConsoleBalatro.Engine
             RegisterDefaultAchievements();
         }
 
+        /// <summary>
+        /// The actual Achievement Definition library. The head honcho, the main db of achievements.
+        /// </summary>
         public static IReadOnlyDictionary<string, AchievementDefinition> AchievementDefinitions => AchievementDefinitionsById;
+
+        /// <summary>
+        /// Returns a list of all registered achievement IDs.
+        /// </summary>
         public static IReadOnlyCollection<string> RegisteredAchievementIds => AchievementDefinitionsById.Keys.OrderBy(x => x).ToList();
 
+        /// <summary>
+        /// Register all vanilla achievement definitions.
+        /// </summary>
         public static void RegisterDefaultAchievements()
         {
             RegisterCollectionDeckUnlock(BlueDeckUnlockId, "Blue", 20);
@@ -170,6 +180,8 @@ namespace ConsoleBalatro.Engine
                 "Beat The Omelette and 15 Minute City challenges.",
                 EventContextType.AchievementUnlocked,
                 _ => UnlockManager.IsChallengeBeaten("THE OMELETTE") && UnlockManager.IsChallengeBeaten("15 MINUTE CITY"));
+
+
 
             RegisterAllAchievementData(
                 TenHandsPlayedAchievementId, 
@@ -479,9 +491,12 @@ namespace ConsoleBalatro.Engine
 
         }
 
+        /// <summary>
+        /// A terrible awful no-good static value to implement a single achievement.
+        /// </summary>
         private static int MoneyTreeInterestStreak;
 
-        public static void ResetMoneyTreeInterestStreak()
+        public static void AchievementDbInitialize()
         {
             MoneyTreeInterestStreak = 0;
         }

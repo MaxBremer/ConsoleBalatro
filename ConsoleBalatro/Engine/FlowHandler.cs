@@ -627,7 +627,6 @@ namespace ConsoleBalatro.Engine
         /// </summary>
         public static void GameOver()
         {
-            AchievementDb.ResetMoneyTreeInterestStreak();
             EngineEventHandler.TriggerEvent(new EngineEventArgs() { MyContext = new() { Context = EventContextType.RunLost } });
             Globals.ClearGameStateStack();
             Globals.PushGameState(new GameStateObj() { GameState = GameState.GameOverMenu });

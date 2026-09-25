@@ -104,6 +104,7 @@ namespace ConsoleBalatro.Engine
             }
             else
             {
+                //Shouldn't we need to clear the definitions out before we register defaults again???
                 AchievementDb.RegisterDefaultAchievements();
                 StartPersistentProgressListeners();
                 StartCollectionListeners();

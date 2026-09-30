@@ -13,5 +13,6 @@ namespace ConsoleBalatro.Engine.Events.Args
         public PlayedHandType HandCurrentlyBeingPlayed;
         public bool isScoringTrigger = false;
         public bool isInHandPostScoringTrigger = false;
+        public bool isPostScoringTrigger = false;
     }
 }

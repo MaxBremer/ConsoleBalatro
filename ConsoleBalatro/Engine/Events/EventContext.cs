@@ -125,6 +125,8 @@ namespace ConsoleBalatro.Engine.Events
         VoucherRedeemed,
 
         HandSizeChanged,
+
+        CardPriceGet,
     }
     public class EventContext
     {

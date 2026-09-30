@@ -1,9 +1,11 @@
 using ConsoleBalatro.Engine.Cards;
+using ConsoleBalatro.Engine.Cards.Consumables;
 using ConsoleBalatro.Engine.Cards.Enums;
 using ConsoleBalatro.Engine.Cards.Jokers;
 using ConsoleBalatro.Engine.Cards.Vouchers;
 using ConsoleBalatro.Engine.Events;
 using ConsoleBalatro.Engine.Events.Args;
+using ConsoleBalatro.Engine.Pools;
 
 namespace ConsoleBalatro.Engine.Challenges;
 
@@ -293,6 +295,218 @@ public static class ChallengeManager
 
                 return ret;
             };
+
+            return challengeDef;
+        } },
+        {"NON-PERISHABLE", () =>
+        {
+            var ret = new ChallengeDefinition
+            {
+                Id = "NON-PERISHABLE",
+                Name = "Non-Perishable",
+                ChallengeIndex = 8,
+                Description = "All Jokers are Eternal."
+            };
+
+            ret.CustomRulesJokerBuilder = c =>
+            {
+                var retJok = JokerDb.BasicDataBlock("Non-perishable challenge", "All Jokers are generated Eternal.");
+                retJok.Listeners.Add(new EngineEventListener()
+                {
+                    MyContextType = EventContextType.RolledCardGenerated,
+                    MyAction = args =>
+                    {
+                        if(args is EngineCardRollGeneratedArgs rollArgs && rollArgs.RollRequest.Pool == Pools.ItemPool.Joker && rollArgs.FinalCardRolled != null && rollArgs.FinalCardRolled.IsJoker)
+                        {
+                            rollArgs.FinalCardRolled.AddSticker(Sticker.ETERNAL);
+                        }
+                    },
+                });
+
+                return retJok;
+            };
+
+            List<string> bannedJokers = ["GROS MICHEL", "CAVENDISH", "ICE CREAM", "TURTLE BEAN", "RAMEN", "DIET COLA", "SELTZER", "POPCORN", "MR. BONES", "INVISIBLE JOKER", "LUCHADOR"];
+            ret.BannedPoolItems[Pools.ItemPool.Joker] = [.. bannedJokers];
+
+            ret.BannedBossBlinds.Add("VERDANT LEAF");
+            return ret;
+        } },
+        {"MEDUSA", () =>
+        {
+            var challengeDef = new ChallengeDefinition
+            {
+                Id = "MEDUSA",
+                Name = "Medusa",
+                ChallengeIndex = 9,
+                Description = "Eternal Marble Joker. All face cards replaced with Stone cards."
+            };
+
+            challengeDef.StartingJokers.Add(() =>
+            {
+                var ret = JokerDb.GenerateJokerCard("MARBLE JOKER");
+                ret.AddSticker(Sticker.ETERNAL);
+                return ret;
+            });
+
+            challengeDef.ModifyStartingDeck = deck =>
+            {
+                foreach (var c in deck.Cards.Where(x => EngineUtils.isFace(x)))
+                {
+                    c.SetEnhancementOfficial(Enhancement.STONE);
+	            }
+            };
+
+            return challengeDef;
+        } },
+        {"DOUBLE OR NOTHING", () =>
+        {
+            var challengeDef = new ChallengeDefinition
+            {
+                Id = "DOUBLE OR NOTHING",
+                Name = "Double or Nothing",
+                ChallengeIndex = 10,
+                Description = "All starting cards have a Red Seal. Playing cards are permanently debuffed after scoring."
+            };
+
+            challengeDef.ModifyStartingDeck = deck =>
+            {
+                foreach (var c in deck.Cards)
+                {
+                    c.SetSealOfficial(Seal.RED);
+                }
+            };
+
+            challengeDef.CustomRulesJokerBuilder = c =>
+            {
+                var retJok = JokerDb.BasicDataBlock("Double or Nothing challenge", "Playing cards debuffed after scoring. If you're seeing this, you shouldn't be lol.");
+                retJok.Listeners.Add(new EngineEventListener()
+                {
+                    MyContextType = EventContextType.CardTrigger,
+                    MyAction = args =>
+                    {
+                        if(args is EngineCardTriggerArgs triggerArgs && triggerArgs.isPostScoringTrigger && triggerArgs.CardThatIsTriggering.isPlayingCard)
+                        {
+                            triggerArgs.CardThatIsTriggering.Debuffed = true;
+                        }
+                    },
+                });
+
+                return retJok;
+            };
+
+            return challengeDef;
+        } },
+        {"TYPECAST", () =>
+        {
+            var challengeDef = new ChallengeDefinition
+            {
+                Id = "TYPECAST",
+                Name = "Typecast",
+                ChallengeIndex = 11,
+                Description = "After Ante 4 boss defeated; all current jokers become Eternal and set Joker Slots to 0."
+            };
+
+            challengeDef.CustomRulesJokerBuilder = c =>
+            {
+                var retJok = JokerDb.BasicDataBlock("Typecast challenge", "After Ante 4 boss defeated; all current jokers become Eternal and set Joker Slots to 0. If you're seeing this, you shouldn't be lol.");
+                var listenerToAdd = new EngineEventListener() {MyContextType = EventContextType.AnteChange};
+                listenerToAdd.MyAction = args =>
+                {
+                    if(args is EngineNewAnteArgs anteArgs && anteArgs.NewAnteVal == 5)
+                    {
+                        foreach (var j in ZoneManager.JokerZone.Cards)
+                            j.AddSticker(Sticker.ETERNAL);
+
+                        ZoneManager.JokerZone.MaxCapacity = 0;
+                        listenerToAdd.RemoveAfterTriggering = true;
+                    }
+                };
+                retJok.Listeners.Add(listenerToAdd);
+
+                return retJok;
+            };
+            challengeDef.BannedBossBlinds.Add("VERDANT LEAF");
+
+            return challengeDef;
+        } },
+        {"INFLATION", () =>
+        {
+            var challengeDef = new ChallengeDefinition
+            {
+                Id = "INFLATION",
+                Name = "Inflation",
+                ChallengeIndex = 12,
+                Description = "Permanently raise prices by $1 on every purpose."
+            };
+
+            challengeDef.CustomRulesJokerBuilder = c =>
+            {
+                var retJok = JokerDb.BasicDataBlock("Inflation challenge", "Permanently raise prices by $1 on every purpose. If you're seeing this, you shouldn't be lol.");
+
+                retJok.DataDict.Add("PRICE_INCREASE", new JokerData() {MyDataType = JokerDataType.INT, IntData = 0});
+
+                retJok.Listeners.Add(new EngineEventListener()
+                {
+                    MyContextType = EventContextType.CardPurchased,
+                    MyAction = args =>
+                    {
+                        if(args is EngineCardPurchasedArgs purchaseArgs)
+                        {
+                            retJok.DataDict["PRICE_INCREASE"].IntData += 1;
+                        }
+                    },
+                });
+                retJok.Listeners.Add(new EngineEventListener()
+                {
+                    MyContextType = EventContextType.CardPriceGet,
+                    MyAction = args =>
+                    {
+                        if(args is EngineCardPriceGetArgs priceArgs)
+                        {
+                            priceArgs.PriceToReturn += retJok.DataDict["PRICE_INCREASE"].IntData;
+                        }
+                    },
+                });
+
+                return retJok;
+            };
+            challengeDef.BannedPoolItems[ItemPool.Voucher].Add("CLEARANCE SALE");
+            challengeDef.BannedPoolItems[ItemPool.Voucher].Add("LIQUIDATION");
+
+            challengeDef.StartingJokers.Add(() => JokerDb.GenerateJokerCard("CREDIT CARD"));
+
+            return challengeDef;
+        } },
+        {"BRAM POKER", () =>
+        {
+            var challengeDef = new ChallengeDefinition
+            {
+                Id = "BRAM POKER",
+                Name = "Bram Poker",
+                ChallengeIndex = 13,
+                Description = "Jokers no longer appear in the shop."
+            };
+
+            challengeDef.CustomRulesJokerBuilder = c =>
+            {
+                var retJok = JokerDb.BasicDataBlock("Bram Poker challenge", "Jokers no longer appear in the shop. If you're seeing this, you shouldn't be lol.");
+
+                
+
+                return retJok;
+            };
+
+            challengeDef.StartingJokers.Add(() => 
+            {
+                var addJok = JokerDb.GenerateJokerCard("VAMPIRE");
+                addJok.AddSticker(Sticker.ETERNAL);
+                return addJok;
+            });
+            challengeDef.StartingConsumables.Add(() => ConsumableManager.MakeTarotCard("EMPEROR"));
+            challengeDef.StartingConsumables.Add(() => ConsumableManager.MakeTarotCard("EMPRESS"));
+            challengeDef.StartingVouchers.Add(() => VoucherDb.MakeVoucherCard("MAGIC TRICK"));
+            challengeDef.StartingVouchers.Add(() => VoucherDb.MakeVoucherCard("ILLUSION"));
 
             return challengeDef;
         } },

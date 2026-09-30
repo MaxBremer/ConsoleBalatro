@@ -475,7 +475,7 @@ namespace ConsoleBalatro.Engine
             }
             else
             {
-                //TODO: SCORING CANCELLED EVENT.
+                //TODO: SCORING CANCELLED EVENT?? MAYBE???
                 CurrentChips = 0;
                 CurrentMult = 0;
 

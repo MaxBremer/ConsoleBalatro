@@ -102,7 +102,14 @@ namespace ConsoleBalatro.Engine.Cards
 
         public int BaseCost = 1; //Default cost of playing card.
         public int? BuyCostOverride = null;
-        public int BuyCost => BuyCostOverride ?? CalcBuyCost();
+        public int BuyCost {
+            get
+            {
+                var args = new EngineCardPriceGetArgs() { CardWhichPriceGetIsFor = this, PriceToReturn = BuyCostOverride ?? CalcBuyCost() };
+                EngineEventHandler.TriggerEvent(args);
+                return args.PriceToReturn; 
+            }
+        }
         public int SellCost => Math.Max((BuyCost / 2) + BonusSellValue, 1);
         public int BonusSellValue = 0;
 
@@ -358,7 +365,9 @@ namespace ConsoleBalatro.Engine.Cards
                 //LATER THIS SHOULD PROB BE CUSTOM, BUT IDK HOW TO DIFFERENTIATE BOSS DEBUFFS FROM OTHER DEBUFFS.
                 //EXAMPLE GLITCH: MATADOR WILL MAKE U A BILLION MONEY IN ANY CHALLENGE THAT DEBUFFS UR CARDS.
                 //IDK MAN FIX IT FUTURE ME.
-                EngineEventHandler.TriggerEvent(new EngineEventArgs() { MyContext = new() { Context = EventContextType.BossAbilityTriggeredByHand } });
+                //fixed it.
+                if(DebuffedByBoss)
+                    EngineEventHandler.TriggerEvent(new EngineEventArgs() { MyContext = new() { Context = EventContextType.BossAbilityTriggeredByHand } });
                 return;
             }
 
@@ -388,6 +397,15 @@ namespace ConsoleBalatro.Engine.Cards
 
                 EngineEventHandler.TriggerEvent(myTriggerArgs);
             }
+
+            var postTrigger = new EngineCardTriggerArgs()
+            {
+                MyContext = new() { Context = EventContextType.CardTrigger, ScoringContext = context },
+                CardThatIsTriggering = this,
+                isPostScoringTrigger = true,
+                HandCurrentlyBeingPlayed = context.HandBeingPlayed,
+            };
+            EngineEventHandler.TriggerEvent(postTrigger);
         }
 
         public void TriggerInHandDuringScoring(ScoringContext context)

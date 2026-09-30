@@ -5,6 +5,7 @@ using ConsoleBalatro.Engine.Cards.Jokers;
 using ConsoleBalatro.Engine.Cards.Vouchers;
 using ConsoleBalatro.Engine.Events;
 using ConsoleBalatro.Engine.Events.Args;
+using ConsoleBalatro.Engine.Market;
 using ConsoleBalatro.Engine.Pools;
 
 namespace ConsoleBalatro.Engine.Challenges;
@@ -269,7 +270,6 @@ public static class ChallengeManager
             {
                 var ret = JokerDb.BasicDataBlock("Luxury Tax challenge");
 
-                Func<int> getHandReductionAmt = () => Globals.Money / 5;
                 ret.DataDict.Add("CUR_HAND_REDUCTION", new JokerData() {MyDataType = JokerDataType.INT, IntData = 0});
 
                 ret.Listeners.Add(new EngineEventListener()
@@ -279,7 +279,7 @@ public static class ChallengeManager
                     {
                         if (args is EngineGoldGainEmitArgs mArgs)
                         {
-                            var curSize = getHandReductionAmt();
+                            var curSize = (Globals.Money + mArgs.AmountGained) / 5;
                             var diff = ret.DataDict["CUR_HAND_REDUCTION"].IntData - curSize;//if new reduction is smaller than old reduction, this num is positive, diff should be added to handsize.
                             Globals.HandSize += diff;
                             ret.DataDict["CUR_HAND_REDUCTION"].IntData = curSize;
@@ -288,7 +288,7 @@ public static class ChallengeManager
                 });
                 ret.OnJokerGainEffs.Add(() =>
                 {
-                    ret.DataDict["CUR_HAND_REDUCTION"].IntData = getHandReductionAmt();
+                    ret.DataDict["CUR_HAND_REDUCTION"].IntData = Globals.Money / 5;
                     var totalHandSize = 10 - ret.DataDict["CUR_HAND_REDUCTION"].IntData;
                     Globals.HandSize = totalHandSize;
                 });
@@ -471,8 +471,11 @@ public static class ChallengeManager
 
                 return retJok;
             };
-            challengeDef.BannedPoolItems[ItemPool.Voucher].Add("CLEARANCE SALE");
-            challengeDef.BannedPoolItems[ItemPool.Voucher].Add("LIQUIDATION");
+            challengeDef.BannedPoolItems[ItemPool.Voucher] =
+            [
+                "CLEARANCE SALE",
+                "LIQUIDATION"
+            ];
 
             challengeDef.StartingJokers.Add(() => JokerDb.GenerateJokerCard("CREDIT CARD"));
 
@@ -492,7 +495,17 @@ public static class ChallengeManager
             {
                 var retJok = JokerDb.BasicDataBlock("Bram Poker challenge", "Jokers no longer appear in the shop. If you're seeing this, you shouldn't be lol.");
 
-                
+                retJok.Listeners.Add(new EngineEventListener()
+                {
+                    MyContextType = EventContextType.MarketTypeBeingChosen,
+                    MyAction = args =>
+                    {
+                        if (args is EngineMarketTypeBeingChosenArgs marketArgs)
+                        {
+                            marketArgs.WeightsBeingRolled.Remove(BuyItemType.JOKER);
+                        }
+                    },
+                });
 
                 return retJok;
             };

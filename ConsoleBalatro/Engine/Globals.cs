@@ -351,7 +351,7 @@ namespace ConsoleBalatro.Engine
             BossBlindDb.BossBlindsAlreadyUsed.Clear();
             
 
-            Money = 0;
+            //Money = 0; //Why was I doing this? Starting money is 4 by default... but maybe there was a reason??
             CurMaxInterest = 5;
             SetStartOfRoundStats();
             RequiredChipsForCurrentBlind = -1;

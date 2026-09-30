@@ -129,6 +129,12 @@ namespace ConsoleBalatro.Engine
             LenStraight = 5;
             LenFlush = 5;
             SkipStrength = 0;
+            RankGroups = new Dictionary<string, List<Rank>>()
+            {
+                { "NUMBERED", new() { Rank.TWO, Rank.THREE, Rank.FOUR, Rank.FIVE, Rank.SIX, Rank.SEVEN, Rank.EIGHT, Rank.NINE, Rank.TEN } },
+                { "FACE", new() { Rank.JACK, Rank.QUEEN, Rank.KING } },
+                { "ACE", new() { Rank.ACE } },
+            };
         }
 
         public static (PlayedHandType, List<Card>) BestHandFromCards(List<Card> cards)

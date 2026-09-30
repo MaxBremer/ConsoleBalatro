@@ -77,14 +77,14 @@ namespace ConsoleBalatro.Tests
             FlowHandler.CurBigBlindTag = TagType.SPEED;
             var record = CaptureTagEvents();
 
-            Assert.Equal(0, Globals.Money);
+            Assert.Equal(4, Globals.Money);
             FlowHandler.DoSkip();
             Assert.Equal(BlindType.BIG, FlowHandler.CurrentSelectedBlind);
             Assert.Equal(1, record.TagAddEventCount);
             Assert.Equal(1, record.TriggerInstantCount);
             Assert.Equal(0, record.TriggerListenerCount);
             Assert.Equal(TagType.SPEED, record.TagsTriggeredInstantly[0].JokerData.TagData.MyType);
-            Assert.Equal(5, Globals.Money);
+            Assert.Equal(4 + 5, Globals.Money);
 
             FlowHandler.DoSkip();
             Assert.Equal(BlindType.BOSS, FlowHandler.CurrentSelectedBlind);
@@ -92,7 +92,7 @@ namespace ConsoleBalatro.Tests
             Assert.Equal(2, record.TriggerInstantCount);
             Assert.Equal(0, record.TriggerListenerCount);
             Assert.Equal(TagType.SPEED, record.TagsTriggeredInstantly[1].JokerData.TagData.MyType);
-            Assert.Equal(15, Globals.Money);
+            Assert.Equal(4 + 15, Globals.Money);
         }
 
         [Theory]
@@ -186,6 +186,7 @@ namespace ConsoleBalatro.Tests
             FlowHandler.CurBigBlindTag = TagType.SPEED;
             var record = CaptureTagEvents();
 
+            var baseMoney = Globals.Money;
             FlowHandler.DoSkip();
             Assert.Equal(1, record.TagAddEventCount);
             Assert.Equal(0, record.TriggerInstantCount);
@@ -199,7 +200,7 @@ namespace ConsoleBalatro.Tests
             Assert.Equal(TagType.DOUBLE_TAG, record.TagsAdded[0].JokerData.TagData.MyType);
             Assert.Equal(TagType.SPEED, record.TagsAdded[1].JokerData.TagData.MyType);
             Assert.Equal(TagType.SPEED, record.TagsAdded[2].JokerData.TagData.MyType);
-            Assert.Equal(20, Globals.Money);
+            Assert.Equal(baseMoney + 20, Globals.Money);
         }
 
         [Fact]

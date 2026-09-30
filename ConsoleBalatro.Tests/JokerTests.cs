@@ -1377,8 +1377,9 @@ namespace ConsoleBalatro.Tests
             var s = JokerSetup("GOLDEN TICKET");
             var cards = BuildKnownHand("AS,AS,AS,AS,AS");
             cards[0].SetEnhancementOfficial(Enhancement.GOLD);
+            var baseMoney = Globals.Money;
             Globals.PlayCurrentlySelectedHand();
-            Assert.Equal(4, Globals.Money);
+            Assert.Equal(baseMoney + 4, Globals.Money);
         }
 
         [Fact]

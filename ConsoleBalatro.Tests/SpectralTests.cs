@@ -153,8 +153,9 @@ namespace ConsoleBalatro.Tests
         {
             ResetToBlindSelection();
             AddSpectral("Wraith");
+            var baseMoney = Globals.Money;
             Globals.EmitMoneyGain(35, null);
-            Assert.Equal(35, Globals.Money);
+            Assert.Equal(baseMoney + 35, Globals.Money);
             Assert.Empty(ZoneManager.JokerZone.Cards);
             var record = CaptureCardChangeEvents();
 

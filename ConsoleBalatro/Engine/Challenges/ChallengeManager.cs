@@ -145,6 +145,157 @@ public static class ChallengeManager
 
             return challengeDef;
         } },
+        {"ON A KNIFES EDGE", () =>
+        {
+            var challengeDef = new ChallengeDefinition
+            {
+                Id = "ON A KNIFES EDGE",
+                Name = "On a Knife's Edge",
+                ChallengeIndex = 4,
+                Description = "Eternal, pinned Ceremonial Dagger."
+            };
+
+            challengeDef.StartingJokers.Add(() =>
+            {
+                var ret = JokerDb.GenerateJokerCard("CEREMONIAL DAGGER");
+                ret.AddSticker(Sticker.ETERNAL);
+                ret.Pinned = true;
+                return ret;
+            });
+
+            return challengeDef;
+        } },
+        {"X RAY VISION", () =>
+        {
+            var ret = new ChallengeDefinition
+            {
+                Id = "X RAY VISION",
+                Name = "X-ray Vision",
+                ChallengeIndex = 5,
+                Description = "1 in 4 cards drawn face down."
+            };
+            
+            ret.CustomRulesJokerBuilder = c =>
+            {
+                var retJok = JokerDb.BasicDataBlock("X-ray vision challenge", "1 in 4 cards drawn face down.");
+                retJok.Listeners.Add(new EngineEventListener()
+                {
+                    MyContextType = EventContextType.CardDrawnToZone,
+                    MyAction = args =>
+                    {
+                        if(args is EngineCardDrawnToZoneArgs drawArgs && drawArgs.ZoneDrawnTo == ZoneManager.HandZone && Globals.RollRandom(1, 4, c) && drawArgs.CardBeingDrawn != null)
+                        {
+                            drawArgs.CardBeingDrawn.FaceDown = true;
+                        }
+                    },
+                });
+
+                return retJok;
+            };
+            return ret;
+        } },
+        {"MAD WORLD", () =>
+        {
+            var challengeDef = new ChallengeDefinition
+            {
+                Id = "MAD WORLD",
+                Name = "Mad World",
+                ChallengeIndex = 6,
+                Description = "Extra hands no longer earn money, earn no Interest at end of round. Eternal negative Pareidolia, Eternal Business Card. Only ranks 2 through 9 in deck."
+            };
+
+            challengeDef.StartingJokers.Add(() =>
+            {
+                var ret = JokerDb.GenerateJokerCard("PAREIDOLIA");
+                ret.AddSticker(Sticker.ETERNAL);
+                ret.SetEditionOfficial(Edition.NEGATIVE);
+                return ret;
+            });
+            challengeDef.StartingJokers.Add(() =>
+            {
+                var ret = JokerDb.GenerateJokerCard("BUSINESS CARD");
+                ret.AddSticker(Sticker.ETERNAL);
+                return ret;
+            });
+
+            challengeDef.ModifyStartingDeck = cz =>
+            {
+                //Remove Aces, Twos, and Threes.
+                List<Rank> toKeepRanks = [Rank.TWO, Rank.THREE, Rank.FOUR, Rank.FIVE, Rank.SIX, Rank.SEVEN, Rank.EIGHT, Rank.NINE];
+                var toRem = new List<Card>();
+                toRem.AddRange(cz.Cards.Where(c => !toKeepRanks.Contains(c.Rank)));
+                foreach (var cr in toRem)
+                {
+                    cz.RemoveCard(cr);
+                }
+            };
+
+            challengeDef.CustomRulesJokerBuilder = c =>
+            {
+                var ret = JokerDb.BasicDataBlock("Mad World challenge", "Extra hands no longer earn money. Earn no Interest at end of round.");
+                ret.Listeners.Add(new EngineEventListener()
+                {
+                    MyContextType = EventContextType.GatherPostRoundMoney,
+                    MyAction = args =>
+                    {
+                        if (args is EngineGatherPostRoundMoneyArgs mArgs)
+                        {
+                            mArgs.ExistingSources.RemoveAll(x => x.Item1 == "Interest");
+                            mArgs.ExistingSources.RemoveAll(x => x.Item1 == "Hands Remaining");
+                        }
+                    }
+                });
+
+                return ret;
+            };
+
+            challengeDef.BannedBossBlinds.Add("THE PLANT");
+
+            return challengeDef;
+        } },
+        {"LUXURY TAX", () =>
+        {
+            var challengeDef = new ChallengeDefinition
+            {
+                Id = "LUXURY TAX",
+                Name = "Luxury Tax",
+                ChallengeIndex = 7,
+                Description = "Hold -1 cards in hand for every $5 you have. Start with 10 hand size."
+            };
+
+            challengeDef.CustomRulesJokerBuilder = c =>
+            {
+                var ret = JokerDb.BasicDataBlock("Luxury Tax challenge");
+
+                Func<int> getHandReductionAmt = () => Globals.Money / 5;
+                ret.DataDict.Add("CUR_HAND_REDUCTION", new JokerData() {MyDataType = JokerDataType.INT, IntData = 0});
+
+                ret.Listeners.Add(new EngineEventListener()
+                {
+                    MyContextType = EventContextType.MoneyGainEmit,
+                    MyAction = args =>
+                    {
+                        if (args is EngineGoldGainEmitArgs mArgs)
+                        {
+                            var curSize = getHandReductionAmt();
+                            var diff = ret.DataDict["CUR_HAND_REDUCTION"].IntData - curSize;//if new reduction is smaller than old reduction, this num is positive, diff should be added to handsize.
+                            Globals.HandSize += diff;
+                            ret.DataDict["CUR_HAND_REDUCTION"].IntData = curSize;
+                        }
+                    }
+                });
+                ret.OnJokerGainEffs.Add(() =>
+                {
+                    ret.DataDict["CUR_HAND_REDUCTION"].IntData = getHandReductionAmt();
+                    var totalHandSize = 10 - ret.DataDict["CUR_HAND_REDUCTION"].IntData;
+                    Globals.HandSize = totalHandSize;
+                });
+
+                return ret;
+            };
+
+            return challengeDef;
+        } },
     };
 
     public static IReadOnlyList<ChallengeDefinition> All => Definitions.Values.ToList();

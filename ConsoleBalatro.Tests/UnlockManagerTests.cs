@@ -311,6 +311,7 @@ public class UnlockManagerTests : TestClassBase
     {
         var savePath = BuildTempSavePath();
         var originalPath = UnlockManager.SaveFilePath;
+        UnlockManager.AUTO_SAVE_PERSISTENT_PROGRESS = false;
         var conditionChecks = 0;
         try
         {
@@ -342,6 +343,7 @@ public class UnlockManagerTests : TestClassBase
         finally
         {
             UnlockManager.PermanentProgressSavingDisabled = true;
+            UnlockManager.AUTO_SAVE_PERSISTENT_PROGRESS = true;
             UnlockManager.SaveFilePath = originalPath;
             UnlockManager.ResetProgressToDefaults(clearAchievementDefinitions: true);
             EngineEventHandler.ResetFullEventHandler();
@@ -356,6 +358,7 @@ public class UnlockManagerTests : TestClassBase
         var savePath = BuildTempSavePath();
         var originalPath = UnlockManager.SaveFilePath;
         var unlockedPopups = new List<EngineAchievementUnlockArgs>();
+        UnlockManager.AUTO_SAVE_PERSISTENT_PROGRESS = false;
         Action<EngineEventArgs> CaptureUnlock = (EngineEventArgs args) => 
         { 
             if (args is EngineAchievementUnlockArgs achArgs) 
@@ -405,6 +408,7 @@ public class UnlockManagerTests : TestClassBase
         {
             EngineEventHandler.StopListening(listener);
             UnlockManager.PermanentProgressSavingDisabled = true;
+            UnlockManager.AUTO_SAVE_PERSISTENT_PROGRESS = true;
             UnlockManager.SaveFilePath = originalPath;
             UnlockManager.ResetProgressToDefaults(clearAchievementDefinitions: true);
             EngineEventHandler.ResetFullEventHandler();
@@ -418,6 +422,7 @@ public class UnlockManagerTests : TestClassBase
     {
         var savePath = BuildTempSavePath();
         var originalPath = UnlockManager.SaveFilePath;
+        UnlockManager.AUTO_SAVE_PERSISTENT_PROGRESS = false;
         try
         {
             UnlockManager.SaveFilePath = savePath;
@@ -457,6 +462,7 @@ public class UnlockManagerTests : TestClassBase
             });
             Assert.True(UnlockManager.IsAchievementAchieved(AchievementDb.Swashbuckler_UnlockId));
 
+            UnlockManager.SaveProgress();
             UnlockManager.ResetProgressToDefaults();
             Assert.True(UnlockManager.LoadProgress());
             Assert.Equal(5, UnlockManager.GetPersistentProgressCount(UnlockManager.LostRunsProgressKey));
@@ -469,6 +475,7 @@ public class UnlockManagerTests : TestClassBase
         finally
         {
             UnlockManager.PermanentProgressSavingDisabled = true;
+            UnlockManager.AUTO_SAVE_PERSISTENT_PROGRESS = true;
             UnlockManager.SaveFilePath = originalPath;
             UnlockManager.ResetProgressToDefaults(clearAchievementDefinitions: true);
             EngineEventHandler.ResetFullEventHandler();
@@ -481,6 +488,7 @@ public class UnlockManagerTests : TestClassBase
     {
         var savePath = BuildTempSavePath();
         var originalPath = UnlockManager.SaveFilePath;
+        UnlockManager.AUTO_SAVE_PERSISTENT_PROGRESS = false;
         try
         {
             UnlockManager.SaveFilePath = savePath;
@@ -522,6 +530,7 @@ public class UnlockManagerTests : TestClassBase
         }
         finally
         {
+            UnlockManager.AUTO_SAVE_PERSISTENT_PROGRESS = true;
             UnlockManager.PermanentProgressSavingDisabled = true;
             UnlockManager.SaveFilePath = originalPath;
             UnlockManager.ResetProgressToDefaults(clearAchievementDefinitions: true);
@@ -630,14 +639,16 @@ public class UnlockManagerTests : TestClassBase
             var bossBlinds = BossBlindDb.BossBlindNames.Take(25).ToList();
             foreach (var bossBlind in bossBlinds.Take(24))
             {
-                Assert.True(UnlockManager.AddBossBlindToCollection(bossBlind));
+                Assert.True(UnlockManager.AddBossBlindToCollection(bossBlind, saveImmediately: false));
             }
             Assert.False(UnlockManager.IsAchievementAchieved(AchievementDb.Retcon_UnlockId));
 
-            Assert.True(UnlockManager.AddBossBlindToCollection(bossBlinds[24]));
+            Assert.True(UnlockManager.AddBossBlindToCollection(bossBlinds[24], saveImmediately: false));
             Assert.Equal(25, UnlockManager.CollectedBossBlindCount);
             Assert.True(UnlockManager.IsBossBlindCollected(bossBlinds[0]));
             Assert.True(UnlockManager.IsAchievementAchieved(AchievementDb.Retcon_UnlockId));
+
+            UnlockManager.SaveProgress();
 
             UnlockManager.ResetProgressToDefaults();
             Assert.True(UnlockManager.LoadProgress());

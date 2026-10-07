@@ -13,6 +13,10 @@ namespace ConsoleBalatro.Engine
 {
     public static class UnlockManager
     {
+        //With this enabled all the time, some unit tests would make >200 file changes in less than a second.
+        //This causes problems. That do not occur in a normal game.
+        public static bool AUTO_SAVE_PERSISTENT_PROGRESS = true;
+
         private static readonly object SaveLock = new();
         private static readonly Dictionary<string, EngineEventListener> AchievementListeners = new(StringComparer.OrdinalIgnoreCase);
         private static readonly List<EngineEventListener> CollectionListeners = new();
@@ -745,7 +749,9 @@ namespace ConsoleBalatro.Engine
 
             PersistentProgressCounts[progressKey] = GetPersistentProgressCount(progressKey) + amount;
             EngineEventHandler.TriggerEvent(new EngineEventArgs { MyContext = new EventContext { Context = EventContextType.AchievementProgressChanged } });
-            SaveProgress();
+
+            if(AUTO_SAVE_PERSISTENT_PROGRESS)
+                SaveProgress();
         }
 
         private static HashSet<string> GetAllConsumableDbNames()

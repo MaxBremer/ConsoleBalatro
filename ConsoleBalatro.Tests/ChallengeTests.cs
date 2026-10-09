@@ -9,12 +9,43 @@ using ConsoleBalatro.Engine.Pools.Rollables;
 using ConsoleBalatro.Engine.Pools.Rules;
 using ConsoleBalatro.Engine.Cards;
 using ConsoleBalatro.Engine.Cards.Enums;
+using ConsoleBalatro.Engine.Cards.Tags;
 using Xunit;
 
 namespace ConsoleBalatro.Tests;
 
 public class ChallengeTests : TestClassBase
 {
+    [Fact]
+    public void Fragile_PackAndTagPoolsExcludeSourcesOfNonGlassCards()
+    {
+        StartChallenge("FRAGILE");
+
+        var bannedPacks = new HashSet<string>
+        {
+            "BASIC CARD PACK",
+            "JUMBO CARD PACK",
+            "MEGA CARD PACK",
+        };
+
+        for (var i = 0; i < 100; i++)
+        {
+            var pack = PoolManager.RollSingle(new ContentRollRequest
+            {
+                Pool = ItemPool.Pack,
+                Source = GenerationSource.Shop,
+            });
+            Assert.DoesNotContain(pack.Id, bannedPacks);
+
+            var tag = Assert.IsType<TagRollableDefinition>(PoolManager.RollSingle(new ContentRollRequest
+            {
+                Pool = ItemPool.Tag,
+                Source = GenerationSource.Tag,
+            }));
+            Assert.NotEqual(TagType.MEGA_STANDARD, tag.TagType);
+        }
+    }
+
     [Fact]
     public void Challenges_DefaultToFirstTwoUnlocked()
     {

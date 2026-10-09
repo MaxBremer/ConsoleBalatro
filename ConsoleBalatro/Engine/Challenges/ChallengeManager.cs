@@ -2,6 +2,7 @@ using ConsoleBalatro.Engine.Cards;
 using ConsoleBalatro.Engine.Cards.Consumables;
 using ConsoleBalatro.Engine.Cards.Enums;
 using ConsoleBalatro.Engine.Cards.Jokers;
+using ConsoleBalatro.Engine.Cards.Tags;
 using ConsoleBalatro.Engine.Cards.Vouchers;
 using ConsoleBalatro.Engine.Events;
 using ConsoleBalatro.Engine.Events.Args;
@@ -578,6 +579,16 @@ public static class ChallengeManager
             challengeDef.BannedPoolItems[ItemPool.Voucher] = [
                 "MAGIC TRICK",
                 "ILLUSION"
+                ];
+
+            challengeDef.BannedPoolItems[ItemPool.Pack] = [
+                "BASIC CARD PACK",
+                "JUMBO CARD PACK",
+                "MEGA CARD PACK"
+                ];
+
+            challengeDef.BannedPoolItems[ItemPool.Tag] = [
+                nameof(TagType.MEGA_STANDARD)
                 ];
 
             return challengeDef;

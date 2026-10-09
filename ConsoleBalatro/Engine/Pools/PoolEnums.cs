@@ -13,6 +13,7 @@ namespace ConsoleBalatro.Engine.Pools
         Planet,
         Spectral,
         Pack,
+        Tag,
         Voucher,
         PlayingCard,
     }

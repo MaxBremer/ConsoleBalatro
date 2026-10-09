@@ -8,6 +8,7 @@ using ConsoleBalatro.Engine.Events.Args;
 using ConsoleBalatro.Engine.Market;
 using ConsoleBalatro.Engine.Stakes;
 using ConsoleBalatro.Engine.Challenges;
+using ConsoleBalatro.Engine.Pools;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -807,18 +808,23 @@ namespace ConsoleBalatro.Engine
         /// <param name="makeUnique">A boolean indicating whether to guarantee the two tags be unique (as in, not the same as each other) or not.</param>
         public static void InitNewTags(bool makeUnique)
         {
-            var values = Enum.GetValues(typeof(TagType)).Cast<TagType>().Where(x => x != TagType.NONE).ToArray();
-            if (makeUnique)
+            var batch = new ContentRollBatchContext
             {
-                var shuffled = values.OrderBy(x => Globals.randomNext(Int32.MaxValue)).ToArray();
-                CurSmallBlindTagCard = TagDb.BuildTagOfType(shuffled[0]);
-                CurBigBlindTagCard = TagDb.BuildTagOfType(shuffled[1]);
-            }
-            else
+                AllowDuplicateResultsInSameBatch = !makeUnique,
+            };
+            CurSmallBlindTagCard = RollTag(batch);
+            CurBigBlindTagCard = RollTag(batch);
+        }
+
+        private static Card RollTag(ContentRollBatchContext batch)
+        {
+            var definition = (Pools.Rollables.TagRollableDefinition)PoolManager.RollSingle(new ContentRollRequest
             {
-                CurSmallBlindTagCard = TagDb.BuildTagOfType(values[Globals.randomNext(values.Length)]);
-                CurBigBlindTagCard = TagDb.BuildTagOfType(values[Globals.randomNext(values.Length)]);
-            }
+                Pool = ItemPool.Tag,
+                Source = GenerationSource.Tag,
+                Batch = batch,
+            });
+            return TagDb.BuildTagOfType(definition.TagType);
         }
 
         /// <summary>

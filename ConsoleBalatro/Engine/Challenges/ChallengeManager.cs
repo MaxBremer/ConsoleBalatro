@@ -523,6 +523,65 @@ public static class ChallengeManager
 
             return challengeDef;
         } },
+        {"FRAGILE", () =>
+        {
+            var challengeDef = new ChallengeDefinition
+            {
+                Id = "FRAGILE",
+                Name = "Fragile",
+                ChallengeIndex = 14,
+                Description = "Careful handling your deck... it shatters easily."
+            };
+
+            for (int i = 0; i < 2; i++)
+            {
+                challengeDef.StartingJokers.Add(() =>
+                {
+                    var addJok = JokerDb.GenerateJokerCard("OOPS! ALL 6S");
+                    addJok.AddSticker(Sticker.ETERNAL);
+                    addJok.SetEditionOfficial(Edition.NEGATIVE);
+                    return addJok;
+                });
+            }
+
+            challengeDef.ModifyStartingDeck = cz =>
+            {
+                foreach (var c in cz.Cards)
+                {
+                    c.SetEnhancementOfficial(Enhancement.GLASS);
+	            }
+            };
+
+            challengeDef.BannedPoolItems[ItemPool.Joker] = [
+                "MARBLE JOKER",
+                "VAMPIRE",
+                "MIDAS MASK",
+                "CERTIFICATE"
+                ];
+
+            challengeDef.BannedPoolItems[ItemPool.Tarot] = [
+                "MAGICIAN",
+                "EMPRESS",
+                "HIEROPHANT",
+                "CHARIOT",
+                "DEVIL",
+                "TOWER",
+                "LOVERS",
+                ];
+
+            challengeDef.BannedPoolItems[ItemPool.Spectral] = [
+                "INCANTATION",
+                "GRIM",
+                "FAMILIAR",
+                ];
+
+            challengeDef.BannedPoolItems[ItemPool.Voucher] = [
+                "MAGIC TRICK",
+                "ILLUSION"
+                ];
+
+            return challengeDef;
+        } },
     };
 
     public static IReadOnlyList<ChallengeDefinition> All => Definitions.Values.ToList();

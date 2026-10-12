@@ -777,7 +777,7 @@ public static class ChallengeManager
 
             challengeDef.CustomRulesJokerBuilder = c =>
             {
-                var ret = JokerDb.BasicDataBlock("Cruelty challenge", "Small and Big Blinds give no reward money.");
+                var ret = JokerDb.BasicDataBlock("Cruelty challenge", "Small and Big Blinds give no reward money. If you're seeing this, you shouldn't be lol.");
                 ret.Listeners.Add(new EngineEventListener()
                 {
                     MyContextType = EventContextType.GatherPostRoundMoney,
@@ -792,6 +792,38 @@ public static class ChallengeManager
 
                 return ret;
             };
+
+            return challengeDef;
+        } },
+        {"JOKERLESS", () =>
+        {
+            var challengeDef = new ChallengeDefinition { Id = "JOKERLESS",
+                Name = "Jokerless",
+                ChallengeIndex = 20,
+                Description = "No Jokers. Nope. None.",
+                //NOTE: Yeah, it's jank to use ModifyStartingDeck for this, but honestly feels less jank then using the custom rules joker.
+                ModifyStartingDeck = cz =>
+                    {
+                        ZoneManager.JokerZone.MaxCapacity = 0;
+                    },
+
+                CustomRulesJokerBuilder = c =>
+                    {
+                        var ret = JokerDb.BasicDataBlock("Jokerless challenge", "Jokers no longer appear in the shop. If you're seeing this, you shouldn't be lol.");
+                        ret.Listeners.Add(new EngineEventListener()
+                        {
+                            MyContextType = EventContextType.MarketTypeBeingChosen,
+                            MyAction = args =>
+                            {
+                                if (args is EngineMarketTypeBeingChosenArgs mArgs && mArgs.WeightsBeingRolled.ContainsKey(BuyItemType.JOKER))
+                                {
+                                    mArgs.WeightsBeingRolled.Remove(BuyItemType.JOKER);
+                                }
+                            }
+                        });
+
+                        return ret;
+                    } };
 
             return challengeDef;
         } },

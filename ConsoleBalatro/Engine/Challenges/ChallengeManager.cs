@@ -593,6 +593,111 @@ public static class ChallengeManager
 
             return challengeDef;
         } },
+        {"MONOLITH", () =>
+        {
+            var challengeDef = new ChallengeDefinition
+            {
+                Id = "MONOLITH",
+                Name = "Monolith",
+                ChallengeIndex = 15,
+                Description = "Eternal Obelisk. Eternal Negative Marble Joker."
+            };
+
+            challengeDef.StartingJokers.Add(() =>
+            {
+                var ret = JokerDb.GenerateJokerCard("OBELISK");
+                ret.AddSticker(Sticker.ETERNAL);
+                return ret;
+            });
+            challengeDef.StartingJokers.Add(() =>
+            {
+                var ret = JokerDb.GenerateJokerCard("MARBLE JOKER");
+                ret.AddSticker(Sticker.ETERNAL);
+                ret.SetEditionOfficial(Edition.NEGATIVE);
+                return ret;
+            });
+
+
+            return challengeDef;
+        } },
+        {"BLAST OFF", () =>
+        {
+            var challengeDef = new ChallengeDefinition
+            {
+                Id = "BLAST OFF",
+                Name = "Blast Off",
+                ChallengeIndex = 16,
+                Description = "Eternal Constellation, Eternal Rocket, Planet Merchant, Planet Tycoon. 2 hands, 2 discards, 4 joker slots."
+            };
+
+            challengeDef.StartingJokers.Add(() =>
+            {
+                var ret = JokerDb.GenerateJokerCard("CONSTELLATION");
+                ret.AddSticker(Sticker.ETERNAL);
+                return ret;
+            });
+            challengeDef.StartingJokers.Add(() =>
+            {
+                var ret = JokerDb.GenerateJokerCard("ROCKET");
+                ret.AddSticker(Sticker.ETERNAL);
+                return ret;
+            });
+
+            //NOTE: Yeah, it's jank to use ModifyStartingDeck for this, but honestly feels less jank then using the custom rules joker.
+            challengeDef.ModifyStartingDeck = cz =>
+            {
+                Globals.MaxHandsPerRound = 2;
+                Globals.MaxDiscardsPerRound = 2;
+                ZoneManager.JokerZone.MaxCapacity = 4;
+            };
+
+            challengeDef.BannedPoolItems[ItemPool.Voucher] = [
+                "GRABBER",
+                "NACHO TONG"
+                ];
+            challengeDef.BannedPoolItems[ItemPool.Joker] = [
+                "BURGLAR"
+                ];
+
+            return challengeDef;
+        } },
+        {"FIVE CARD DRAW", () =>
+        {
+            var challengeDef = new ChallengeDefinition
+            {
+                Id = "FIVE CARD DRAW",
+                Name = "Five-Card Draw",
+                ChallengeIndex = 17,
+                Description = "Start with Card Sharp and Jimbo. 6 discards per round, 7 Joker slots, hand size is 5."
+            };
+
+            challengeDef.StartingJokers.Add(() =>
+            {
+                var ret = JokerDb.GenerateJokerCard("CARD SHARP");
+                return ret;
+            });
+            challengeDef.StartingJokers.Add(() =>
+            {
+                var ret = JokerDb.GenerateJokerCard("JIMBO");
+                return ret;
+            });
+
+            //NOTE: Yeah, it's jank to use ModifyStartingDeck for this, but honestly feels less jank then using the custom rules joker.
+            challengeDef.ModifyStartingDeck = cz =>
+            {
+                Globals.MaxDiscardsPerRound = 6;
+                ZoneManager.JokerZone.MaxCapacity = 7;
+                Globals.HandSize = 5;
+            };
+
+            challengeDef.BannedPoolItems[ItemPool.Joker] = [
+                "JUGGLER",
+                "TROUBADOUR",
+                "TURTLE BEAN"
+                ];
+
+            return challengeDef;
+        } },
     };
 
     public static IReadOnlyList<ChallengeDefinition> All => Definitions.Values.ToList();

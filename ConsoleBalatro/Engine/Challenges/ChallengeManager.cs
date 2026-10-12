@@ -698,6 +698,103 @@ public static class ChallengeManager
 
             return challengeDef;
         } },
+        {"GOLDEN NEEDLE", () =>
+        {
+            var challengeDef = new ChallengeDefinition
+            {
+                Id = "GOLDEN NEEDLE",
+                Name = "Golden Needle",
+                ChallengeIndex = 18,
+                Description = "Discards each cost $1. 1 hand, 6 discards per round. Start with $10 and Credit Card."
+            };
+
+            challengeDef.StartingJokers.Add(() =>
+            {
+                var ret = JokerDb.GenerateJokerCard("CREDIT CARD");
+                return ret;
+            });
+
+            //NOTE: Yeah, it's jank to use ModifyStartingDeck for this, but honestly feels less jank then using the custom rules joker.
+            challengeDef.ModifyStartingDeck = cz =>
+            {
+                Globals.MaxHandsPerRound = 1;
+                Globals.MaxDiscardsPerRound = 6;
+                Globals.Money = 10;
+            };
+
+            challengeDef.BannedPoolItems[ItemPool.Joker] = [
+                "BURGLAR",
+                ];
+            challengeDef.BannedPoolItems[ItemPool.Voucher] = [
+                "GRABBER",
+                "NACHO TONG"
+                ];
+
+            challengeDef.CustomRulesJokerBuilder = c =>
+            {
+                var retJok = JokerDb.BasicDataBlock("Golden Needle challenge", "Discards cost $1. If you're seeing this, you shouldn't be lol.");
+
+                retJok.Listeners.Add(new EngineEventListener()
+                {
+                    MyContextType = EventContextType.DiscardAvailabilityCheck,
+                    MyAction = args =>
+                    {
+                        if (args is EngineDiscardAvailabilityCheckArgs discArgs && discArgs.CurrentValue && !Globals.CanAfford(1))
+                        {
+                            discArgs.CurrentValue = false;
+                        }
+                    },
+                });
+                retJok.Listeners.Add(new EngineEventListener()
+                {
+                    MyContextType = EventContextType.HandDiscardDone,
+                    MyAction = args =>
+                    {
+                        Globals.EmitMoneyLoss(1, c, false);
+                    },
+                });
+
+                return retJok;
+            };
+
+            return challengeDef;
+        } },
+        {"CRUELTY", () =>
+        {
+            var challengeDef = new ChallengeDefinition
+            {
+                Id = "CRUELTY",
+                Name = "Cruelty",
+                ChallengeIndex = 19,
+                Description = "Small and Big blinds give no reward money. 3 Joker slots."
+            };
+
+            //NOTE: Yeah, it's jank to use ModifyStartingDeck for this, but honestly feels less jank then using the custom rules joker.
+            challengeDef.ModifyStartingDeck = cz =>
+            {
+                ZoneManager.JokerZone.MaxCapacity = 3;
+            };
+
+            challengeDef.CustomRulesJokerBuilder = c =>
+            {
+                var ret = JokerDb.BasicDataBlock("Cruelty challenge", "Small and Big Blinds give no reward money.");
+                ret.Listeners.Add(new EngineEventListener()
+                {
+                    MyContextType = EventContextType.GatherPostRoundMoney,
+                    MyAction = args =>
+                    {
+                        if (args is EngineGatherPostRoundMoneyArgs mArgs && (FlowHandler.CurrentSelectedBlind == BlindType.SMALL || FlowHandler.CurrentSelectedBlind == BlindType.BIG))
+                        {
+                            mArgs.ExistingSources.RemoveAll(x => x.Item1 == "Blind");
+                        }
+                    }
+                });
+
+                return ret;
+            };
+
+            return challengeDef;
+        } },
     };
 
     public static IReadOnlyList<ChallengeDefinition> All => Definitions.Values.ToList();

@@ -264,7 +264,16 @@ namespace ConsoleBalatro.Engine
         /// <summary>
         /// Can the player discard from hand right now?
         /// </summary>
-        public static bool CanDiscard => CurDiscardsRemaining > 0;
+        public static bool CanDiscard
+        {
+            get
+            {
+                var curValToSet = CurDiscardsRemaining > 0;
+                var args = new EngineDiscardAvailabilityCheckArgs() { CurrentValue = curValToSet, OriginalIntendedValue = curValToSet};
+                EngineEventHandler.TriggerEvent(args);
+                return args.CurrentValue; 
+            } 
+        }
 
         /// <summary>
         /// This is the big one. Initialize the whole Balatro Engine.

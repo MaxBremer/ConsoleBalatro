@@ -127,6 +127,7 @@ namespace ConsoleBalatro.Engine.Events
         HandSizeChanged,
 
         CardPriceGet,
+        DiscardAvailabilityCheck,
     }
     public class EventContext
     {

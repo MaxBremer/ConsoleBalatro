@@ -1,6 +1,7 @@
 ﻿using ConsoleBalatro.Engine.Cards.Consumables;
 using ConsoleBalatro.Engine.Cards.Jokers;
 using ConsoleBalatro.Engine.Cards.Vouchers;
+using ConsoleBalatro.Engine.Cards.Tags;
 using ConsoleBalatro.Engine.Pools.Rollables;
 using ConsoleBalatro.Engine.Pools.Rules;
 using System;
@@ -34,6 +35,7 @@ namespace ConsoleBalatro.Engine.Pools
         public static Dictionary<string, RollableDefinition> PlanetCardPool = new Dictionary<string, RollableDefinition>();
         public static Dictionary<string, RollableDefinition> JokerPool = new Dictionary<string, RollableDefinition>();
         public static Dictionary<string, RollableDefinition> PackPool = new Dictionary<string, RollableDefinition>();
+        public static Dictionary<string, RollableDefinition> TagPool = new Dictionary<string, RollableDefinition>();
         public static Dictionary<string, RollableDefinition> VoucherPool = new Dictionary<string, RollableDefinition>();
         public static Dictionary<string, RollableDefinition> PlayingCardPool = new Dictionary<string, RollableDefinition>();
 
@@ -52,6 +54,7 @@ namespace ConsoleBalatro.Engine.Pools
             PlanetCardPool.Clear();
             JokerPool.Clear();
             PackPool.Clear();
+            TagPool.Clear();
             VoucherPool.Clear();
             PlayingCardPool.Clear();
 
@@ -77,9 +80,15 @@ namespace ConsoleBalatro.Engine.Pools
                 JokerPool.Add(j.DBName, new JokerRollableDefinition(j));
             }
 
-            foreach (var p in ConsumableManager.PackBasicNums.Values.Select(x => x.ID))
+            foreach (var p in ConsumableManager.PackBasicNums.Values.Where(x => x.ChanceToAppear > 0))
             {
-                PackPool.Add(p, new PackRollableDefinition(p));
+                PackPool.Add(p.ID, new PackRollableDefinition(p.ID, p.ChanceToAppear));
+            }
+
+            foreach (var tagType in Enum.GetValues<TagType>().Where(x => x != TagType.NONE))
+            {
+                var definition = new TagRollableDefinition(tagType);
+                TagPool.Add(definition.Id, definition);
             }
 
             foreach (var v in VoucherDb.VoucherDBNames)
@@ -149,6 +158,7 @@ namespace ConsoleBalatro.Engine.Pools
                 ItemPool.Planet => PlanetCardPool,
                 ItemPool.Joker => JokerPool,
                 ItemPool.Pack => PackPool,
+                ItemPool.Tag => TagPool,
                 ItemPool.Voucher => VoucherPool,
                 ItemPool.PlayingCard => PlayingCardPool,
                 _ => throw new ArgumentException("Invalid content pool specified.")

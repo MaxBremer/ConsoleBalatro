@@ -1086,20 +1086,12 @@ namespace ConsoleBalatro.Engine.Cards.Consumables
 
         public static Card MakePackByOdds()
         {
-            PackType chosenPackType = PackType.BASIC_JOKER;
-            var roll = Globals.randomNext(PackTotalOdds);
-            foreach (var kv in PackBasicNums)
+            var definition = PoolManager.RollSingle(new ContentRollRequest
             {
-                if(roll < kv.Value.ChanceToAppear)
-                {
-                    chosenPackType = kv.Key;
-                    break;
-                }
-                else
-                {
-                    roll -= kv.Value.ChanceToAppear;
-                }
-            }
+                Pool = ItemPool.Pack,
+                Source = GenerationSource.Shop,
+            });
+            var chosenPackType = PackBasicNums.First(x => x.Value.ID == definition.Id).Key;
             return MakePack(chosenPackType);
         }
 

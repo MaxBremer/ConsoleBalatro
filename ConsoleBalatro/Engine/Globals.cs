@@ -73,7 +73,7 @@ namespace ConsoleBalatro.Engine
             if (double.IsNaN(chipCount) || chipCount <= 0)
                 return 0;
 
-            if (double.IsPositiveInfinity(chipCount) || chipCount >= (double)MaxChipCount)
+            if (chipCount >= (double)MaxChipCount)
                 return MaxChipCount;
 
             return new BigInteger(chipCount);
@@ -97,11 +97,20 @@ namespace ConsoleBalatro.Engine
 
         private static BigInteger _reqChipsBlind = -1;
 
-        //The pre-calculation values of current chips and mult.
-        //By pre-calculation I mean like literally before they're multiplied together to get the final chips.
+        /// <summary>
+        /// The current pre-final-multiplication value of chips for scoring.
+        /// </summary>
         public static BigInteger CurrentChips = 0;
+
+        /// <summary>
+        /// The current pre-final-multiplication value of mult for scoring.
+        /// </summary>
         public static double CurrentMult = 0;
 
+        /// <summary>
+        /// Global price multiplier, used for discount effects.
+        /// Should it be an event listener instead, modifying the price in a pass-around? Probably. Fuck you.
+        /// </summary>
         public static double DiscountMultiplier = 1.0;//For price discounting effects
 
         //The "number to beat" for the current blind.
@@ -118,8 +127,17 @@ namespace ConsoleBalatro.Engine
 
 
         //Game state tracking fields; check GameState enum vals for potential states.
+        /// <summary>
+        /// The gamestate stack. Frankly, I don't often use this as a stack, but ideally you could.
+        /// </summary>
         public static Stack<GameStateObj> GameStateStack = new();
+        /// <summary>
+        /// Gets the current active game state object from the stack.
+        /// </summary>
         public static GameStateObj CurrentGameStateObj => GameStateStack.Peek();
+        /// <summary>
+        /// Gets the value of the currently active game state, ie PlayRound, MarketRound, BlindSelection, etc.
+        /// </summary>
         public static GameState CurrentGameState => CurrentGameStateObj.GameState;
 
 
@@ -144,7 +162,9 @@ namespace ConsoleBalatro.Engine
         //Used to track the "card source" of reroll costs. Actually useful, not just a hack.
         public static Card? RerollButtonCard;
 
-        //Max capacity of hand zone.
+        /// <summary>
+        /// Gets the zone size of the hand.
+        /// </summary>
         public static int HandSize { get => ZoneManager.HandSize; set => ZoneManager.HandSize = value; }
 
         /// <summary>
@@ -444,7 +464,7 @@ namespace ConsoleBalatro.Engine
                 sContext.PlayingCardsBeingScored.AddRange(cardsInActualHandPlayed);//Uhhh shouldn't this be cardsForScoringCalc? TODO
                 //like honestly wtf did I write here?
                 sContext.AllPlayingCardsSubmittedForHand.AddRange(selCards);//See this one makes sense
-                foreach (var cardScored in cardsForScoringCalc)//see this makes sense
+                foreach (var cardScored in cardsForScoringCalc)//this too. nothing else tho.
                 {
                     cardScored.TriggerScoring(sContext);
                 }

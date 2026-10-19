@@ -14,8 +14,14 @@ namespace ConsoleBalatro.Engine.Cards.Vouchers
 {
     public static class VoucherDb
     {
-        public static Dictionary<string, string> VoucherDependants = new();
+        /// <summary>
+        /// Tracks the list of voucher dependents, 
+        /// </summary>
+        public static Dictionary<string, string> VoucherDependents = new();
 
+        /// <summary>
+        /// DB of the achievements needed to unlock certain Vouchers.
+        /// </summary>
         public static Dictionary<string, string> VoucherUnlockAchieves = new()
         {
             ["NACHO TONG"] = AchievementDb.NachoTong_UnlockId,
@@ -36,6 +42,9 @@ namespace ConsoleBalatro.Engine.Cards.Vouchers
             ["ILLUSION"] = AchievementDb.Illusion_UnlockId,
         };
 
+        /// <summary>
+        /// Full voucher database.
+        /// </summary>
         public static Dictionary<string, Func<Card, JokerCardDataBlock>> VoucherData = new()
         {
             {
@@ -739,14 +748,24 @@ namespace ConsoleBalatro.Engine.Cards.Vouchers
             },
         };
 
+        /// <summary>
+        /// Gets a list of all defined voucher names.
+        /// </summary>
         public static List<string> VoucherDBNames => VoucherData.Keys.ToList();
 
+        /// <summary>
+        /// Reset the tracked list of voucher dependents.
+        /// </summary>
         public static void ResetDependants()
         {
-            VoucherDependants.Clear();
+            VoucherDependents.Clear();
         }
 
-        //Give the passed card the data necessary to make it the named Voucher (DB NAME)
+        /// <summary>
+        /// Make passed card the named voucher, non-destructively.
+        /// </summary>
+        /// <param name="c">The card to be turned into the voucher.</param>
+        /// <param name="VoucherName">The DB name of the voucher</param>
         public static void MakeCardVoucher(Card c, string VoucherName)
         {
             var toSet = VoucherData[VoucherName](c);
@@ -757,7 +776,11 @@ namespace ConsoleBalatro.Engine.Cards.Vouchers
             c.BaseCost = 10; //Voucher all base cost is 10? I think?
         }
 
-        //Generate and return a fresh Card object that is the named Voucher (DB NAME)
+        /// <summary>
+        /// Return a fresh Card object that is the passed voucher.
+        /// </summary>
+        /// <param name="VoucherName">The DB name of the Voucher to be generated as a card</param>
+        /// <returns>A card object that is the passed voucher.</returns>
         public static Card MakeVoucherCard(string VoucherName)
         {
             var c = new Card();
@@ -765,6 +788,13 @@ namespace ConsoleBalatro.Engine.Cards.Vouchers
             return c;
         }
 
+        /// <summary>
+        /// Generate a default, empty JokerCardDataBlock with the correct name, dbname, and metadata values passed.
+        /// </summary>
+        /// <param name="name">The name for the Voucher data block (DB name is name.ToUpper)</param>
+        /// <param name="nextVoucher">Optional successor voucher for the data block.</param>
+        /// <param name="prevVoucher">Optional predecessor voucher for the data block.</param>
+        /// <returns></returns>
         private static JokerCardDataBlock VoucherDatablock(string name, string nextVoucher = "", string prevVoucher = "")
         {
             var ret = new JokerCardDataBlock();

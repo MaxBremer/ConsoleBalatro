@@ -112,7 +112,6 @@ namespace ConsoleBalatro.Engine
             { "ACE", new() { Rank.ACE } },
         };
 
-        public static List<Rank> FaceRanks => RankGroups["FACE"];
         public static bool isFace(Card c) => RankGroups["FACE"].Contains(c.Rank);
 
         public static Dictionary<Edition, string> EditionDescriptors = new Dictionary<Edition, string>()

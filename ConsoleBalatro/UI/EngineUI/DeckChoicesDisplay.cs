@@ -50,6 +50,7 @@ namespace ConsoleBalatro.UI.EngineUI
 
         public bool CanSelectCurrentStake => !string.IsNullOrEmpty(SelectedDeckName) && UnlockManager.IsStakeUnlockedForDeck(SelectedDeckName, SelectedStake);
         public bool CanSelectCurrentChallenge => SelectedChallenge != null && ChallengeManager.IsUnlocked(SelectedChallenge.Id);
+        public bool IsChallengeModeUnlocked => UnlockManager.IsAchievementAchieved(AchievementDb.OmeletteChallengeUnlockId);
 
         public void SelectNextDeck()
         {
@@ -63,7 +64,11 @@ namespace ConsoleBalatro.UI.EngineUI
             MoveDeckSelection(-1);
         }
 
-        public void ToggleRunType() => IsChallengeMode = !IsChallengeMode;
+        public void ToggleRunType()
+        {
+            if (IsChallengeMode || IsChallengeModeUnlocked)
+                IsChallengeMode = !IsChallengeMode;
+        }
 
         private void MoveChallengeSelection(int direction)
         {
@@ -122,7 +127,9 @@ namespace ConsoleBalatro.UI.EngineUI
             WriteCentered(1, IsChallengeMode ? "CHOOSE A CHALLENGE" : "CHOOSE YOUR DECK");
             WriteLine(ContentMargin, 3, IsChallengeMode
                 ? "Tab: regular decks    Left/Right: browse challenges"
-                : "Tab: challenges    Left/Right: decks    Up/Down: stakes");
+                : IsChallengeModeUnlocked
+                    ? "Tab: challenges    Left/Right: decks    Up/Down: stakes"
+                    : "Left/Right: decks    Up/Down: stakes");
         }
 
         private void DrawDeckArt()

@@ -72,6 +72,7 @@ namespace ConsoleBalatro.Engine
         public static int CollectedConsumableCount => CollectedConsumables.Count;
         public static int CollectedBossBlindCount => CollectedBossBlinds.Count;
         public static int CollectionCount => CollectedJokerCount + CollectedConsumableCount + CollectedBossBlindCount;
+        public static int WonDeckCount => DeckHighestBeatenStakeIndexes.Count(deck => deck.Value >= 0);
         // When true, unlocks, achievements, and collection progress still update in memory, but are not written to the permanent save file.
         public static bool PermanentProgressSavingDisabled { get; set; } = false;
 
@@ -140,6 +141,8 @@ namespace ConsoleBalatro.Engine
 
             if (AchievementDb.ChallengeCompletionAchievementIds.TryGetValue(challengeId, out var achievementId))
                 MarkAchievementAchieved(achievementId, saveImmediately: false);
+
+            EngineEventHandler.TriggerEvent(new EngineEventArgs { MyContext = new EventContext { Context = EventContextType.AchievementProgressChanged } });
 
             if (saveImmediately)
                 SaveProgress();
@@ -214,6 +217,7 @@ namespace ConsoleBalatro.Engine
             }
 
             DeckHighestBeatenStakeIndexes[deckDbName] = stakeIndex;
+            EngineEventHandler.TriggerEvent(new EngineEventArgs { MyContext = new EventContext { Context = EventContextType.AchievementProgressChanged } });
             if (saveImmediately)
             {
                 SaveProgress();
@@ -507,6 +511,11 @@ namespace ConsoleBalatro.Engine
             StartPersistentProgressListeners();
             StartCollectionListeners();
             StartUnachievedAchievementListeners();
+
+            // Existing saves may already meet newly added challenge achievement requirements.
+            foreach (var challengeId in BeatenChallenges)
+                MarkAchievementAchieved(AchievementDb.ChallengeCompletionAchievementIds[challengeId], saveImmediately: false);
+            EngineEventHandler.TriggerEvent(new EngineEventArgs { MyContext = new EventContext { Context = EventContextType.AchievementProgressChanged } });
         }
 
         private static void StartUnachievedAchievementListeners()

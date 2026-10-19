@@ -834,7 +834,7 @@ public static class ChallengeManager
 
     public static IReadOnlyList<ChallengeDefinition> All => Definitions.Values.ToList();
     public static IReadOnlyCollection<string> DefaultUnlockedChallengeIds { get; } =
-        new HashSet<string>(StringComparer.OrdinalIgnoreCase) { "THE OMELETTE", "15 MINUTE CITY" };
+        Array.Empty<string>();
     public static IReadOnlyCollection<string> UnlockedChallengeIds =>
         Definitions.Keys.Where(UnlockManager.IsChallengeUnlocked).OrderBy(x => x).ToList();
     public static ChallengeDefinition? CurrentChallenge { get; private set; }

@@ -1,6 +1,7 @@
 ﻿using ConsoleBalatro.Engine.Cards;
 using ConsoleBalatro.Engine.Cards.Consumables;
 using ConsoleBalatro.Engine.Cards.Enums;
+using ConsoleBalatro.Engine.Challenges;
 using ConsoleBalatro.Engine.Events;
 using ConsoleBalatro.Engine.Events.Args;
 using ConsoleBalatro.Engine.Stakes;
@@ -36,20 +37,17 @@ namespace ConsoleBalatro.Engine
         public const string FifteenMinuteCityChallengeWinId = "15_MINUTE_CITY_CHALLENGE_WIN";
         public const string RichGetRicherChallengeWinId = "RICH_GET_RICHER_CHALLENGE_WIN";
         public const string RichGetRicherChallengeUnlockId = "RICH_GET_RICHER_CHALLENGE_UNLOCK";
+        public const string OmeletteChallengeUnlockId = "THE_OMELETTE_CHALLENGE_UNLOCK";
+        public const string AllChallengesCompleteId = "ALL_CHALLENGES_COMPLETE";
 
         public static IReadOnlyDictionary<string, string> ChallengeCompletionAchievementIds { get; } =
-            new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase)
-            {
-                ["THE OMELETTE"] = OmeletteChallengeWinId,
-                ["15 MINUTE CITY"] = FifteenMinuteCityChallengeWinId,
-                ["RICH GET RICHER"] = RichGetRicherChallengeWinId,
-            };
+            ChallengeManager.All.ToDictionary(challenge => challenge.Id,
+                challenge => $"{challenge.Id.Replace(' ', '_')}_CHALLENGE_WIN", StringComparer.OrdinalIgnoreCase);
 
         public static IReadOnlyDictionary<string, string> ChallengeUnlocksByAchievementId { get; } =
-            new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase)
-            {
-                [RichGetRicherChallengeUnlockId] = "RICH GET RICHER",
-            };
+            ChallengeManager.All.OrderBy(challenge => challenge.ChallengeIndex).ToDictionary(
+                challenge => $"{challenge.Id.Replace(' ', '_')}_CHALLENGE_UNLOCK",
+                challenge => challenge.Id, StringComparer.OrdinalIgnoreCase);
 
 
 
@@ -171,15 +169,29 @@ namespace ConsoleBalatro.Engine
             RegisterStakeWinUnlock(PlasmaDeckUnlockId, "Plasma", StakeType.BLUE);
             RegisterStakeWinUnlock(ErraticDeckUnlockId, "Erratic", StakeType.ORANGE);
 
-            RegisterChallengeCompletion(OmeletteChallengeWinId, "The Omelette");
-            RegisterChallengeCompletion(FifteenMinuteCityChallengeWinId, "15 Minute City");
-            RegisterChallengeCompletion(RichGetRicherChallengeWinId, "Rich get Richer");
+            foreach (var (achievementId, challengeId) in ChallengeUnlocksByAchievementId)
+            {
+                var challenge = ChallengeManager.All.Single(challenge => challenge.Id == challengeId);
+                RegisterChallengeCompletion(ChallengeCompletionAchievementIds[challengeId], challenge.Name);
+                var requiredCompletions = challenge.ChallengeIndex - 5;
+                RegisterAllAchievementData(
+                    achievementId,
+                    $"{challenge.Name} Challenge Unlocked",
+                    requiredCompletions <= 0
+                        ? "Win a run (beat Ante 8) with 5 different decks on any difficulty."
+                        : $"Beat {requiredCompletions} different challenges.",
+                    EventContextType.AchievementProgressChanged,
+                    _ => requiredCompletions <= 0
+                        ? UnlockManager.WonDeckCount >= 5
+                        : UnlockManager.IsAchievementAchieved(OmeletteChallengeUnlockId)
+                            && UnlockManager.BeatenChallengeIds.Count >= requiredCompletions);
+            }
             RegisterAllAchievementData(
-                RichGetRicherChallengeUnlockId,
-                "Rich get Richer Challenge Unlocked",
-                "Beat The Omelette and 15 Minute City challenges.",
-                EventContextType.AchievementUnlocked,
-                _ => UnlockManager.IsChallengeBeaten("THE OMELETTE") && UnlockManager.IsChallengeBeaten("15 MINUTE CITY"));
+                AllChallengesCompleteId,
+                "Challenge Master",
+                "Beat all 20 challenges.",
+                EventContextType.AchievementProgressChanged,
+                _ => ChallengeManager.All.All(challenge => UnlockManager.IsChallengeBeaten(challenge.Id)));
 
 
 

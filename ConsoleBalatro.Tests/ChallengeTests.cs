@@ -10,6 +10,8 @@ using ConsoleBalatro.Engine.Pools.Rules;
 using ConsoleBalatro.Engine.Cards;
 using ConsoleBalatro.Engine.Cards.Enums;
 using ConsoleBalatro.Engine.Cards.Tags;
+using ConsoleBalatro.Engine.Stakes;
+using ConsoleBalatro.UI.EngineUI;
 using Xunit;
 
 namespace ConsoleBalatro.Tests;
@@ -47,29 +49,128 @@ public class ChallengeTests : TestClassBase
     }
 
     [Fact]
-    public void Challenges_DefaultToFirstTwoUnlocked()
+    public void Challenges_DefaultToNoneUnlocked_AndCannotToggleChallengeMode()
     {
         UnlockManager.ResetProgressToDefaults();
 
-        Assert.True(ChallengeManager.IsUnlocked("THE OMELETTE"));
-        Assert.True(ChallengeManager.IsUnlocked("15 MINUTE CITY"));
-        Assert.False(ChallengeManager.IsUnlocked("RICH GET RICHER"));
+        Assert.Empty(ChallengeManager.UnlockedChallengeIds);
+        var display = new DeckChoicesDisplay(0, 0);
+        display.ToggleRunType();
+        Assert.False(display.IsChallengeMode);
+        display.PreDisplaySetup();
+        Assert.DoesNotContain("Tab: challenges", GetDisplayRow(display, 3));
     }
 
     [Fact]
-    public void BeatingFirstTwoChallenges_UnlocksThirdChallengeThroughAchievement()
+    public void WinningFiveDifferentDecks_UnlocksFirstFiveChallengesAndMode()
     {
         UnlockManager.ResetProgressToDefaults();
+        var display = new DeckChoicesDisplay(0, 0);
+        foreach (var deck in new[] { "RED", "BLUE", "YELLOW", "GREEN" })
+            UnlockManager.MarkDeckStakeBeaten(deck, StakeType.WHITE, saveImmediately: false);
 
-        Assert.True(UnlockManager.MarkChallengeBeaten("THE OMELETTE", saveImmediately: false));
-        Assert.True(UnlockManager.IsAchievementAchieved(AchievementDb.OmeletteChallengeWinId));
-        Assert.False(ChallengeManager.IsUnlocked("RICH GET RICHER"));
+        // Replays and higher stakes on the same deck do not count as another deck.
+        Assert.False(UnlockManager.MarkDeckStakeBeaten("RED", StakeType.WHITE, saveImmediately: false));
+        UnlockManager.MarkDeckStakeBeaten("RED", StakeType.RED, saveImmediately: false);
+        Assert.Equal(4, UnlockManager.WonDeckCount);
+        Assert.Empty(ChallengeManager.UnlockedChallengeIds);
+        display.ToggleRunType();
+        Assert.False(display.IsChallengeMode);
 
-        Assert.True(UnlockManager.MarkChallengeBeaten("15 MINUTE CITY", saveImmediately: false));
+        UnlockManager.MarkDeckStakeBeaten("BLACK", StakeType.WHITE, saveImmediately: false);
 
-        Assert.True(UnlockManager.IsAchievementAchieved(AchievementDb.FifteenMinuteCityChallengeWinId));
-        Assert.True(UnlockManager.IsAchievementAchieved(AchievementDb.RichGetRicherChallengeUnlockId));
-        Assert.True(ChallengeManager.IsUnlocked("RICH GET RICHER"));
+        Assert.Equal(5, UnlockManager.WonDeckCount);
+        Assert.Equal(5, ChallengeManager.UnlockedChallengeIds.Count);
+        Assert.All(ChallengeManager.All, challenge => Assert.Equal(challenge.ChallengeIndex <= 5, ChallengeManager.IsUnlocked(challenge.Id)));
+        Assert.True(UnlockManager.IsAchievementAchieved(AchievementDb.OmeletteChallengeUnlockId));
+        display.PreDisplaySetup();
+        Assert.Contains("Tab: challenges", GetDisplayRow(display, 3));
+        display.ToggleRunType();
+        Assert.True(display.IsChallengeMode);
+        display.ToggleRunType();
+        Assert.False(display.IsChallengeMode);
+    }
+
+    [Fact]
+    public void DistinctChallengeWins_UnlockNextChallenge_RegardlessOfOrder()
+    {
+        UnlockManager.ResetProgressToDefaults();
+        UnlockChallengeMode();
+
+        for (var completed = 1; completed <= 20; completed++)
+        {
+            // Always beat the highest available challenge, leaving the earliest ones until last.
+            var next = ChallengeManager.All.Where(challenge => ChallengeManager.IsUnlocked(challenge.Id)
+                && !ChallengeManager.IsBeaten(challenge.Id)).MaxBy(challenge => challenge.ChallengeIndex)!;
+            Assert.True(UnlockManager.MarkChallengeBeaten(next.Id, saveImmediately: false));
+            Assert.True(UnlockManager.IsAchievementAchieved(AchievementDb.ChallengeCompletionAchievementIds[next.Id]));
+            Assert.Equal(completed, UnlockManager.BeatenChallengeIds.Count);
+            Assert.Equal(Math.Min(20, 5 + completed), ChallengeManager.UnlockedChallengeIds.Count);
+            Assert.All(ChallengeManager.All, challenge => Assert.Equal(challenge.ChallengeIndex <= 5 + completed,
+                ChallengeManager.IsUnlocked(challenge.Id)));
+            Assert.False(UnlockManager.MarkChallengeBeaten(next.Id, saveImmediately: false));
+            Assert.Equal(Math.Min(20, 5 + completed), ChallengeManager.UnlockedChallengeIds.Count);
+            Assert.Equal(completed == 20, UnlockManager.IsAchievementAchieved(AchievementDb.AllChallengesCompleteId));
+        }
+
+        Assert.DoesNotContain(AchievementDb.AllChallengesCompleteId, AchievementDb.ChallengeUnlocksByAchievementId.Keys);
+    }
+
+    [Fact]
+    public void OnlyAnteEightBossWins_CountTowardChallengeMode()
+    {
+        ResetEngineForTest();
+        UnlockManager.ResetProgressToDefaults();
+        foreach (var deck in new[] { "RED", "BLUE", "YELLOW", "GREEN", "BLACK" })
+        {
+            FlowHandler.CurrentDeckDbName = deck;
+            FlowHandler.CurrentAnte = 7;
+            FlowHandler.CurrentSelectedBlind = BlindType.BOSS;
+            FlowHandler.IncrementBlind();
+        }
+        Assert.Equal(0, UnlockManager.WonDeckCount);
+        Assert.Empty(ChallengeManager.UnlockedChallengeIds);
+
+        foreach (var deck in new[] { "RED", "BLUE", "YELLOW", "GREEN", "BLACK" })
+        {
+            FlowHandler.CurrentDeckDbName = deck;
+            FlowHandler.CurrentAnte = 8;
+            FlowHandler.CurrentSelectedBlind = BlindType.BOSS;
+            FlowHandler.IncrementBlind();
+        }
+        Assert.Equal(5, UnlockManager.WonDeckCount);
+        Assert.Equal(5, ChallengeManager.UnlockedChallengeIds.Count);
+    }
+
+    [Fact]
+    public void ExistingSaveProgress_AwardsNewChallengeAchievementsOnLoad()
+    {
+        var savePath = Path.Combine(Path.GetTempPath(), $"console-balatro-challenges-{Guid.NewGuid():N}.json");
+        var originalPath = UnlockManager.SaveFilePath;
+        try
+        {
+            UnlockManager.SaveFilePath = savePath;
+            UnlockManager.ResetProgressToDefaults();
+            File.WriteAllText(savePath, """
+                {
+                  "Version": 2,
+                  "Decks": { "HighestBeatenStakeIndexes": { "RED": 0, "BLUE": 0, "YELLOW": 0, "GREEN": 0, "BLACK": 0 } },
+                  "Challenges": { "Beaten": ["THE OMELETTE", "15 MINUTE CITY", "X RAY VISION"] }
+                }
+                """);
+
+            Assert.True(UnlockManager.LoadProgress());
+            Assert.Equal(8, ChallengeManager.UnlockedChallengeIds.Count);
+            Assert.True(UnlockManager.IsAchievementAchieved(AchievementDb.OmeletteChallengeUnlockId));
+            Assert.True(UnlockManager.IsAchievementAchieved(AchievementDb.ChallengeCompletionAchievementIds["X RAY VISION"]));
+            Assert.False(UnlockManager.IsAchievementAchieved(AchievementDb.AllChallengesCompleteId));
+        }
+        finally
+        {
+            UnlockManager.SaveFilePath = originalPath;
+            UnlockManager.ResetProgressToDefaults();
+            File.Delete(savePath);
+        }
     }
 
     [Fact]
@@ -82,6 +183,7 @@ public class ChallengeTests : TestClassBase
             UnlockManager.SaveFilePath = savePath;
             UnlockManager.PermanentProgressSavingDisabled = false;
             UnlockManager.ResetProgressToDefaults();
+            UnlockChallengeMode();
 
             UnlockManager.MarkChallengeBeaten("THE OMELETTE", saveImmediately: false);
             UnlockManager.MarkChallengeBeaten("15 MINUTE CITY");
@@ -95,6 +197,8 @@ public class ChallengeTests : TestClassBase
             Assert.True(ChallengeManager.IsBeaten("THE OMELETTE"));
             Assert.True(ChallengeManager.IsBeaten("15 MINUTE CITY"));
             Assert.True(ChallengeManager.IsUnlocked("RICH GET RICHER"));
+            Assert.Equal(7, ChallengeManager.UnlockedChallengeIds.Count);
+            Assert.True(UnlockManager.IsAchievementAchieved(AchievementDb.OmeletteChallengeUnlockId));
             Assert.True(UnlockManager.IsAchievementAchieved(AchievementDb.OmeletteChallengeWinId));
             Assert.True(UnlockManager.IsAchievementAchieved(AchievementDb.FifteenMinuteCityChallengeWinId));
         }
@@ -124,6 +228,7 @@ public class ChallengeTests : TestClassBase
     {
         ResetEngineForTest();
         UnlockManager.ResetProgressToDefaults();
+        ChallengeManager.Unlock("THE OMELETTE", saveImmediately: false);
         FlowHandler.ChallengeChosen("THE OMELETTE");
         FlowHandler.CurrentAnte = 8;
         FlowHandler.CurrentSelectedBlind = BlindType.BOSS;
@@ -132,12 +237,14 @@ public class ChallengeTests : TestClassBase
 
         Assert.True(ChallengeManager.IsBeaten("THE OMELETTE"));
         Assert.True(UnlockManager.IsAchievementAchieved(AchievementDb.OmeletteChallengeWinId));
+        Assert.Equal(0, UnlockManager.WonDeckCount);
     }
 
     [Fact]
     public void Omelette_StartsWithFiveEggs()
     {
         ResetEngineForTest();
+        ChallengeManager.Unlock("THE OMELETTE", saveImmediately: false);
 
         FlowHandler.ChallengeChosen("THE OMELETTE");
 
@@ -874,6 +981,15 @@ public class ChallengeTests : TestClassBase
 
         Assert.Empty(context.Candidates);
     }
+
+    private static void UnlockChallengeMode()
+    {
+        foreach (var deck in new[] { "RED", "BLUE", "YELLOW", "GREEN", "BLACK" })
+            UnlockManager.MarkDeckStakeBeaten(deck, StakeType.WHITE, saveImmediately: false);
+    }
+
+    private static string GetDisplayRow(DeckChoicesDisplay display, int row) =>
+        string.Concat(Enumerable.Range(0, display.Width).Select(column => display.Sprite[row, column]));
 
     private ChallengeDefinition StartChallenge(string id)
     {

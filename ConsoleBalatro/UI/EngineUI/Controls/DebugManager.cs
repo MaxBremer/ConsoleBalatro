@@ -5,6 +5,7 @@ using ConsoleBalatro.Engine.Cards.Consumables;
 using ConsoleBalatro.Engine.Cards.Enums;
 using ConsoleBalatro.Engine.Cards.Jokers;
 using ConsoleBalatro.Engine.Cards.Vouchers;
+using ConsoleBalatro.Engine.Challenges;
 using ConsoleBalatro.Engine.Stakes;
 using System;
 using System.Collections.Generic;
@@ -33,6 +34,7 @@ namespace ConsoleBalatro.UI.EngineUI.Controls
             { "SETMONEY", SetMoney },
             { "PERMAPROGRESS", PermanentProgress },
             { "UNLOCKDECK", UnlockDeck },
+            { "UNLOCKCHALLENGES", UnlockChallenges },
         };
 
         private static readonly Dictionary<string, Func<CardZone>> CardZoneGetters = new()
@@ -72,6 +74,7 @@ namespace ConsoleBalatro.UI.EngineUI.Controls
             "SETMONEY <amount> - Sets the players money to the passed amount.",
             "PERMAPROGRESS <enable|disable|status> - Toggles whether permanent progress saves are written.",
             "UNLOCKDECK <deckName> [stakeName] [-beaten] - Unlocks a deck, or unlocks stakes for that deck up to stakeName. Use -beaten to also award the stakeName sticker.",
+            "UNLOCKCHALLENGES <5|ALL> - Enables challenge mode and unlocks the first five or all challenges, without marking them beaten. Respects PERMAPROGRESS.",
             "QUIT or Q - Exits the debug command line.",
         };
         
@@ -302,6 +305,28 @@ namespace ConsoleBalatro.UI.EngineUI.Controls
             var highestBeaten = UnlockManager.GetHighestBeatenStakeForDeck(deckName)?.ToString() ?? "NONE";
             var highestPlayable = StakeManager.OfficialStakeOrder.LastOrDefault(stake => UnlockManager.IsStakeUnlockedForDeck(deckName, stake)).ToString();
             ConsoleWriteLine($"{deckName} deck unlocked. Highest playable stake: {highestPlayable}. Highest sticker: {highestBeaten}.");
+        }
+
+        private static void UnlockChallenges(List<string> parameters, List<string> flags)
+        {
+            if (parameters.Count != 1 || flags.Count != 0 || (parameters[0] != "5" && parameters[0] != "ALL"))
+            {
+                ConsoleWriteLine("Usage: unlockchallenges <5|ALL>");
+                return;
+            }
+
+            var unlockAll = parameters[0] == "ALL";
+            var progressChanged = false;
+            foreach (var (achievementId, challengeId) in AchievementDb.ChallengeUnlocksByAchievementId)
+            {
+                if (ChallengeManager.TryGet(challengeId, out var challenge) && (unlockAll || challenge.ChallengeIndex <= 5))
+                    progressChanged |= UnlockManager.MarkAchievementAchieved(achievementId, saveImmediately: false);
+            }
+
+            if (progressChanged)
+                UnlockManager.SaveProgress();
+
+            ConsoleWriteLine($"Challenge mode enabled. {(unlockAll ? "All challenges" : "First five challenges")} unlocked. Challenges have not been marked beaten.");
         }
 
         private static void PermanentProgress(List<string> parameters, List<string> flags)

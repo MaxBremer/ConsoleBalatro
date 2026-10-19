@@ -12,6 +12,7 @@ using ConsoleBalatro.Engine.Cards.Enums;
 using ConsoleBalatro.Engine.Cards.Tags;
 using ConsoleBalatro.Engine.Stakes;
 using ConsoleBalatro.UI.EngineUI;
+using ConsoleBalatro.UI.EngineUI.Controls;
 using Xunit;
 
 namespace ConsoleBalatro.Tests;
@@ -59,6 +60,93 @@ public class ChallengeTests : TestClassBase
         Assert.False(display.IsChallengeMode);
         display.PreDisplaySetup();
         Assert.DoesNotContain("Tab: challenges", GetDisplayRow(display, 3));
+    }
+
+    [Fact]
+    public void DebugUnlockFirstFive_AllowsChallengeModeAndNormalProgression()
+    {
+        UnlockManager.ResetProgressToDefaults();
+
+        DebugManager.ReadCommand("unlockchallenges 5");
+        DebugManager.ReadCommand("unlockchallenges 5");
+
+        Assert.Equal(5, ChallengeManager.UnlockedChallengeIds.Count);
+        Assert.All(ChallengeManager.All, challenge => Assert.Equal(challenge.ChallengeIndex <= 5,
+            ChallengeManager.IsUnlocked(challenge.Id)));
+        var display = new DeckChoicesDisplay(0, 0);
+        display.ToggleRunType();
+        Assert.True(display.IsChallengeMode);
+        Assert.Empty(UnlockManager.BeatenChallengeIds);
+        Assert.Equal(0, UnlockManager.WonDeckCount);
+        Assert.DoesNotContain(AchievementDb.AllChallengesCompleteId, UnlockManager.AchievedAchievementIds);
+
+        UnlockManager.MarkChallengeBeaten("X RAY VISION", saveImmediately: false);
+        Assert.Equal(6, ChallengeManager.UnlockedChallengeIds.Count);
+        Assert.True(ChallengeManager.IsUnlocked("MAD WORLD"));
+    }
+
+    [Theory]
+    [InlineData(false)]
+    [InlineData(true)]
+    public void DebugUnlockAll_RespectsPermanentProgressSetting(bool savingDisabled)
+    {
+        var savePath = Path.Combine(Path.GetTempPath(), $"console-balatro-challenges-{Guid.NewGuid():N}.json");
+        var originalPath = UnlockManager.SaveFilePath;
+        try
+        {
+            UnlockManager.SaveFilePath = savePath;
+            UnlockManager.PermanentProgressSavingDisabled = savingDisabled;
+            UnlockManager.ResetProgressToDefaults();
+
+            DebugManager.ReadCommand("unlockchallenges all");
+
+            Assert.Equal(20, ChallengeManager.UnlockedChallengeIds.Count);
+            Assert.All(AchievementDb.ChallengeUnlocksByAchievementId.Keys,
+                achievementId => Assert.True(UnlockManager.IsAchievementAchieved(achievementId)));
+            Assert.Empty(UnlockManager.BeatenChallengeIds);
+            Assert.Equal(0, UnlockManager.WonDeckCount);
+            Assert.False(UnlockManager.IsAchievementAchieved(AchievementDb.AllChallengesCompleteId));
+            Assert.Equal(!savingDisabled, File.Exists(savePath));
+            Assert.False(File.Exists(savePath + ".tmp"));
+
+            if (!savingDisabled)
+            {
+                UnlockManager.ResetProgressToDefaults();
+                Assert.True(UnlockManager.LoadProgress());
+                Assert.Equal(20, ChallengeManager.UnlockedChallengeIds.Count);
+                var display = new DeckChoicesDisplay(0, 0);
+                display.ToggleRunType();
+                Assert.True(display.IsChallengeMode);
+                Assert.Empty(UnlockManager.BeatenChallengeIds);
+                Assert.Equal(0, UnlockManager.WonDeckCount);
+                Assert.False(UnlockManager.IsAchievementAchieved(AchievementDb.AllChallengesCompleteId));
+            }
+        }
+        finally
+        {
+            UnlockManager.PermanentProgressSavingDisabled = true;
+            UnlockManager.SaveFilePath = originalPath;
+            UnlockManager.ResetProgressToDefaults();
+            File.Delete(savePath);
+        }
+    }
+
+    [Theory]
+    [InlineData("unlockchallenges")]
+    [InlineData("unlockchallenges 0")]
+    [InlineData("unlockchallenges 6")]
+    [InlineData("unlockchallenges 5 all")]
+    [InlineData("unlockchallenges all -beaten")]
+    public void DebugUnlockChallenges_InvalidArgumentsLeaveProgressUnchanged(string command)
+    {
+        UnlockManager.ResetProgressToDefaults();
+
+        DebugManager.ReadCommand(command);
+
+        Assert.Empty(ChallengeManager.UnlockedChallengeIds);
+        Assert.Empty(UnlockManager.AchievedAchievementIds);
+        Assert.Empty(UnlockManager.BeatenChallengeIds);
+        Assert.Equal(0, UnlockManager.WonDeckCount);
     }
 
     [Fact]

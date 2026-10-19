@@ -651,6 +651,9 @@ public static class ChallengeManager
                 ZoneManager.JokerZone.MaxCapacity = 4;
             };
 
+            challengeDef.StartingVouchers.Add(() => VoucherDb.MakeVoucherCard("PLANET MERCHANT"));
+            challengeDef.StartingVouchers.Add(() => VoucherDb.MakeVoucherCard("PLANET TYCOON"));
+
             challengeDef.BannedPoolItems[ItemPool.Voucher] = [
                 "GRABBER",
                 "NACHO TONG"

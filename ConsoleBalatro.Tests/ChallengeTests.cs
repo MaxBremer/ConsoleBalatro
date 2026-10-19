@@ -574,6 +574,283 @@ public class ChallengeTests : TestClassBase
     }
 
     [Fact]
+    public void BramPoker_HasCorrectStartingCardsAndVouchers()
+    {
+        StartChallenge("BRAM POKER");
+
+        var vampire = Assert.Single(ZoneManager.JokerZone!.Cards);
+        Assert.Equal("VAMPIRE", vampire.JokerData?.DBName);
+        Assert.True(vampire.HasSticker(Sticker.ETERNAL));
+        Assert.Equal(new[] { "EMPEROR", "EMPRESS" },
+            ZoneManager.ConsumableZone!.Cards.Select(c => c.ConsumableData!.DBName));
+        Assert.Equal(new[] { "MAGIC TRICK", "ILLUSION" },
+            ZoneManager.ActiveVoucherZone!.Cards.Select(c => c.JokerData!.DBName));
+        Assert.True(Globals.ShopPlayingCardsGetModifiers);
+    }
+
+    [Fact]
+    public void Fragile_StartsWithGlassDeckAndTwoEternalNegativeOopsAllSixes()
+    {
+        StartChallenge("FRAGILE");
+
+        Assert.Equal(52, ZoneManager.DeckZone!.Cards.Count);
+        Assert.All(ZoneManager.DeckZone.Cards,
+            card => Assert.Equal(Enhancement.GLASS, card.Enhancement));
+        Assert.Equal(2, ZoneManager.JokerZone!.Cards.Count);
+        Assert.All(ZoneManager.JokerZone.Cards, joker =>
+        {
+            Assert.Equal("OOPS! ALL 6S", joker.JokerData?.DBName);
+            Assert.True(joker.HasSticker(Sticker.ETERNAL));
+            Assert.Equal(Edition.NEGATIVE, joker.Edition);
+        });
+        Assert.Equal(7, ZoneManager.JokerZone.MaxCapacity);
+    }
+
+    [Fact]
+    public void Monolith_StartsWithEternalObeliskAndEternalNegativeMarbleJoker()
+    {
+        StartChallenge("MONOLITH");
+
+        var jokers = ZoneManager.JokerZone!.Cards;
+        Assert.Equal(2, jokers.Count);
+        var obelisk = Assert.Single(jokers, j => j.JokerData?.DBName == "OBELISK");
+        Assert.True(obelisk.HasSticker(Sticker.ETERNAL));
+        Assert.Equal(Edition.BASE, obelisk.Edition);
+        var marble = Assert.Single(jokers, j => j.JokerData?.DBName == "MARBLE JOKER");
+        Assert.True(marble.HasSticker(Sticker.ETERNAL));
+        Assert.Equal(Edition.NEGATIVE, marble.Edition);
+        Assert.Equal(6, ZoneManager.JokerZone.MaxCapacity);
+    }
+
+    [Fact]
+    public void BlastOff_StartsWithEternalConstellationAndRocketAndReducedLimits()
+    {
+        StartChallenge("BLAST OFF");
+
+        Assert.Equal(new[] { "CONSTELLATION", "ROCKET" },
+            ZoneManager.JokerZone!.Cards.Select(c => c.JokerData!.DBName));
+        Assert.All(ZoneManager.JokerZone.Cards,
+            joker => Assert.True(joker.HasSticker(Sticker.ETERNAL)));
+        Assert.Equal(4, ZoneManager.JokerZone.MaxCapacity);
+        Assert.Equal(2, Globals.MaxHandsPerRound);
+        Assert.Equal(2, Globals.MaxDiscardsPerRound);
+
+        FlowHandler.StartSelectedBlind();
+
+        Assert.Equal(2, Globals.CurHandsRemaining);
+        Assert.Equal(2, Globals.CurDiscardsRemaining);
+    }
+
+    [Fact]
+    public void BlastOff_StartsWithActivePlanetMerchantAndPlanetTycoon()
+    {
+        StartChallenge("BLAST OFF");
+
+        Assert.Equal(new[] { "PLANET MERCHANT", "PLANET TYCOON" },
+            ZoneManager.ActiveVoucherZone!.Cards.Select(c => c.JokerData!.DBName));
+
+        var args = new EngineMarketTypeBeingChosenArgs
+        {
+            WeightsBeingRolled = MarketPullManager.MainMarketWeights.ToDictionary(),
+            MyContext = new() { Context = EventContextType.MarketTypeBeingChosen }
+        };
+        var originalPlanetWeight = args.WeightsBeingRolled[BuyItemType.PLANET_CARD];
+
+        EngineEventHandler.TriggerEvent(args);
+
+        Assert.Equal(originalPlanetWeight * 4, args.WeightsBeingRolled[BuyItemType.PLANET_CARD]);
+    }
+
+    [Fact]
+    public void FiveCardDraw_StartsWithCardSharpAndJimboAndCorrectRoundLimits()
+    {
+        StartChallenge("FIVE CARD DRAW");
+
+        Assert.Equal(new[] { "CARD SHARP", "JIMBO" },
+            ZoneManager.JokerZone!.Cards.Select(c => c.JokerData!.DBName));
+        Assert.All(ZoneManager.JokerZone.Cards,
+            joker => Assert.False(joker.HasSticker(Sticker.ETERNAL)));
+        Assert.Equal(7, ZoneManager.JokerZone.MaxCapacity);
+        Assert.Equal(5, Globals.HandSize);
+        Assert.Equal(6, Globals.MaxDiscardsPerRound);
+        Assert.Equal(4, Globals.MaxHandsPerRound);
+
+        FlowHandler.StartSelectedBlind();
+
+        Assert.Equal(5, ZoneManager.HandZone!.Cards.Count);
+        Assert.Equal(6, Globals.CurDiscardsRemaining);
+        Assert.Equal(4, Globals.CurHandsRemaining);
+    }
+
+    [Fact]
+    public void GoldenNeedle_StartsWithCreditCardTenDollarsAndCorrectRoundLimits()
+    {
+        StartChallenge("GOLDEN NEEDLE");
+
+        var creditCard = Assert.Single(ZoneManager.JokerZone!.Cards);
+        Assert.Equal("CREDIT CARD", creditCard.JokerData?.DBName);
+        Assert.Equal(10, Globals.Money);
+        Assert.Equal(-20, Globals.MinimumMoneyAllowed);
+        Assert.Equal(1, Globals.MaxHandsPerRound);
+        Assert.Equal(6, Globals.MaxDiscardsPerRound);
+
+        FlowHandler.StartSelectedBlind();
+
+        Assert.Equal(1, Globals.CurHandsRemaining);
+        Assert.Equal(6, Globals.CurDiscardsRemaining);
+    }
+
+    [Theory]
+    [InlineData(1, 1, true)]
+    [InlineData(0, 1, true)]
+    [InlineData(-19, 1, true)]
+    [InlineData(-20, 1, false)]
+    [InlineData(10, 0, false)]
+    public void GoldenNeedle_DiscardAvailabilityRespectsCreditLimitAndRemainingDiscards(
+        int money, int discards, bool expected)
+    {
+        StartChallenge("GOLDEN NEEDLE");
+        Globals.Money = money;
+        Globals.CurDiscardsRemaining = discards;
+
+        Assert.Equal(expected, Globals.CanDiscard);
+        Assert.Equal(money, Globals.Money);
+        Assert.Equal(discards, Globals.CurDiscardsRemaining);
+    }
+
+    [Theory]
+    [InlineData(10)]
+    [InlineData(-19)]
+    public void GoldenNeedle_DiscardCostsOneDollarForTheWholeHand(int money)
+    {
+        StartChallenge("GOLDEN NEEDLE");
+        Globals.Money = money;
+        Globals.CurDiscardsRemaining = 6;
+        var cards = BuildKnownHand("AS,KH,QD");
+
+        Globals.DiscardSelectedFromHand(doRedraw: false);
+
+        Assert.Equal(money - 1, Globals.Money);
+        Assert.Equal(5, Globals.CurDiscardsRemaining);
+        Assert.Empty(ZoneManager.HandZone!.Cards);
+        Assert.All(cards, card => Assert.Contains(card, ZoneManager.DiscardZone!.Cards));
+        var discard = Assert.IsType<EngineDiscardDoneArgs>(
+            EngineEventHandler.LastSavedOfType(EventContextType.HandDiscardDone));
+        Assert.Equal(cards, discard.BeingDiscarded);
+    }
+
+    [Theory]
+    [InlineData(-20, 6)]
+    [InlineData(10, 0)]
+    public void GoldenNeedle_UnavailableDiscardDoesNotMoveCardsChargeMoneyOrEmitEvent(int money, int discards)
+    {
+        StartChallenge("GOLDEN NEEDLE");
+        Globals.Money = money;
+        Globals.CurDiscardsRemaining = discards;
+        var cards = BuildKnownHand("AS,KH");
+        Assert.False(Globals.CanDiscard);
+
+        Globals.DiscardSelectedFromHand(doRedraw: false);
+
+        Assert.Equal(money, Globals.Money);
+        Assert.Equal(discards, Globals.CurDiscardsRemaining);
+        Assert.Equal(cards, ZoneManager.HandZone!.Cards);
+        Assert.Empty(ZoneManager.DiscardZone!.Cards);
+        Assert.Equal(0, EngineEventHandler.CountOfSaved(EventContextType.HandDiscardDone));
+    }
+
+    [Fact]
+    public void Cruelty_StartsWithThreeJokerSlots()
+    {
+        StartChallenge("CRUELTY");
+
+        Assert.Empty(ZoneManager.JokerZone!.Cards);
+        Assert.Equal(3, ZoneManager.JokerZone.MaxCapacity);
+    }
+
+    [Theory]
+    [InlineData(BlindType.SMALL, false)]
+    [InlineData(BlindType.BIG, false)]
+    [InlineData(BlindType.BOSS, true)]
+    public void Cruelty_OnlyRemovesSmallAndBigBlindRewards(BlindType blind, bool keepsBlindReward)
+    {
+        StartChallenge("CRUELTY");
+        FlowHandler.CurrentSelectedBlind = blind;
+        Globals.Money = 10;
+        Globals.CurHandsRemaining = 2;
+
+        var rewards = FlowHandler.CalcPostRoundMoneyWithSources();
+
+        Assert.Equal(keepsBlindReward, rewards.Any(reward => reward.Item1 == "Blind"));
+        if (keepsBlindReward)
+            Assert.Contains(("Blind", FlowHandler.PostRoundFreeMoney[blind]), rewards);
+        Assert.Contains(("Interest", 2), rewards);
+        Assert.Contains(("Hands Remaining", 2), rewards);
+    }
+
+    [Fact]
+    public void Jokerless_StartsWithoutJokersAndRejectsOrdinaryJokers()
+    {
+        StartChallenge("JOKERLESS");
+
+        Assert.Empty(ZoneManager.JokerZone!.Cards);
+        Assert.Equal(0, ZoneManager.JokerZone.MaxCapacity);
+        AddJoker("JIMBO");
+        Assert.Empty(ZoneManager.JokerZone.Cards);
+    }
+
+    [Theory]
+    [InlineData(true)]
+    [InlineData(false)]
+    public void Jokerless_RemovesOnlyJokerShopWeightAndHandlesRepeatedEvents(bool includeJokers)
+    {
+        StartChallenge("JOKERLESS");
+        var weights = MarketPullManager.MainMarketWeights.ToDictionary();
+        weights.Remove(BuyItemType.JOKER);
+        var expected = weights.ToDictionary();
+        if (includeJokers)
+            weights[BuyItemType.JOKER] = 40;
+        var args = new EngineMarketTypeBeingChosenArgs
+        {
+            WeightsBeingRolled = weights,
+            MyContext = new() { Context = EventContextType.MarketTypeBeingChosen }
+        };
+
+        EngineEventHandler.TriggerEvent(args);
+        EngineEventHandler.TriggerEvent(args);
+
+        Assert.Equal(expected.Count, weights.Count);
+        Assert.All(expected, pair => Assert.Equal(pair.Value, weights[pair.Key]));
+        Assert.DoesNotContain(BuyItemType.JOKER, weights.Keys);
+    }
+
+    [Theory]
+    [InlineData("BLAST OFF", ItemPool.Joker, "BURGLAR", "JIMBO")]
+    [InlineData("BLAST OFF", ItemPool.Voucher, "GRABBER", "SEED MONEY")]
+    [InlineData("BLAST OFF", ItemPool.Voucher, "NACHO TONG", "SEED MONEY")]
+    [InlineData("FIVE CARD DRAW", ItemPool.Joker, "JUGGLER", "JIMBO")]
+    [InlineData("FIVE CARD DRAW", ItemPool.Joker, "TROUBADOUR", "JIMBO")]
+    [InlineData("FIVE CARD DRAW", ItemPool.Joker, "TURTLE BEAN", "JIMBO")]
+    [InlineData("GOLDEN NEEDLE", ItemPool.Joker, "BURGLAR", "JIMBO")]
+    [InlineData("GOLDEN NEEDLE", ItemPool.Voucher, "GRABBER", "SEED MONEY")]
+    [InlineData("GOLDEN NEEDLE", ItemPool.Voucher, "NACHO TONG", "SEED MONEY")]
+    public void ChallengeRestrictions_RemoveBannedItemsAndKeepAllowedItems(
+        string challenge, ItemPool pool, string bannedId, string allowedId)
+    {
+        StartChallenge(challenge);
+        var definitions = pool == ItemPool.Joker ? PoolManager.JokerPool : PoolManager.VoucherPool;
+        var context = new MarketPoolContext { Pool = pool, Source = GenerationSource.Shop };
+        context.Candidates.Add(new WeightedCandidate { Definition = definitions[bannedId], Weight = 1 });
+        context.Candidates.Add(new WeightedCandidate { Definition = definitions[allowedId], Weight = 2 });
+
+        new ChallengePoolRule().ModifyCandidates(context);
+
+        var remaining = Assert.Single(context.Candidates);
+        Assert.Equal(allowedId, remaining.Definition.Id);
+        Assert.Equal(2, remaining.Weight);
+    }
+
+    [Fact]
     public void ChallengePoolRule_RemovesConfiguredItems()
     {
         ResetEngineForTest();

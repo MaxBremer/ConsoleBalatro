@@ -529,7 +529,7 @@ namespace ConsoleBalatro.Engine
         /// <param name="doRedraw">Should the hand be refilled after the discard?</param>
         public static void DiscardSelectedFromHand(bool doRedraw = true)
         {
-            if (CurDiscardsRemaining == 0)
+            if (!CanDiscard)
                 return;
             var selList = ZoneManager.CardsSelectedInHand.ToList();
             ZoneManager.DiscardSelectedFromHand();

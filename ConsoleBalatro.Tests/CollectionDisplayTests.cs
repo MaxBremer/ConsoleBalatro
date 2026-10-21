@@ -53,7 +53,7 @@ namespace ConsoleBalatro.Tests
             FlowHandler.OpenCollectionMenu();
             _ = Globals.randomNext(1_000_000);
             _ = Globals.randomNext(1_000_000);
-            FlowHandler.ClosePlaceholderMenu();
+            FlowHandler.CloseMainMenuSubmenu();
 
             Assert.Equal(GameState.MainMenu, Globals.CurrentGameState);
             Assert.Equal(before.InitialSeed, Globals.RunRandom.State.InitialSeed);

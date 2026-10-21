@@ -20,7 +20,7 @@ using Xunit;
 using ConsoleBalatro.Engine.Cards.Decks;
 using ConsoleBalatro.Engine.Stakes;
 
-[assembly: CollectionBehavior(DisableTestParallelization = true)]
+[assembly: CollectionBehavior(DisableTestParallelization = true)]//cause I'm stupid and everythings static, you can't run tests in parallel.
 
 namespace ConsoleBalatro.Tests
 {
@@ -249,6 +249,9 @@ namespace ConsoleBalatro.Tests
             return capture;
         }
 
+        /// <summary>
+        /// Object for storing discards observed via listener
+        /// </summary>
         public class DiscardCapture
         {
             public int NumCardsDiscarded => CardsDiscarded == null ? 0 : CardsDiscarded.Count;
@@ -256,6 +259,9 @@ namespace ConsoleBalatro.Tests
             public List<Card> CardsDiscarded { get; } = new();
         }
 
+        /// <summary>
+        /// Object for storing scoring contributions observed via listener.
+        /// </summary>
         public class ContributionCapture
         {
             public BigInteger ChipsFromEmits { get; set; }

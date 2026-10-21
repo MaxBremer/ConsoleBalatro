@@ -506,11 +506,11 @@ namespace ConsoleBalatro.UI.EngineUI.Controls
 
             ret.AvailableActions.Add(ConsoleKey.B, _ =>
             {
-                FlowHandler.ClosePlaceholderMenu();
+                FlowHandler.CloseMainMenuSubmenu();
             });
             ret.AvailableActions.Add(ConsoleKey.Escape, _ =>
             {
-                FlowHandler.ClosePlaceholderMenu();
+                FlowHandler.CloseMainMenuSubmenu();
             });
 
             return ret;
@@ -532,8 +532,8 @@ namespace ConsoleBalatro.UI.EngineUI.Controls
             ret.AvailableActions.Add(ConsoleKey.LeftArrow, _ => RedrawAfter(() => EngineDisplayGlobals.OptionsMenu.ChangeSelected(-1)));
             ret.AvailableActions.Add(ConsoleKey.RightArrow, _ => RedrawAfter(() => EngineDisplayGlobals.OptionsMenu.ChangeSelected(1)));
             ret.AvailableActions.Add(ConsoleKey.Enter, _ => RedrawAfter(() => EngineDisplayGlobals.OptionsMenu.ChangeSelected(1)));
-            ret.AvailableActions.Add(ConsoleKey.B, _ => FlowHandler.ClosePlaceholderMenu());
-            ret.AvailableActions.Add(ConsoleKey.Escape, _ => FlowHandler.ClosePlaceholderMenu());
+            ret.AvailableActions.Add(ConsoleKey.B, _ => FlowHandler.CloseMainMenuSubmenu());
+            ret.AvailableActions.Add(ConsoleKey.Escape, _ => FlowHandler.CloseMainMenuSubmenu());
             return ret;
         }
 
@@ -555,7 +555,7 @@ namespace ConsoleBalatro.UI.EngineUI.Controls
             Action<ControlContext> back = _ =>
             {
                 if (EngineDisplayGlobals.CollectionMenu.Back())
-                    FlowHandler.ClosePlaceholderMenu();
+                    FlowHandler.CloseMainMenuSubmenu();
                 else
                     EngineDisplayGlobals.Redraw();
             };

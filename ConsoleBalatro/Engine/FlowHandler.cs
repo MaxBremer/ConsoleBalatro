@@ -28,7 +28,6 @@ namespace ConsoleBalatro.Engine
         /// Small blind=1x amount, Big blind = 1.5x, Boss = 2x (unless in exception list)
         /// Index = ante, except lower than 0 which is just 0.
         /// </summary>
-        /// TODO: Implement endless/up to ante 16.
         public static List<BigInteger> BaseAnteChipAmounts = new()
         {
             100,
@@ -56,7 +55,7 @@ namespace ConsoleBalatro.Engine
             97 * BigInteger.Pow(10, 49),
             1 * BigInteger.Pow(10, 59),
             58 * BigInteger.Pow(10, 66),
-            16 * BigInteger.Pow(10, 76), //Ante 24. For my sanity, we're stopping here; auto-scaling can handle it after this
+            16 * BigInteger.Pow(10, 76), //Ante 24. For my sanity, we're stopping here.
             //TODO: BigInteger can technically go as high as you want it... should we manually implement naneinf?
         };
 
@@ -262,9 +261,8 @@ namespace ConsoleBalatro.Engine
             if (ante < scalingList.Count)
                 return scalingList[ante];
 
-            //Did... did I add this? Did AI write this? Did a ghost write this? I do not remember adding post-scalingList default scaling at all.... but I guess it happened :shrug: seems good idk
-            var scaledAmount = (double)scalingList[^1] * Math.Pow(2, ante - scalingList.Count + 1);
-            return Globals.CapChipCount(scaledAmount);
+            //Everything SHOULD be handled by the scaling list, but in case it isn't somehow, just return max chip count.
+            return Globals.MaxChipCount;
         }
 
         private static List<BigInteger> GetCurrentChipScalingList()
@@ -387,19 +385,6 @@ namespace ConsoleBalatro.Engine
             EngineEventHandler.TriggerEvent(new EngineEventArgs() { MyContext = new() { Context = EventContextType.StartPlayRoundSetupOver } });
         }
 
-        private static void ProcessTempRoundBuffs(EnginePlayRoundSetupArgs args)
-        {
-            if (!args.AnyBuffsApplied())
-                return;
-
-            if(args.TempHandSizeBonus != 0)
-            {
-                ZoneManager.HandSize += args.TempHandSizeBonus;
-            }
-
-            CurrentTempChanges = args;
-        }
-
         /// <summary>
         /// Closes an open "Play Round", that is, an actual blind, moving immediately to the Post Round.
         /// </summary>
@@ -429,6 +414,20 @@ namespace ConsoleBalatro.Engine
             //Post-round with the money menu
 
             InitializePostRound(postRoundMoney, replaceCurrentState: true);
+        }
+
+        //I mean this whole system ended up being just for the one tag... although it could be used in other implementations in theory... hate hate hate...
+        private static void ProcessTempRoundBuffs(EnginePlayRoundSetupArgs args)
+        {
+            if (!args.AnyBuffsApplied())
+                return;
+
+            if (args.TempHandSizeBonus != 0)
+            {
+                ZoneManager.HandSize += args.TempHandSizeBonus;
+            }
+
+            CurrentTempChanges = args;
         }
 
         private static void UndoTempRoundBuffs()
@@ -529,6 +528,10 @@ namespace ConsoleBalatro.Engine
             Globals.PushGameState(new GameStateObj() { GameState = GameState.MainMenu });
         }
 
+        /// <summary>
+        /// Initialize the "won run" menu, the win.
+        /// </summary>
+        /// <param name="replaceCurrentState">A boolean value indicating whether to a) replace the current game state or b) push win menu over the current game state.</param>
         public static void InitializeWinRound(bool replaceCurrentState = false)
         {
             EngineEventHandler.TriggerEvent(new EngineEventArgs() { MyContext = new() { Context = EventContextType.RunWon } });
@@ -539,33 +542,48 @@ namespace ConsoleBalatro.Engine
                 Globals.PushGameState(winState);
         }
 
+        /// <summary>
+        /// The player has chosen to end the run post-win.
+        /// </summary>
         public static void EndWonRun()
         {
             RunWinDecisionPending = false;
-            //Resetting is banned, just quit the game. Lol.
+            //Resetting is banned cause of how I built this stupid thing, just quit the game. Lol.
             /*Globals.ResetFullEngine();
             InitializeMainMenu();*/
             Globals.QUIT = true;
         }
 
+        /// <summary>
+        /// The player selects to continue post-win into endless mode.
+        /// </summary>
         public static void ContinueWonRun()
         {
             RunWinDecisionPending = false;
             InitializeBlindSelectionRound(replaceCurrentState: Globals.CurrentGameState == GameState.WinMenu);
         }
 
+        /// <summary>
+        /// Open the collection menu game state.
+        /// </summary>
         public static void OpenCollectionMenu()
         {
             CollectionMenuRunRandomState = Globals.RunRandom.State;
             Globals.PushGameState(new GameStateObj() { GameState = GameState.CollectionMenu });
         }
 
+        /// <summary>
+        /// Open the options menu game state.
+        /// </summary>
         public static void OpenOptionsMenu()
         {
             Globals.PushGameState(new GameStateObj() { GameState = GameState.OptionsMenu });
         }
 
-        public static void ClosePlaceholderMenu()
+        /// <summary>
+        /// Close the currently open submenu fro mmain menu, such as Collection or Options.
+        /// </summary>
+        public static void CloseMainMenuSubmenu()
         {
             if (Globals.CurrentGameState == GameState.CollectionMenu)
             {

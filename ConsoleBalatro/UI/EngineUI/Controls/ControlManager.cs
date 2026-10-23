@@ -675,7 +675,7 @@ namespace ConsoleBalatro.UI.EngineUI.Controls
                 {
                     var targetZone = c.MyZone;
                     var secondCardForSwap = KeySelectCardFromZone(targetZone);
-                    if (c == secondCardForSwap || secondCardForSwap.Pinned)
+                    if (secondCardForSwap == null || c == secondCardForSwap || secondCardForSwap.Pinned)
                         return;
 
                     targetZone.SwapCardPositions(c, secondCardForSwap);
